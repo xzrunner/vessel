@@ -1,0 +1,6 @@
+vessel/
+vessel_test/
+projects/*
+
+!projects/vessel.vcxproj
+!projects/vessel.vcxproj.filters
