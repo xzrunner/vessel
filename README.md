@@ -3,4 +3,4 @@
 ## Reference
 
 [Crafting Interpreters](git@github.com:munificent/craftinginterpreters.git)
- Code from clox.
+ Code based clox.
