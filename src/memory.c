@@ -1,6 +1,7 @@
 #include "compiler.h"
 #include "memory.h"
 #include "vm.h"
+#include "debug.h"
 
 #ifdef DEBUG_LOG_GC
 #include <stdio.h>
@@ -48,7 +49,7 @@ void mark_object(Obj* object)
 
 #ifdef DEBUG_LOG_GC
     printf("%p mark ", (void*)object);
-    print_value(OBJ_VAL(object));
+    ves_dump_value(OBJ_VAL(object));
     printf("\n");
 #endif
 
@@ -86,7 +87,7 @@ static void blacken_object(Obj* object)
 {
 #ifdef DEBUG_LOG_GC
     printf("%p blacken ", (void*)object);
-    print_value(OBJ_VAL(object));
+    ves_dump_value(OBJ_VAL(object));
     printf("\n");
 #endif
 

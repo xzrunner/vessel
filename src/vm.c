@@ -2,6 +2,7 @@
 #include "value.h"
 #include "memory.h"
 #include "compiler.h"
+#include "debug.h"
 
 #include <time.h>
 #include <stdarg.h>
@@ -313,7 +314,7 @@ static InterpretResult run()
         printf("          ");
         for (Value* slot = vm.stack; slot < vm.stack_top; slot++) {
             printf("[ ");
-            print_value(*slot);
+            ves_dump_value(*slot);
             printf(" ]");
         }
         printf("\n");
@@ -472,8 +473,8 @@ static InterpretResult run()
                 break;
 
             case OP_PRINT: {
-                print_value(pop());
-                printf("\n");
+                ves_dump_value(pop());
+                ves_str_buf_newline();
                 break;
             }
 
