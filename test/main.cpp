@@ -1,28 +1,15 @@
+#define CATCH_CONFIG_RUNNER
+#include <catch/catch.hpp>
+
 #include <vm.h>
 
 int main(int argc, char* argv[])
 {
     init_vm();
 
-    auto ret = interpret(R"(
+    int result = Catch::Session().run(argc, argv);
 
-{
-  var a = "before";
-  print a; // expect: before
+    // global clean-up...
 
-  a = "after";
-  print a; // expect: after
-
-  print a = "arg"; // expect: arg
-  print a; // expect: arg
-}
-
-
-)");
-
-    int zz = 0;
-
-    free_vm();
-
-    return 0;
+    return result;
 }
