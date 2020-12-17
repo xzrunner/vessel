@@ -160,6 +160,22 @@ static bool match(TokenType type)
     return true;
 }
 
+static bool match_line()
+{
+    if (!match(TOKEN_LINE)) {
+        return false;
+    }
+
+    while (match(TOKEN_LINE))
+        ;
+    return true;
+}
+
+static void ignore_new_lines()
+{
+    match_line();
+}
+
 static void emit_byte(uint8_t byte) 
 {
     write_chunk(current_chunk(), byte, parser.previous.line);
@@ -457,6 +473,8 @@ static uint8_t argument_list()
 
 static void and_(bool can_assign) 
 {
+    ignore_new_lines();
+
     int endJump = emit_jump(OP_JUMP_IF_FALSE);
 
     emit_byte(OP_POP);
@@ -538,6 +556,8 @@ static void number(bool can_assign)
 
 static void or_(bool can_assign) 
 {
+    ignore_new_lines();
+
     int else_jump = emit_jump(OP_JUMP_IF_FALSE);
     int endJump = emit_jump(OP_JUMP);
 
@@ -809,7 +829,9 @@ static void class_declaration()
     named_variable(class_name, false);
     consume(TOKEN_LEFT_BRACE, "Expect '{' before class body.");
     while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF)) {
+        ignore_new_lines();
         method();
+        ignore_new_lines();
     }
     consume(TOKEN_RIGHT_BRACE, "Expect '}' after class body.");
     emit_byte(OP_POP);
@@ -838,7 +860,6 @@ static void var_declaration()
     } else {
         emit_byte(OP_NIL);
     }
-    consume(TOKEN_SEMICOLON, "Expect ';' after variable declaration.");
 
     define_variable(global);
 }
@@ -846,7 +867,6 @@ static void var_declaration()
 static void expression_statement() 
 {
     expression();
-    consume(TOKEN_SEMICOLON, "Expect ';' after expression.");
     emit_byte(OP_POP);
 }
 
@@ -855,15 +875,20 @@ static void for_statement()
     begin_scope();
 
     consume(TOKEN_LEFT_PAREN, "Expect '(' after 'for'.");
+    // for-initializer
     if (match(TOKEN_SEMICOLON)) {
         // No initializer.
     } else if (match(TOKEN_VAR)) {
         var_declaration();
+        consume(TOKEN_SEMICOLON, "Expect ';' after loop init.");
     } else {
         expression_statement();
+        consume(TOKEN_SEMICOLON, "Expect ';' after loop init.");
     }
 
     int loop_start = current_chunk()->count;
+
+    // for-exit
     int exit_jump = -1;
     if (!match(TOKEN_SEMICOLON)) 
     {
@@ -874,6 +899,7 @@ static void for_statement()
         emit_byte(OP_POP); // Condition.
     }
 
+    // for-increment
     if (!match(TOKEN_RIGHT_PAREN)) 
     {
         int body_jump = emit_jump(OP_JUMP);
@@ -925,7 +951,6 @@ static void if_statement()
 static void print_statement() 
 {
     expression();
-    consume(TOKEN_SEMICOLON, "Expect ';' after value.");
     emit_byte(OP_PRINT);
 }
 
@@ -935,7 +960,7 @@ static void return_statement()
         error("Can't return from top-level code.");
     }
 
-    if (match(TOKEN_SEMICOLON)) {
+    if (match(TOKEN_LINE)) {
         emit_return();
     } else {
         if (current->type == TYPE_INITIALIZER) {
@@ -943,7 +968,6 @@ static void return_statement()
         }
 
         expression();
-        consume(TOKEN_SEMICOLON, "Expect ';' after return value.");
         emit_byte(OP_RETURN);
     }
 }
@@ -973,7 +997,7 @@ static void synchronize()
 
     while (parser.current.type != TOKEN_EOF) 
     {
-        if (parser.previous.type == TOKEN_SEMICOLON) {
+        if (parser.previous.type == TOKEN_LINE) {
             return;
         }
 
@@ -1000,6 +1024,11 @@ static void synchronize()
 
 static void declaration() 
 {
+    ignore_new_lines();
+    if (match(TOKEN_EOF)) {
+        return;
+    }
+
     if (match(TOKEN_CLASS)) {
         class_declaration();
     } else if (match(TOKEN_FUN)) {
@@ -1013,10 +1042,14 @@ static void declaration()
     if (parser.panic_mode) {
         synchronize();
     }
+
+    ignore_new_lines();
 }
 
 static void statement() 
 {
+    ignore_new_lines();
+
     if (match(TOKEN_PRINT)) {
         print_statement();
     } else if (match(TOKEN_FOR)) {
@@ -1034,6 +1067,8 @@ static void statement()
     } else {
         expression_statement();
     }
+
+    ignore_new_lines();
 }
 
 ObjFunction* compile(const char* source) 
@@ -1057,9 +1092,9 @@ ObjFunction* compile(const char* source)
 }
 
 void mark_compiler_roots() {
-  Compiler* compiler = current;
-  while (compiler != NULL) {
-    mark_object((Obj*)compiler->function);
-    compiler = compiler->enclosing;
-  }
+    Compiler* compiler = current;
+    while (compiler != NULL) {
+        mark_object((Obj*)compiler->function);
+        compiler = compiler->enclosing;
+    }
 }

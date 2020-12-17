@@ -36,12 +36,6 @@ static bool is_at_end()
     return *scanner.current == '\0';
 }
 
-static char advance() 
-{
-    scanner.current++;
-    return scanner.current[-1];
-}
-
 static char peek() 
 {
     return *scanner.current;
@@ -53,6 +47,16 @@ static char peek_next()
         return '\0';
     }
     return scanner.current[1];
+}
+
+static char advance()
+{
+    char c = peek();
+    scanner.current++;
+    if (c == '\n') {
+        scanner.line++;
+    }
+    return c;
 }
 
 static bool match(char expected) 
@@ -102,14 +106,11 @@ static void skip_whitespace()
             advance();
             break;
 
-        case '\n':
-            scanner.line++;
-            advance();
-            break;
-
         case '/':
             if (peek_next() == '/') {
-                while (peek() != '\n' && !is_at_end()) advance();
+                while (peek() != '\n' && !is_at_end()) {
+                    advance();
+                }
             } else {
                 return;
             }
@@ -247,6 +248,8 @@ Token scan_token()
         case '+': return make_token(TOKEN_PLUS);
         case '/': return make_token(TOKEN_SLASH);
         case '*': return make_token(TOKEN_STAR);
+
+        case '\n': return make_token(TOKEN_LINE);
 
         case '!': return make_token(match('=') ? TOKEN_BANG_EQUAL : TOKEN_BANG);
         case '=': return make_token(match('=') ? TOKEN_EQUAL_EQUAL : TOKEN_EQUAL);
