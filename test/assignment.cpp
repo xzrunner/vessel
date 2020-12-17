@@ -46,3 +46,44 @@ arg
 arg
 )" + 1);
 }
+
+TEST_CASE("local")
+{
+    ves_str_buf_clear();
+
+    interpret(R"(
+{
+  var a = "before"
+  print a // expect: before
+
+  a = "after"
+  print a // expect: after
+
+  print a = "arg" // expect: arg
+  print a // expect: arg
+}
+)");
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
+before
+after
+arg
+arg
+)" + 1);
+}
+
+TEST_CASE("assign_syntax")
+{
+    ves_str_buf_clear();
+
+    interpret(R"(
+// Assignment on RHS of variable.
+var a = "before"
+var c = a = "var"
+print a // expect: var
+print c // expect: var
+)");
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
+var
+var
+)" + 1);
+}

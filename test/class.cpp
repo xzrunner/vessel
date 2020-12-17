@@ -3,6 +3,20 @@
 #include <vm.h>
 #include <debug.h>
 
+TEST_CASE("class_empty")
+{
+    ves_str_buf_clear();
+
+    interpret(R"(
+class Foo {}
+
+print Foo // expect: Foo
+)");
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
+Foo
+)" + 1);
+}
+
 TEST_CASE("inherited_method")
 {
     ves_str_buf_clear();
@@ -38,3 +52,59 @@ in baz
 )" + 1);
 }
 
+TEST_CASE("local_inherit_other")
+{
+    ves_str_buf_clear();
+
+    interpret(R"(
+class A {}
+
+fun f() {
+  class B < A {}
+  return B
+}
+
+print f() // expect: B
+)");
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
+B
+)" + 1);
+}
+
+TEST_CASE("local_reference_self")
+{
+    ves_str_buf_clear();
+
+    interpret(R"(
+{
+  class Foo {
+    returnSelf() {
+      return Foo
+    }
+  }
+
+  print Foo().returnSelf() // expect: Foo
+}
+)");
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
+Foo
+)" + 1);
+}
+
+TEST_CASE("reference_self")
+{
+    ves_str_buf_clear();
+
+    interpret(R"(
+class Foo {
+  returnSelf() {
+    return Foo
+  }
+}
+
+print Foo().returnSelf() // expect: Foo
+)");
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
+Foo
+)" + 1);
+}

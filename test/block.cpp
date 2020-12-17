@@ -21,7 +21,7 @@ ok
 )" + 1);
 }
 
-TEST_CASE("scope")
+TEST_CASE("block-scope")
 {
     ves_str_buf_clear();
 

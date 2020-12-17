@@ -18,13 +18,30 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\test\assignment.cpp" />
     <ClCompile Include="..\..\..\test\block.cpp" />
+    <ClCompile Include="..\..\..\test\bool.cpp" />
     <ClCompile Include="..\..\..\test\class.cpp" />
     <ClCompile Include="..\..\..\test\closure.cpp" />
+    <ClCompile Include="..\..\..\test\comments.cpp" />
     <ClCompile Include="..\..\..\test\constructor.cpp" />
     <ClCompile Include="..\..\..\test\expressions.cpp" />
     <ClCompile Include="..\..\..\test\field.cpp" />
     <ClCompile Include="..\..\..\test\for.cpp" />
+    <ClCompile Include="..\..\..\test\function.cpp" />
+    <ClCompile Include="..\..\..\test\if.cpp" />
+    <ClCompile Include="..\..\..\test\inheritance.cpp" />
+    <ClCompile Include="..\..\..\test\logical_operator.cpp" />
     <ClCompile Include="..\..\..\test\main.cpp" />
+    <ClCompile Include="..\..\..\test\method.cpp" />
+    <ClCompile Include="..\..\..\test\nil.cpp" />
+    <ClCompile Include="..\..\..\test\number.cpp" />
+    <ClCompile Include="..\..\..\test\operator.cpp" />
+    <ClCompile Include="..\..\..\test\return.cpp" />
+    <ClCompile Include="..\..\..\test\string.cpp" />
+    <ClCompile Include="..\..\..\test\super.cpp" />
+    <ClCompile Include="..\..\..\test\this.cpp" />
+    <ClCompile Include="..\..\..\test\variable.cpp" />
+    <ClCompile Include="..\..\..\test\while.cpp" />
+    <ClCompile Include="..\..\..\test\z_test.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectName>1.vessel-test</ProjectName>
