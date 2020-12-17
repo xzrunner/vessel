@@ -104,6 +104,9 @@ void ves_str_buf_newline()
 
 void ves_str_buf_clear()
 {
+    if (out_buf) {
+        out_buf[0] = 0;
+    }
     out_ptr = 0;
 }
 
