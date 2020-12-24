@@ -13,11 +13,14 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\src\chunk.c" />
     <ClCompile Include="..\..\..\src\compiler.c" />
+    <ClCompile Include="..\..\..\src\core.c" />
     <ClCompile Include="..\..\..\src\debug.c" />
     <ClCompile Include="..\..\..\src\memory.c" />
     <ClCompile Include="..\..\..\src\object.c" />
+    <ClCompile Include="..\..\..\src\primitive.c" />
     <ClCompile Include="..\..\..\src\scanner.c" />
     <ClCompile Include="..\..\..\src\table.c" />
+    <ClCompile Include="..\..\..\src\utils.c" />
     <ClCompile Include="..\..\..\src\value.c" />
     <ClCompile Include="..\..\..\src\vm.c" />
   </ItemGroup>
@@ -25,11 +28,14 @@
     <ClInclude Include="..\..\..\src\chunk.h" />
     <ClInclude Include="..\..\..\src\common.h" />
     <ClInclude Include="..\..\..\src\compiler.h" />
+    <ClInclude Include="..\..\..\src\core.h" />
     <ClInclude Include="..\..\..\src\debug.h" />
     <ClInclude Include="..\..\..\src\memory.h" />
     <ClInclude Include="..\..\..\src\object.h" />
+    <ClInclude Include="..\..\..\src\primitive.h" />
     <ClInclude Include="..\..\..\src\scanner.h" />
     <ClInclude Include="..\..\..\src\table.h" />
+    <ClInclude Include="..\..\..\src\utils.h" />
     <ClInclude Include="..\..\..\src\value.h" />
     <ClInclude Include="..\..\..\src\vm.h" />
   </ItemGroup>
@@ -77,13 +83,14 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DEBUG;WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader />
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -97,6 +104,7 @@
       <PrecompiledHeader />
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

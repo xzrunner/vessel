@@ -13,18 +13,20 @@ extern "C"
 #define FRAMES_MAX 64
 #define STACK_MAX (FRAMES_MAX * UINT8_COUNT)
 
-typedef struct 
+typedef struct
 {
 	ObjClosure* closure;
 	uint8_t* ip;
 	Value* slots;
 } CallFrame;
 
-typedef struct 
+typedef struct
 {
+	ObjClass* list_class;
+
 	CallFrame frames[FRAMES_MAX];
 	int frame_count;
-  
+
 	Value stack[STACK_MAX];
 	Value* stack_top;
 
@@ -39,12 +41,16 @@ typedef struct
 
 	Obj* objects;
 
+	Table modules;
+
 	int gray_count;
 	int gray_capacity;
 	Obj** gray_stack;
+
+	ValueArray method_names;
 } VM;
 
-typedef enum 
+typedef enum
 {
 	INTERPRET_OK,
 	INTERPRET_COMPILE_ERROR,
@@ -56,7 +62,7 @@ extern VM vm;
 void init_vm();
 void free_vm();
 
-InterpretResult interpret(const char* source);
+InterpretResult interpret(const char* module, const char* source);
 
 void push(Value value);
 Value pop();

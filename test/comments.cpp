@@ -7,7 +7,7 @@ TEST_CASE("line_at_eof")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 print "ok" // expect: ok
 // comment
 )");
@@ -20,7 +20,7 @@ TEST_CASE("only_line_comment")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 // comment
 )");
 }
@@ -29,7 +29,7 @@ TEST_CASE("only_line_comment_and_line")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 // comment
 
 )");

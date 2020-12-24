@@ -7,7 +7,7 @@ TEST_CASE("arity")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 class Foo {
   method0() { return "no args" }
   method1(a) { return a }
@@ -48,7 +48,7 @@ TEST_CASE("empty_block")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 class Foo {
   bar() {}
 }
@@ -64,7 +64,7 @@ TEST_CASE("print_bound_method")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 class Foo {
   method() { }
 }

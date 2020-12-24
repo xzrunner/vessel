@@ -7,7 +7,7 @@ TEST_CASE("equality")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 print true == true    // expect: true
 print true == false   // expect: false
 print false == true   // expect: false
@@ -58,7 +58,7 @@ TEST_CASE("bool_equality")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 print !true    // expect: false
 print !false   // expect: true
 print !!true   // expect: true

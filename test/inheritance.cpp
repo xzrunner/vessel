@@ -7,7 +7,7 @@ TEST_CASE("inheritance_constructor")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 class A {
   init(param) {
     this.field = param
@@ -32,7 +32,7 @@ TEST_CASE("inherit_methods")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 class Foo {
   methodOnFoo() { print "foo" }
   override() { print "foo" }
@@ -59,7 +59,7 @@ TEST_CASE("set_fields_from_base_class")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 class Foo {
   foo(a, b) {
     this.field1 = a

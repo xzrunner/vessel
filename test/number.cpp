@@ -7,7 +7,7 @@ TEST_CASE("literals")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 print 123     // expect: 123
 print 987654  // expect: 987654
 print 0       // expect: 0
@@ -30,7 +30,7 @@ TEST_CASE("nan_equality")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 var nan = 0/0
 
 print nan == 0 // expect: false

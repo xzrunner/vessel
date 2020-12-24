@@ -7,7 +7,7 @@ TEST_CASE("dangling_else")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 // A dangling else binds to the right-most if.
 if (true) if (false) print "bad" else print "good" // expect: good
 if (false) if (true) print "bad" else print "bad"
@@ -21,7 +21,7 @@ TEST_CASE("else")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 // Evaluate the 'else' expression if the condition is false.
 if (true) print "good" else print "bad" // expect: good
 if (false) print "bad" else print "good" // expect: good
@@ -40,7 +40,7 @@ TEST_CASE("if")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 // Evaluate the 'then' expression if the condition is true.
 if (true) print "good" // expect: good
 if (false) print "bad"
@@ -63,7 +63,7 @@ TEST_CASE("truth")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 // False and nil are false.
 if (false) print "bad" else print "false" // expect: false
 if (nil) print "bad" else print "nil" // expect: nil

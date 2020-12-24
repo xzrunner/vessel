@@ -7,7 +7,7 @@ TEST_CASE("while_closure_in_body")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 var f1
 var f2
 var f3
@@ -39,7 +39,7 @@ TEST_CASE("while_return_closure")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 fun f() {
   while (true) {
     var i = "i"
@@ -60,7 +60,7 @@ TEST_CASE("while_return_inside")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 fun f() {
   while (true) {
     var i = "i"
@@ -80,7 +80,7 @@ TEST_CASE("while_syntax")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 // Single-expression body.
 var c = 0
 while (c < 3) print c = c + 1

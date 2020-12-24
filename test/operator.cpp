@@ -7,7 +7,7 @@ TEST_CASE("add")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 print 123 + 456 // expect: 579
 print "str" + "ing" // expect: string
 )");
@@ -21,7 +21,7 @@ TEST_CASE("comparison")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 print 1 < 2    // expect: true
 print 2 < 2    // expect: false
 print 2 < 1    // expect: false
@@ -76,7 +76,7 @@ TEST_CASE("divide")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 print 8 / 2         // expect: 4
 print 12.34 / 12.34  // expect: 1
 )");
@@ -90,7 +90,7 @@ TEST_CASE("equals")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 print nil == nil // expect: true
 
 print true == true // expect: true
@@ -124,7 +124,7 @@ TEST_CASE("equals_class")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 // Bound methods have identity equality.
 class Foo {}
 class Bar {}
@@ -155,7 +155,7 @@ TEST_CASE("equals_method")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 // Bound methods have identity equality.
 class Foo {
   method() {}
@@ -180,7 +180,7 @@ TEST_CASE("multiply")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 print 5 * 3 // expect: 15
 print 12.34 * 0.3 // expect: 3.702
 )");
@@ -194,7 +194,7 @@ TEST_CASE("negate")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 print -(3) // expect: -3
 print --(3) // expect: 3
 print ---(3) // expect: -3
@@ -210,7 +210,7 @@ TEST_CASE("not")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 print !true     // expect: false
 print !false    // expect: true
 print !!true    // expect: true
@@ -241,7 +241,7 @@ TEST_CASE("not_class")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 class Bar {}
 print !Bar      // expect: false
 print !Bar()    // expect: false
@@ -256,7 +256,7 @@ TEST_CASE("not_equals")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 print nil != nil // expect: false
 
 print true != true // expect: false
@@ -290,7 +290,7 @@ TEST_CASE("subtract")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 print 4 - 3 // expect: 1
 print 1.2 - 1.2 // expect: 0
 )");

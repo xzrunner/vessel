@@ -29,6 +29,7 @@
     <ClCompile Include="..\..\..\test\function.cpp" />
     <ClCompile Include="..\..\..\test\if.cpp" />
     <ClCompile Include="..\..\..\test\inheritance.cpp" />
+    <ClCompile Include="..\..\..\test\list.cpp" />
     <ClCompile Include="..\..\..\test\logical_operator.cpp" />
     <ClCompile Include="..\..\..\test\main.cpp" />
     <ClCompile Include="..\..\..\test\method.cpp" />

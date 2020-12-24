@@ -11,7 +11,7 @@ extern "C"
 
 #include <stdint.h>
 
-typedef enum 
+typedef enum
 {
 	OP_CONSTANT,
 	OP_NIL,
@@ -49,10 +49,28 @@ typedef enum
 	OP_RETURN,
 	OP_CLASS,
 	OP_INHERIT,
-	OP_METHOD
+	OP_METHOD,
+	OP_LOAD_MODULE_VAR,
+	OP_CALL_0,
+	OP_CALL_1,
+	OP_CALL_2,
+	OP_CALL_3,
+	OP_CALL_4,
+	OP_CALL_5,
+	OP_CALL_6,
+	OP_CALL_7,
+	OP_CALL_8,
+	OP_CALL_9,
+	OP_CALL_10,
+	OP_CALL_11,
+	OP_CALL_12,
+	OP_CALL_13,
+	OP_CALL_14,
+	OP_CALL_15,
+	OP_CALL_16,
 } OpCode;
 
-typedef struct 
+typedef struct
 {
 	int count;
 	int capacity;

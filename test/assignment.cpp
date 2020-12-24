@@ -7,7 +7,7 @@ TEST_CASE("associativity")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 var a = "a"
 var b = "b"
 var c = "c"
@@ -29,7 +29,7 @@ TEST_CASE("global")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 var a = "before"
 print a // expect: before
 
@@ -51,7 +51,7 @@ TEST_CASE("local")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 {
   var a = "before"
   print a // expect: before
@@ -75,7 +75,7 @@ TEST_CASE("assign_syntax")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 // Assignment on RHS of variable.
 var a = "before"
 var c = a = "var"

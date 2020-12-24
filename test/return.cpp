@@ -7,7 +7,7 @@ TEST_CASE("after_else")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 fun f() {
   if (false) "no" else return "ok"
 }
@@ -23,7 +23,7 @@ TEST_CASE("after_if")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 fun f() {
   if (true) return "ok"
 }
@@ -39,7 +39,7 @@ TEST_CASE("after_while")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 fun f() {
   while (true) return "ok"
 }
@@ -55,7 +55,7 @@ TEST_CASE("in_function")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 fun f() {
   return "ok"
   print "bad"
@@ -72,7 +72,7 @@ TEST_CASE("in_method")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 class Foo {
   method() {
     return "ok"
@@ -91,7 +91,7 @@ TEST_CASE("return_nil_if_no_value")
 {
     ves_str_buf_clear();
 
-    interpret(R"(
+    interpret(NULL, R"(
 fun f() {
   return
   print "bad"
