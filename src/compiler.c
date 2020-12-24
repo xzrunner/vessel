@@ -502,12 +502,12 @@ static void and_(bool can_assign)
 {
     ignore_new_lines();
 
-    int endJump = emit_jump(OP_JUMP_IF_FALSE);
+    int end_jump = emit_jump(OP_JUMP_IF_FALSE);
 
     emit_op(OP_POP);
     parse_precedence(PREC_AND);
 
-    patch_jump(endJump);
+    patch_jump(end_jump);
 }
 
 static void binary(bool can_assign)
@@ -587,6 +587,7 @@ static void call_method(int num_args, const char* name, int length)
 //    int symbol = symbol_table_ensure(&vm.method_names, name, length);
 //    emit_short_arg((OpCode)(OP_CALL_0 + num_args), symbol);
 
+    // fixme
     int symbol = make_constant(OBJ_VAL(copy_string(name, length)));
     emit_byte_arg((OpCode)(OP_CALL_0 + num_args), symbol);
 }
@@ -645,13 +646,13 @@ static void or_(bool can_assign)
     ignore_new_lines();
 
     int else_jump = emit_jump(OP_JUMP_IF_FALSE);
-    int endJump = emit_jump(OP_JUMP);
+    int end_jump = emit_jump(OP_JUMP);
 
     patch_jump(else_jump);
     emit_op(OP_POP);
 
     parse_precedence(PREC_OR);
-    patch_jump(endJump);
+    patch_jump(end_jump);
 }
 
 static void string(bool can_assign)
@@ -793,19 +794,19 @@ ParseRule rules[] =
 static void parse_precedence(Precedence precedence)
 {
     advance();
-    ParseFn prefixRule = get_rule(parser.previous.type)->prefix;
-    if (prefixRule == NULL) {
+    ParseFn prefix_rule = get_rule(parser.previous.type)->prefix;
+    if (prefix_rule == NULL) {
         error("Expect expression.");
         return;
     }
 
     bool can_assign = precedence <= PREC_ASSIGNMENT;
-    prefixRule(can_assign);
+    prefix_rule(can_assign);
 
     while (precedence <= get_rule(parser.current.type)->precedence) {
         advance();
-        ParseFn infixRule = get_rule(parser.previous.type)->infix;
-        infixRule(can_assign);
+        ParseFn infix_rule = get_rule(parser.previous.type)->infix;
+        infix_rule(can_assign);
     }
 
     if (can_assign && match(TOKEN_EQUAL)) {

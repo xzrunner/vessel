@@ -173,7 +173,7 @@ static bool call(ObjClosure* closure, int arg_count)
 	return true;
 }
 
-static bool callValue(Value callee, int arg_count)
+static bool call_value(Value callee, int arg_count)
 {
 	if (IS_OBJ(callee))
 	{
@@ -193,8 +193,7 @@ static bool callValue(Value callee, int arg_count)
 			Value initializer;
 			if (table_get(&klass->methods, vm.init_string, &initializer)) {
 				return call(AS_CLOSURE(initializer), arg_count);
-			}
-			else if (arg_count != 0) {
+			} else if (arg_count != 0) {
 				runtime_error("Expected 0 arguments but got %d.", arg_count);
 				return false;
 			}
@@ -209,6 +208,7 @@ static bool callValue(Value callee, int arg_count)
 			{
 			case METHOD_PRIMITIVE:
 				if (method->as.primitive(args)) {
+					// fixme
 					vm.stack_top -= arg_count;
 					return true;
 				} else {
@@ -251,7 +251,7 @@ static bool callValue(Value callee, int arg_count)
 	return false;
 }
 
-static bool invokeFromClass(ObjClass* klass, ObjString* name, int arg_count)
+static bool invoke_from_class(ObjClass* klass, ObjString* name, int arg_count)
 {
 	Value method;
 	if (!table_get(&klass->methods, name, &method)) {
@@ -294,7 +294,7 @@ static bool invoke(ObjString* name, int arg_count)
 		Value value;
 		if (table_get(&instance->fields, name, &value)) {
 			vm.stack_top[-arg_count - 1] = value;
-			return callValue(value, arg_count);
+			return call_value(value, arg_count);
 		}
 
 		obj_class = instance->klass;
@@ -311,7 +311,7 @@ static bool invoke(ObjString* name, int arg_count)
 
 		Value value;
 		if (table_get(&vm.list_class->methods, signed_name, &value)) {
-			return callValue(value, arg_count);
+			return call_value(value, arg_count);
 		}
 
 		obj_class = vm.list_class;
@@ -321,10 +321,10 @@ static bool invoke(ObjString* name, int arg_count)
 		runtime_error("Only instances and list have methods.");
 		return false;
 	}
-	return invokeFromClass(obj_class, name, arg_count);
+	return invoke_from_class(obj_class, name, arg_count);
 }
 
-static bool bindMethod(ObjClass* klass, ObjString* name)
+static bool bind_method(ObjClass* klass, ObjString* name)
 {
 	Value method;
 	if (!table_get(&klass->methods, name, &method)) {
@@ -338,7 +338,7 @@ static bool bindMethod(ObjClass* klass, ObjString* name)
 	return true;
 }
 
-static ObjUpvalue* captureUpvalue(Value* local)
+static ObjUpvalue* capture_upvalue(Value* local)
 {
 	ObjUpvalue* prev_upvalue = NULL;
 	ObjUpvalue* upvalue = vm.open_upvalues;
@@ -357,8 +357,7 @@ static ObjUpvalue* captureUpvalue(Value* local)
 
 	if (prev_upvalue == NULL) {
 		vm.open_upvalues = created_upvalue;
-	}
-	else {
+	} else {
 		prev_upvalue->next = created_upvalue;
 	}
 
@@ -585,7 +584,7 @@ static InterpretResult run()
 				push(value);
 				break;
 			}
-			if (!bindMethod(instance->klass, name)) {
+			if (!bind_method(instance->klass, name)) {
 				return INTERPRET_RUNTIME_ERROR;
 			}
 			break;
@@ -609,7 +608,7 @@ static InterpretResult run()
 		case OP_GET_SUPER: {
 			ObjString* name = READ_STRING();
 			ObjClass* superclass = AS_CLASS(pop());
-			if (!bindMethod(superclass, name)) {
+			if (!bind_method(superclass, name)) {
 				return INTERPRET_RUNTIME_ERROR;
 			}
 			break;
@@ -679,7 +678,7 @@ static InterpretResult run()
 
 		case OP_CALL: {
 			int arg_count = READ_BYTE();
-			if (!callValue(peek(arg_count), arg_count)) {
+			if (!call_value(peek(arg_count), arg_count)) {
 				return INTERPRET_RUNTIME_ERROR;
 			}
 			frame = &vm.frames[vm.frame_count - 1];
@@ -759,7 +758,7 @@ static InterpretResult run()
 			ObjString* method = READ_STRING();
 			int arg_count = READ_BYTE();
 			ObjClass* superclass = AS_CLASS(pop());
-			if (!invokeFromClass(superclass, method, arg_count)) {
+			if (!invoke_from_class(superclass, method, arg_count)) {
 				return INTERPRET_RUNTIME_ERROR;
 			}
 			frame = &vm.frames[vm.frame_count - 1];
@@ -774,10 +773,8 @@ static InterpretResult run()
 				uint8_t is_local = READ_BYTE();
 				uint8_t index = READ_BYTE();
 				if (is_local) {
-					closure->upvalues[i] =
-						captureUpvalue(frame->slots + index);
-				}
-				else {
+					closure->upvalues[i] = capture_upvalue(frame->slots + index);
+				} else {
 					closure->upvalues[i] = frame->closure->upvalues[index];
 				}
 			}
@@ -819,8 +816,7 @@ static InterpretResult run()
 			}
 
 			ObjClass* subclass = AS_CLASS(peek(0));
-			table_add_all(&AS_CLASS(superclass)->methods,
-				&subclass->methods);
+			table_add_all(&AS_CLASS(superclass)->methods, &subclass->methods);
 			pop(); // Subclass.
 			break;
 		}
@@ -854,7 +850,7 @@ InterpretResult interpret(const char* module, const char* source)
 	ObjClosure* closure = new_closure(function);
 	pop();
 	push(OBJ_VAL(closure));
-	callValue(OBJ_VAL(closure), 0);
+	call_value(OBJ_VAL(closure), 0);
 
 	InterpretResult ret = run();
 
