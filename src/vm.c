@@ -94,6 +94,7 @@ void free_vm()
 	free_table(&vm.strings);
 	vm.init_string = NULL;
 	free_table(&vm.modules);
+	free_value_array(&vm.method_names);
 	free_objects();
 }
 
@@ -208,7 +209,6 @@ static bool call_value(Value callee, int arg_count)
 			{
 			case METHOD_PRIMITIVE:
 				if (method->as.primitive(args)) {
-					// fixme
 					vm.stack_top -= arg_count;
 					return true;
 				} else {
@@ -705,8 +705,8 @@ static InterpretResult run()
 		{
 			// Add one for the implicit receiver argument.
 			int arg_count = instruction - OP_CALL_0 + 1;
-			ObjString* symbol = READ_STRING();
-
+			ObjString* symbol = AS_STRING(vm.method_names.values[READ_SHORT()]);
+				
 			Value* args = vm.stack_top - arg_count;
 			ASSERT(IS_OBJ(args[0]), "Should be obj.");
 			ObjClass* class_obj = AS_OBJ(args[0])->class_obj;

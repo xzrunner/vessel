@@ -584,12 +584,8 @@ static void load_core_variable(const char* name)
 
 static void call_method(int num_args, const char* name, int length)
 {
-//    int symbol = symbol_table_ensure(&vm.method_names, name, length);
-//    emit_short_arg((OpCode)(OP_CALL_0 + num_args), symbol);
-
-    // fixme
-    int symbol = make_constant(OBJ_VAL(copy_string(name, length)));
-    emit_byte_arg((OpCode)(OP_CALL_0 + num_args), symbol);
+    int symbol = symbol_table_ensure(&vm.method_names, name, length);
+    emit_short_arg((OpCode)(OP_CALL_0 + num_args), symbol);
 }
 
 static void list(bool can_assign)
