@@ -262,26 +262,6 @@ static bool invoke_from_class(ObjClass* klass, ObjString* name, int arg_count)
 	return call(AS_CLOSURE(method), arg_count);
 }
 
-static void signature_parameter_list(char name[MAX_METHOD_SIGNATURE], int* length, const ObjString* src_name,
-                                     int num_params, char left_bracket, char right_bracket)
-{
-	*length = 0;
-
-	memcpy(name + *length, src_name->chars, src_name->length);
-	*length += src_name->length;
-
-	name[(*length)++] = left_bracket;
-
-	for (int i = 0; i < num_params && i < MAX_PARAMETERS; i++)
-	{
-		if (i > 0) {
-			name[(*length)++] = ',';
-		}
-		name[(*length)++] = '_';
-	}
-	name[(*length)++] = right_bracket;
-}
-
 static bool invoke(ObjString* name, int arg_count)
 {
 	Value receiver = peek(arg_count);
@@ -303,7 +283,9 @@ static bool invoke(ObjString* name, int arg_count)
 	{
 		char name_str[MAX_METHOD_SIGNATURE];
 		int length;
-		signature_parameter_list(name_str, &length, name, arg_count, '(', ')');
+
+		Signature signature = { name->chars, name->length, SIG_METHOD, arg_count };
+		signature_to_string(&signature, name_str, &length);
 
 		ObjString* signed_name = copy_string(name_str, length);
 
@@ -570,21 +552,66 @@ static InterpretResult run()
 		}
 
 		case OP_GET_PROPERTY: {
-			if (!IS_INSTANCE(peek(0))) {
-				runtime_error("Only instances have properties.");
-				return INTERPRET_RUNTIME_ERROR;
-			}
+			Value receiver = peek(0);
+			if (IS_INSTANCE(receiver))
+			{
+				ObjInstance* instance = AS_INSTANCE(receiver);
+				ObjString* name = READ_STRING();
 
-			ObjInstance* instance = AS_INSTANCE(peek(0));
-			ObjString* name = READ_STRING();
-
-			Value value;
-			if (table_get(&instance->fields, name, &value)) {
-				pop(); // Instance.
-				push(value);
-				break;
+				Value value;
+				if (table_get(&instance->fields, name, &value)) {
+					pop(); // Instance.
+					push(value);
+					break;
+				}
+				if (!bind_method(instance->klass, name)) {
+					return INTERPRET_RUNTIME_ERROR;
+				}
 			}
-			if (!bind_method(instance->klass, name)) {
+			else if (IS_LIST(receiver))
+			{
+				ObjList* list = AS_LIST(receiver);
+				ObjString* name = READ_STRING();
+
+				Value value;
+				if (table_get(&vm.list_class->methods, name, &value))
+				{
+					pop(); // List
+					if (IS_METHOD(value))
+					{
+						ObjMethod* method = AS_METHOD(value);
+						switch (method->type)
+						{
+						case METHOD_PRIMITIVE:
+							if (method->as.primitive(vm.stack_top)) {
+								vm.stack_top += 1;
+							} else {
+								runtime_error("Run primitive fail.");
+								return INTERPRET_RUNTIME_ERROR;
+							}
+							break;
+						case METHOD_FUNCTION_CALL:
+							break;
+						case METHOD_FOREIGN:
+							break;
+						case METHOD_BLOCK:
+							break;
+						case METHOD_NONE:
+							break;
+						default:
+							ASSERT(false, "Unknown method type.");
+						}
+					}
+					else
+					{
+						push(value);
+					}
+					break;
+				}
+			}
+			else
+			{
+				runtime_error("Only instances and list have properties.");
 				return INTERPRET_RUNTIME_ERROR;
 			}
 			break;
@@ -706,7 +733,7 @@ static InterpretResult run()
 			// Add one for the implicit receiver argument.
 			int arg_count = instruction - OP_CALL_0 + 1;
 			ObjString* symbol = AS_STRING(vm.method_names.values[READ_SHORT()]);
-				
+
 			Value* args = vm.stack_top - arg_count;
 			ASSERT(IS_OBJ(args[0]), "Should be obj.");
 			ObjClass* class_obj = AS_OBJ(args[0])->class_obj;

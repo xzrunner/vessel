@@ -48,6 +48,8 @@ typedef struct
 	Obj** gray_stack;
 
 	ValueArray method_names;
+
+	Value error;
 } VM;
 
 typedef enum

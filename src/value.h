@@ -42,14 +42,14 @@ typedef uint64_t Value;
 #define NUMBER_VAL(num) num_to_value(num)
 #define OBJ_VAL(obj)    (Value)(SIGN_BIT | QNAN | (uint64_t)(uintptr_t)(obj))
 
-static inline double value_to_num(Value value) 
+static inline double value_to_num(Value value)
 {
     double num;
     memcpy(&num, &value, sizeof(Value));
     return num;
 }
 
-static inline Value num_to_value(double num) 
+static inline Value num_to_value(double num)
 {
     Value value;
     memcpy(&value, &num, sizeof(double));
@@ -58,7 +58,7 @@ static inline Value num_to_value(double num)
 
 #else
 
-typedef enum 
+typedef enum
 {
     VAL_BOOL,
     VAL_NIL, // [user-types]
@@ -66,10 +66,10 @@ typedef enum
     VAL_OBJ
 } ValueType;
 
-typedef struct 
+typedef struct
 {
     ValueType type;
-    union 
+    union
     {
         bool boolean;
         double number;
@@ -94,7 +94,7 @@ typedef struct
 
 #endif // NAN_BOXING
 
-typedef struct 
+typedef struct
 {
     int capacity;
     int count;
@@ -105,6 +105,7 @@ bool values_equal(Value a, Value b);
 void init_value_array(ValueArray* array);
 void write_value_array(ValueArray* array, Value value);
 void free_value_array(ValueArray* array);
+Value array_remove_at(ValueArray* array, uint32_t index);
 
 #endif // vessel_value_h
 

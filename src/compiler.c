@@ -479,23 +479,23 @@ static void define_variable(uint8_t global)
     emit_byte_arg(OP_DEFINE_GLOBAL, global);
 }
 
-static uint8_t argument_list()
+static uint8_t argument_list(TokenType token_right)
 {
-    uint8_t argCount = 0;
-    if (!check(TOKEN_RIGHT_PAREN))
+    uint8_t arg_count = 0;
+    if (!check(token_right))
     {
         do {
             expression();
 
-            if (argCount == 255) {
+            if (arg_count == 255) {
                 error("Can't have more than 255 arguments.");
             }
-            argCount++;
+            arg_count++;
         } while (match(TOKEN_COMMA));
     }
 
-    consume(TOKEN_RIGHT_PAREN, "Expect ')' after arguments.");
-    return argCount;
+    consume(token_right, "Expect ')' or ']' after arguments.");
+    return arg_count;
 }
 
 static void and_(bool can_assign)
@@ -536,8 +536,23 @@ static void binary(bool can_assign)
 
 static void call(bool can_assign)
 {
-    uint8_t arg_count = argument_list();
+    uint8_t arg_count = argument_list(TOKEN_RIGHT_PAREN);
     emit_byte_arg(OP_CALL, arg_count);
+}
+
+static int signature_symbol(Signature* signature)
+{
+    char name[MAX_METHOD_SIGNATURE];
+    int length;
+    signature_to_string(signature, name, &length);
+
+    return symbol_table_ensure(&vm.method_names, name, length);
+}
+
+static void call_signature(Signature* signature)
+{
+    int symbol = signature_symbol(signature);
+    emit_short_arg((OpCode)(OP_CALL_0 + signature->arity), symbol);
 }
 
 static void dot(bool can_assign)
@@ -549,9 +564,9 @@ static void dot(bool can_assign)
         expression();
         emit_byte_arg(OP_SET_PROPERTY, name);
     } else if (match(TOKEN_LEFT_PAREN)) {
-        uint8_t argCount = argument_list();
+        uint8_t arg_count = argument_list(TOKEN_RIGHT_PAREN);
         emit_byte_arg(OP_INVOKE, name);
-        emit_byte(argCount);
+        emit_byte(arg_count);
     } else {
         emit_byte_arg(OP_GET_PROPERTY, name);
     }
@@ -609,26 +624,19 @@ static void list(bool can_assign)
     consume(TOKEN_RIGHT_BRACKET, "Expect ']' after list elements.");
 }
 
-static void subscript(bool canAssign)
+static void subscript(bool can_assign)
 {
-    //Signature signature = { "", 0, SIG_SUBSCRIPT, 0 };
+    uint8_t arg_count = argument_list(TOKEN_RIGHT_BRACKET);
+    Signature signature = { "", 0, SIG_SUBSCRIPT, arg_count };
 
-    //// Parse the argument list.
-    //finishArgumentList(compiler, &signature);
-    //consume(compiler, TOKEN_RIGHT_BRACKET, "Expect ']' after arguments.");
+    if (can_assign && match(TOKEN_EQUAL))
+    {
+        signature.type = SIG_SUBSCRIPT_SETTER;
+        signature.arity += 1;
+        expression();
+    }
 
-    //allowLineBeforeDot(compiler);
-
-    //if (canAssign && match(compiler, TOKEN_EQ))
-    //{
-    //    signature.type = SIG_SUBSCRIPT_SETTER;
-
-    //    // Compile the assigned value.
-    //    validateNumParameters(compiler, ++signature.arity);
-    //    expression(compiler);
-    //}
-
-    //callSignature(compiler, CODE_CALL_0, &signature);
+    call_signature(&signature);
 }
 
 static void number(bool can_assign)
@@ -707,10 +715,10 @@ static void super_(bool can_assign)
 
     named_variable(synthetic_token("this"), false);
     if (match(TOKEN_LEFT_PAREN)) {
-        uint8_t argCount = argument_list();
+        uint8_t arg_count = argument_list(TOKEN_RIGHT_PAREN);
         named_variable(synthetic_token("super"), false);
         emit_byte_arg(OP_SUPER_INVOKE, name);
-        emit_byte(argCount);
+        emit_byte(arg_count);
     } else {
         named_variable(synthetic_token("super"), false);
         emit_byte_arg(OP_GET_SUPER, name);
@@ -1215,4 +1223,66 @@ void mark_compiler_roots() {
         mark_object((Obj*)compiler->function);
         compiler = compiler->enclosing;
     }
+}
+
+static void signature_parameter_list(char name[MAX_METHOD_SIGNATURE], int* length,
+                                     int num_params, char left_bracket, char right_bracket)
+{
+	//*length = 0;
+
+	//memcpy(name + *length, src_name->chars, src_name->length);
+	//*length += src_name->length;
+
+	name[(*length)++] = left_bracket;
+
+	for (int i = 0; i < num_params && i < MAX_PARAMETERS; i++)
+	{
+		if (i > 0) {
+			name[(*length)++] = ',';
+		}
+		name[(*length)++] = '_';
+	}
+	name[(*length)++] = right_bracket;
+}
+
+void signature_to_string(Signature* signature, char name[MAX_METHOD_SIGNATURE], int* length)
+{
+    *length = 0;
+
+    memcpy(name + *length, signature->name, signature->length);
+    *length += signature->length;
+
+    switch (signature->type)
+    {
+    case SIG_METHOD:
+        signature_parameter_list(name, length, signature->arity, '(', ')');
+        break;
+
+    case SIG_GETTER:
+        break;
+
+    case SIG_SETTER:
+        name[(*length)++] = '=';
+        signature_parameter_list(name, length, 1, '(', ')');
+        break;
+
+    case SIG_SUBSCRIPT:
+        signature_parameter_list(name, length, signature->arity, '[', ']');
+        break;
+
+    case SIG_SUBSCRIPT_SETTER:
+        signature_parameter_list(name, length, signature->arity - 1, '[', ']');
+        name[(*length)++] = '=';
+        signature_parameter_list(name, length, 1, '(', ')');
+        break;
+
+    case SIG_INITIALIZER:
+        memcpy(name, "init ", 5);
+        memcpy(name + 5, signature->name, signature->length);
+        *length = 5 + signature->length;
+        signature_parameter_list(name, length, signature->arity, '(', ')');
+        break;
+    }
+
+    name[*length] = '\0';
 }
