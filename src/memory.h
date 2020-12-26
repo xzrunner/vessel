@@ -1,8 +1,3 @@
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 #ifndef vessel_memory_h
 #define vessel_memory_h
 
@@ -29,7 +24,3 @@ void collect_garbage();
 void free_objects();
 
 #endif // vessel_memory_h
-
-#ifdef __cplusplus
-}
-#endif

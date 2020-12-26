@@ -1,8 +1,3 @@
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 #ifndef vessel_common_h
 #define vessel_common_h
 
@@ -65,7 +60,3 @@ do                                                                       \
 #undef DEBUG_TRACE_EXECUTION
 #undef DEBUG_STRESS_GC
 #undef DEBUG_LOG_GC
-
-#ifdef __cplusplus
-}
-#endif

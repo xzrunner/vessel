@@ -1,9 +1,4 @@
-﻿#ifdef __cplusplus
-extern "C"
-{
-#endif
-
-#ifndef vessel_compiler_h
+﻿#ifndef vessel_compiler_h
 #define vessel_compiler_h
 
 #include "common.h"
@@ -33,7 +28,3 @@ typedef struct
 void signature_to_string(Signature* signature, char name[MAX_METHOD_SIGNATURE], int* length);
 
 #endif // vessel_compiler_h
-
-#ifdef __cplusplus
-}
-#endif

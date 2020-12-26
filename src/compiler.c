@@ -1254,11 +1254,6 @@ void mark_compiler_roots() {
 static void signature_parameter_list(char name[MAX_METHOD_SIGNATURE], int* length,
                                      int num_params, char left_bracket, char right_bracket)
 {
-	//*length = 0;
-
-	//memcpy(name + *length, src_name->chars, src_name->length);
-	//*length += src_name->length;
-
 	name[(*length)++] = left_bracket;
 
 	for (int i = 0; i < num_params && i < MAX_PARAMETERS; i++)

@@ -1,8 +1,3 @@
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 #ifndef vessel_table_h
 #define vessel_table_h
 
@@ -35,7 +30,3 @@ void table_remove_white(Table* table);
 void mark_table(Table* table);
 
 #endif // vessel_table_h
-
-#ifdef __cplusplus
-}
-#endif

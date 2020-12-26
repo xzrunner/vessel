@@ -1,8 +1,3 @@
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 #ifndef vessel_scanner_h
 #define vessel_scanner_h
 
@@ -48,7 +43,3 @@ void init_scanner(const char* source);
 Token scan_token();
 
 #endif // vessel_scanner_h
-
-#ifdef __cplusplus
-}
-#endif

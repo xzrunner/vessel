@@ -1,8 +1,3 @@
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 #ifndef vessel_object_h
 #define vessel_object_h
 
@@ -201,7 +196,3 @@ static inline bool is_obj_type(Value value, ObjType type) {
 }
 
 #endif // vessel_object_h
-
-#ifdef __cplusplus
-}
-#endif

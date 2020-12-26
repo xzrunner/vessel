@@ -1,7 +1,7 @@
 #define CATCH_CONFIG_RUNNER
 #include <catch/catch.hpp>
 
-#include <vm.h>
+#include <vessel.h>
 
 int main(int argc, char* argv[])
 {

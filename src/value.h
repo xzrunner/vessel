@@ -1,8 +1,3 @@
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 #ifndef vessel_value_h
 #define vessel_value_h
 
@@ -109,7 +104,3 @@ void free_value_array(ValueArray* array);
 Value array_remove_at(ValueArray* array, uint32_t index);
 
 #endif // vessel_value_h
-
-#ifdef __cplusplus
-}
-#endif

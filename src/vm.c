@@ -5,6 +5,7 @@
 #include "debug.h"
 #include "core.h"
 #include "object.h"
+#include "vessel.h"
 
 #include <time.h>
 #include <stdarg.h>

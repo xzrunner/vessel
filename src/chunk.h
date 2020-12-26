@@ -1,8 +1,3 @@
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 #ifndef vessel_chunk_h
 #define vessel_chunk_h
 
@@ -85,7 +80,3 @@ void write_chunk(Chunk* chunk, uint8_t byte, int line);
 int add_constant(Chunk* chunk, Value value);
 
 #endif // vessel_chunk_h
-
-#ifdef __cplusplus
-}
-#endif

@@ -1,7 +1,6 @@
 #include <catch/catch.hpp>
 
-#include <vm.h>
-#include <debug.h>
+#include <vessel.h>
 
 TEST_CASE("inheritance_constructor")
 {

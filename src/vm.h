@@ -1,14 +1,10 @@
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 #ifndef vessel_vm_h
 #define vessel_vm_h
 
 #include "common.h"
 #include "value.h"
 #include "object.h"
+#include "vessel.h"
 
 #define FRAMES_MAX 64
 #define STACK_MAX (FRAMES_MAX * UINT8_COUNT)
@@ -53,25 +49,11 @@ typedef struct
 	Value error;
 } VM;
 
-typedef enum
-{
-	INTERPRET_OK,
-	INTERPRET_COMPILE_ERROR,
-	INTERPRET_RUNTIME_ERROR
-} InterpretResult;
-
 extern VM vm;
 
-void init_vm();
-void free_vm();
-
-InterpretResult interpret(const char* module, const char* source);
+void FinalizeForeign(ObjForeign* foreign);
 
 void push(Value value);
 Value pop();
 
 #endif // vessel_vm_h
-
-#ifdef __cplusplus
-}
-#endif
