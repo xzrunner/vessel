@@ -298,6 +298,25 @@ static bool invoke(ObjString* name, int arg_count)
 
 		obj_class = vm.list_class;
 	}
+	else if (IS_MAP(receiver))
+	{
+		char name_str[MAX_METHOD_SIGNATURE];
+		int length;
+
+		Signature signature = { name->chars, name->length, SIG_METHOD, arg_count };
+		signature_to_string(&signature, name_str, &length);
+
+		ObjString* signed_name = copy_string(name_str, length);
+
+		ObjMap* map = AS_MAP(receiver);
+
+		Value value;
+		if (table_get(&vm.map_class->methods, signed_name, &value)) {
+			return call_value(value, arg_count);
+		}
+
+		obj_class = vm.map_class;
+	}
 	else
 	{
 		runtime_error("Only instances and list have methods.");
@@ -609,9 +628,50 @@ static InterpretResult run()
 					break;
 				}
 			}
+			else if (IS_MAP(receiver))
+			{
+				ObjMap* map = AS_MAP(receiver);
+				ObjString* name = READ_STRING();
+
+				Value value;
+				if (table_get(&vm.map_class->methods, name, &value))
+				{
+					pop(); // Map
+					if (IS_METHOD(value))
+					{
+						ObjMethod* method = AS_METHOD(value);
+						switch (method->type)
+						{
+						case METHOD_PRIMITIVE:
+							if (method->as.primitive(vm.stack_top)) {
+								vm.stack_top += 1;
+							} else {
+								runtime_error("Run primitive fail.");
+								return INTERPRET_RUNTIME_ERROR;
+							}
+							break;
+						case METHOD_FUNCTION_CALL:
+							break;
+						case METHOD_FOREIGN:
+							break;
+						case METHOD_BLOCK:
+							break;
+						case METHOD_NONE:
+							break;
+						default:
+							ASSERT(false, "Unknown method type.");
+						}
+					}
+					else
+					{
+						push(value);
+					}
+					break;
+				}
+			}
 			else
 			{
-				runtime_error("Only instances and list have properties.");
+				runtime_error("Only instances and list and map have properties.");
 				return INTERPRET_RUNTIME_ERROR;
 			}
 			break;

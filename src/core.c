@@ -65,7 +65,7 @@ DEF_PRIMITIVE(list_subscript)
 
 	//int step;
 	//uint32_t count = list->elements.count;
-	//uint32_t start = calculateRange(vm, AS_RANGE(args[1]), &count, &step);
+	//uint32_t start = calculateRange(AS_RANGE(args[1]), &count, &step);
 	//if (start == UINT32_MAX) {
 	//	return false;
 	//}
@@ -89,6 +89,170 @@ DEF_PRIMITIVE(list_subscriptSetter)
 	list->elements.values[index] = args[2];
 	RETURN_VAL(args[2]);
 }
+
+DEF_PRIMITIVE(map_new)
+{
+  RETURN_OBJ(new_map());
+}
+
+DEF_PRIMITIVE(map_subscript)
+{
+	//if (!validate_key(args[1])) {
+	//	return false;
+	//}
+	if (!IS_STRING(args[1])) {
+		return false;
+	}
+
+	Value value;
+	table_get(&AS_MAP(args[0])->entries, AS_STRING(args[1]), &value);
+
+	RETURN_VAL(value);
+}
+
+DEF_PRIMITIVE(map_subscriptSetter)
+{
+	//if (!validate_key(args[1])) {
+	//	return false;
+	//}
+	if (!IS_STRING(args[1])) {
+		return false;
+	}
+
+	table_set(&AS_MAP(args[0])->entries, AS_STRING(args[1]), args[2]);
+	RETURN_VAL(args[2]);
+}
+
+// Adds an entry to the map and then returns the map itself. This is called by
+// the compiler when compiling map literals instead of using [_]=(_) to
+// minimize stack churn.
+DEF_PRIMITIVE(map_addCore)
+{
+	//if (!validate_key(args[1])) {
+	//	return false;
+	//}
+	if (!IS_STRING(args[1])) {
+		return false;
+	}
+
+	table_set(&AS_MAP(args[0])->entries, AS_STRING(args[1]), args[2]);
+
+	// Return the map itself.
+	RETURN_VAL(args[0]);
+}
+
+DEF_PRIMITIVE(map_clear)
+{
+	free_table(&AS_MAP(args[0])->entries);
+	RETURN_NULL;
+}
+
+DEF_PRIMITIVE(map_containsKey)
+{
+	//if (!validate_key(args[1])) {
+	//	return false;
+	//}
+	if (!IS_STRING(args[1])) {
+		return false;
+	}
+
+	Value value;
+	RETURN_BOOL(table_get(&AS_MAP(args[0])->entries, AS_STRING(args[1]), &value));
+}
+
+DEF_PRIMITIVE(map_count)
+{
+	RETURN_NUM(AS_MAP(args[0])->entries.count);
+}
+
+DEF_PRIMITIVE(map_iterate)
+{
+	ObjMap* map = AS_MAP(args[0]);
+
+	if (map->entries.count == 0) {
+		RETURN_FALSE;
+	}
+
+	// If we're starting the iteration, start at the first used entry.
+	int index = 0;
+
+	// Otherwise, start one past the last entry we stopped at.
+	if (!IS_NIL(args[1]))
+	{
+		if (!validate_int(args[1], "Iterator")) {
+			return false;
+		}
+
+		if (AS_NUMBER(args[1]) < 0) {
+			RETURN_FALSE;
+		}
+		index = (uint32_t)AS_NUMBER(args[1]);
+
+		if (index >= map->entries.capacity) {
+			RETURN_FALSE;
+		}
+
+		// Advance the iterator.
+		index++;
+	}
+
+	// Find a used entry, if any.
+	for (; index < map->entries.capacity; index++)
+	{
+		if (map->entries.entries[index].key) {
+			RETURN_NUM(index);
+		}
+	}
+
+	// If we get here, walked all of the entries.
+	RETURN_FALSE;
+}
+
+DEF_PRIMITIVE(map_remove)
+{
+	//if (!validate_key(args[1])) {
+	//	return false;
+	//}
+	if (!IS_STRING(args[1])) {
+		return false;
+	}
+
+	table_delete(&AS_MAP(args[0])->entries, AS_STRING(args[1]));
+	//RETURN_VAL(table_delete(&AS_MAP(args[0])->entries, AS_STRING(args[1])));
+	RETURN_NULL;
+}
+
+//DEF_PRIMITIVE(map_keyIteratorValue)
+//{
+//  ObjMap* map = AS_MAP(args[0]);
+//  uint32_t index = validate_index(args[1], map->entries.capacity, "Iterator");
+//  if (index == UINT32_MAX) {
+//	  return false;
+//  }
+//
+//  MapEntry* entry = &map->entries[index];
+//  if (IS_UNDEFINED(entry->key))
+//  {
+//    RETURN_ERROR("Invalid map iterator.");
+//  }
+//
+//  RETURN_VAL(entry->key);
+//}
+//
+//DEF_PRIMITIVE(map_valueIteratorValue)
+//{
+//  ObjMap* map = AS_MAP(args[0]);
+//  uint32_t index = validate_index(args[1], map->entries.capacity, "Iterator");
+//  if (index == UINT32_MAX) return false;
+//
+//  MapEntry* entry = &map->entries[index];
+//  if (IS_UNDEFINED(entry->key))
+//  {
+//    RETURN_ERROR("Invalid map iterator.");
+//  }
+//
+//  RETURN_VAL(entry->value);
+//}
 
 static int define_variable(ObjModule* module, const char* name, size_t length, Value value)
 {
@@ -149,4 +313,18 @@ void initialize_core()
 	PRIMITIVE(vm.list_class, "clear()", list_clear);
 	PRIMITIVE(vm.list_class, "count", list_count);
 	PRIMITIVE(vm.list_class, "removeAt(_)", list_removeAt);
+
+	vm.map_class = new_class(copy_string("Map", 4));
+	define_variable(core_module, "Map", 3, OBJ_VAL(vm.map_class));
+	PRIMITIVE(vm.map_class->obj.class_obj, "new()", map_new);
+	PRIMITIVE(vm.map_class, "[_]", map_subscript);
+	PRIMITIVE(vm.map_class, "[_]=(_)", map_subscriptSetter);
+	PRIMITIVE(vm.map_class, "addCore_(_,_)", map_addCore);
+	PRIMITIVE(vm.map_class, "clear()", map_clear);
+	PRIMITIVE(vm.map_class, "containsKey(_)", map_containsKey);
+	PRIMITIVE(vm.map_class, "count", map_count);
+	PRIMITIVE(vm.map_class, "remove(_)", map_remove);
+	PRIMITIVE(vm.map_class, "iterate(_)", map_iterate);
+	//PRIMITIVE(vm.map_class, "keyIteratorValue_(_)", map_keyIteratorValue);
+	//PRIMITIVE(vm.map_class, "valueIteratorValue_(_)", map_valueIteratorValue);
 }

@@ -8,14 +8,14 @@ extern "C"
 
 #include "common.h"
 
-typedef enum 
+typedef enum
 {
     // Single-character tokens.
     TOKEN_LEFT_PAREN, TOKEN_RIGHT_PAREN,
     TOKEN_LEFT_BRACKET, TOKEN_RIGHT_BRACKET,
     TOKEN_LEFT_BRACE, TOKEN_RIGHT_BRACE,
     TOKEN_COMMA, TOKEN_DOT, TOKEN_MINUS, TOKEN_PLUS,
-    TOKEN_SEMICOLON, TOKEN_SLASH, TOKEN_STAR, TOKEN_LINE,
+    TOKEN_COLON, TOKEN_SEMICOLON, TOKEN_SLASH, TOKEN_STAR, TOKEN_LINE,
 
     // One or two character tokens.
     TOKEN_BANG, TOKEN_BANG_EQUAL,
@@ -36,7 +36,7 @@ typedef enum
     TOKEN_EOF
 } TokenType;
 
-typedef struct 
+typedef struct
 {
     TokenType type;
     const char* start;

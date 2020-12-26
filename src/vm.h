@@ -23,6 +23,7 @@ typedef struct
 typedef struct
 {
 	ObjClass* list_class;
+	ObjClass* map_class;
 
 	CallFrame frames[FRAMES_MAX];
 	int frame_count;

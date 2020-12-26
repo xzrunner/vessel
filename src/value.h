@@ -87,9 +87,10 @@ typedef struct
 #define AS_NUMBER(value)  ((value).as.number)
 
 #define BOOL_VAL(value)   ((Value){VAL_BOOL, {.boolean = value}})
+#define FALSE_VAL         ((Value){VAL_BOOL, {.boolean = false}})
+#define TRUE_VAL          ((Value){VAL_BOOL, {.boolean = true}})
 #define NIL_VAL           ((Value){VAL_NIL, {.number = 0}})
 #define NUMBER_VAL(value) ((Value){VAL_NUMBER, {.number = value}})
-
 #define OBJ_VAL(object)   ((Value){VAL_OBJ, {.obj = (Obj*)object}})
 
 #endif // NAN_BOXING

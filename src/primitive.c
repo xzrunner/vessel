@@ -38,6 +38,25 @@ bool validate_int_value(double value, const char* arg_name)
     RETURN_ERROR_FMT("$ must be an integer.", arg_name);
 }
 
+bool validate_int(Value arg, const char* arg_name)
+{
+    if (!validate_num(arg, arg_name)) {
+        return false;
+    }
+    return validate_int_value(AS_NUMBER(arg), arg_name);
+}
+
+bool validate_key(Value arg)
+{
+    if (IS_BOOL(arg) || IS_CLASS(arg) || IS_NIL(arg) ||
+        IS_NUMBER(arg) || IS_STRING(arg))
+    {
+        return true;
+    }
+
+    RETURN_ERROR_FMT("Key must be a value type.");
+}
+
 uint32_t validate_index(Value arg, uint32_t count, const char* arg_name)
 {
     if (!validate_num(arg, arg_name)) {

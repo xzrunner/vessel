@@ -639,6 +639,31 @@ static void subscript(bool can_assign)
     call_signature(&signature);
 }
 
+static void map(bool canAssign)
+{
+    load_core_variable("Map");
+    call_method(0, "new()", 5);
+
+    do
+    {
+        ignore_new_lines();
+
+        if (check(TOKEN_RIGHT_BRACE)) {
+            break;
+        }
+
+        parse_precedence(PREC_UNARY);
+        consume(TOKEN_COLON, "Expect ':' after map key.");
+        ignore_new_lines();
+
+        expression();
+        call_method(2, "addCore_(_,_)", 13);
+    } while (match(TOKEN_COMMA));
+
+    ignore_new_lines();
+    consume(TOKEN_RIGHT_BRACE, "Expect '}' after map entries.");
+}
+
 static void number(bool can_assign)
 {
     double value = strtod(parser.previous.start, NULL);
@@ -755,8 +780,9 @@ ParseRule rules[] =
     [TOKEN_RIGHT_PAREN]   = {NULL,     NULL,   PREC_NONE},
     [TOKEN_LEFT_BRACKET]  = {list,     subscript, PREC_CALL},
     [TOKEN_RIGHT_BRACKET] = {NULL,     NULL,   PREC_NONE},
-    [TOKEN_LEFT_BRACE]    = {NULL,     NULL,   PREC_NONE},
+    [TOKEN_LEFT_BRACE]    = {map,      NULL,   PREC_NONE},
     [TOKEN_RIGHT_BRACE]   = {NULL,     NULL,   PREC_NONE},
+    [TOKEN_COLON]         = {NULL,     NULL,   PREC_NONE},
     [TOKEN_COMMA]         = {NULL,     NULL,   PREC_NONE},
     [TOKEN_DOT]           = {NULL,     dot,    PREC_CALL},
     [TOKEN_MINUS]         = {unary,    binary, PREC_TERM},

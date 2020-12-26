@@ -147,6 +147,14 @@ ObjList* new_list(uint32_t num_elements)
 	return list;
 }
 
+ObjMap* new_map()
+{
+	ObjMap* map = ALLOCATE_OBJ(ObjMap, OBJ_MAP);
+	map->obj.class_obj = vm.map_class;
+	init_table(&map->entries);
+	return map;
+}
+
 ObjString* allocate_string(char* chars, int length, uint32_t hash)
 {
 	ObjString* string = ALLOCATE_OBJ(ObjString, OBJ_STRING);

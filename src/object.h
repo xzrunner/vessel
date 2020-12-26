@@ -38,6 +38,7 @@ extern "C"
 #define AS_CSTRING(value)      (((ObjString*)AS_OBJ(value))->chars)
 #define AS_MODULE(value)       ((ObjModule*)AS_OBJ(value))
 #define AS_LIST(value)         ((ObjList*)AS_OBJ(value))
+#define AS_MAP(value)          ((ObjMap*)AS_OBJ(value))
 
 typedef enum
 {
@@ -172,6 +173,12 @@ typedef struct
 	ValueArray elements;
 } ObjList;
 
+typedef struct
+{
+	Obj obj;
+	Table entries;
+} ObjMap;
+
 ObjBoundMethod* new_bound_method(Value receiver, ObjClosure* method);
 ObjClass* new_class(ObjString* name);
 ObjClass* new_single_class(int num_fields, ObjString* name);
@@ -182,6 +189,7 @@ ObjInstance* new_instance(ObjClass* klass);
 ObjNative* new_native(NativeFn function);
 ObjModule* new_module(ObjString* name);
 ObjList* new_list(uint32_t num_elements);
+ObjMap* new_map();
 uint32_t hash_string(const char* key, int length);
 ObjString* allocate_string(char* chars, int length, uint32_t hash);
 ObjString* take_string(char* chars, int length);

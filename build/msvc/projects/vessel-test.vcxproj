@@ -32,6 +32,7 @@
     <ClCompile Include="..\..\..\test\list.cpp" />
     <ClCompile Include="..\..\..\test\logical_operator.cpp" />
     <ClCompile Include="..\..\..\test\main.cpp" />
+    <ClCompile Include="..\..\..\test\map.cpp" />
     <ClCompile Include="..\..\..\test\method.cpp" />
     <ClCompile Include="..\..\..\test\nil.cpp" />
     <ClCompile Include="..\..\..\test\number.cpp" />

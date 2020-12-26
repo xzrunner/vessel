@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <string.h>
 
-typedef struct 
+typedef struct
 {
 	const char* start;
 	const char* current;
@@ -12,36 +12,36 @@ typedef struct
 
 Scanner scanner;
 
-void init_scanner(const char* source) 
+void init_scanner(const char* source)
 {
 	scanner.start = source;
 	scanner.current = source;
 	scanner.line = 1;
 }
 
-static bool is_alpha(char c) 
+static bool is_alpha(char c)
 {
     return (c >= 'a' && c <= 'z') ||
            (c >= 'A' && c <= 'Z') ||
             c == '_';
 }
 
-static bool is_digit(char c) 
+static bool is_digit(char c)
 {
     return c >= '0' && c <= '9';
 }
 
-static bool is_at_end() 
+static bool is_at_end()
 {
     return *scanner.current == '\0';
 }
 
-static char peek() 
+static char peek()
 {
     return *scanner.current;
 }
 
-static char peek_next() 
+static char peek_next()
 {
     if (is_at_end()) {
         return '\0';
@@ -59,7 +59,7 @@ static char advance()
     return c;
 }
 
-static bool match(char expected) 
+static bool match(char expected)
 {
     if (is_at_end()) {
         return false;
@@ -72,7 +72,7 @@ static bool match(char expected)
     return true;
 }
 
-static Token make_token(TokenType type) 
+static Token make_token(TokenType type)
 {
     Token token;
     token.type = type;
@@ -83,7 +83,7 @@ static Token make_token(TokenType type)
     return token;
 }
 
-static Token error_token(const char* message) 
+static Token error_token(const char* message)
 {
     Token token;
     token.type = TOKEN_ERROR;
@@ -94,9 +94,9 @@ static Token error_token(const char* message)
     return token;
 }
 
-static void skip_whitespace() 
+static void skip_whitespace()
 {
-    for (;;) 
+    for (;;)
     {
         char c = peek();
         switch (c) {
@@ -122,7 +122,7 @@ static void skip_whitespace()
     }
 }
 
-static TokenType check_keyword(int start, int length, const char* rest, TokenType type) 
+static TokenType check_keyword(int start, int length, const char* rest, TokenType type)
 {
     if (scanner.current - scanner.start == start + length &&
         memcmp(scanner.start + start, rest, length) == 0) {
@@ -132,17 +132,17 @@ static TokenType check_keyword(int start, int length, const char* rest, TokenTyp
     return TOKEN_IDENTIFIER;
 }
 
-static TokenType identifier_type() 
+static TokenType identifier_type()
 {
-    switch (scanner.start[0]) 
+    switch (scanner.start[0])
     {
         case 'a': return check_keyword(1, 2, "nd", TOKEN_AND);
         case 'c': return check_keyword(1, 4, "lass", TOKEN_CLASS);
         case 'e': return check_keyword(1, 3, "lse", TOKEN_ELSE);
         case 'f':
-            if (scanner.current - scanner.start > 1) 
+            if (scanner.current - scanner.start > 1)
             {
-                switch (scanner.start[1]) 
+                switch (scanner.start[1])
                 {
                     case 'a': return check_keyword(2, 3, "lse", TOKEN_FALSE);
                     case 'o': return check_keyword(2, 1, "r", TOKEN_FOR);
@@ -157,9 +157,9 @@ static TokenType identifier_type()
         case 'r': return check_keyword(1, 5, "eturn", TOKEN_RETURN);
         case 's': return check_keyword(1, 4, "uper", TOKEN_SUPER);
         case 't':
-            if (scanner.current - scanner.start > 1) 
+            if (scanner.current - scanner.start > 1)
             {
-                switch (scanner.start[1]) 
+                switch (scanner.start[1])
                 {
                     case 'h': return check_keyword(2, 2, "is", TOKEN_THIS);
                     case 'r': return check_keyword(2, 2, "ue", TOKEN_TRUE);
@@ -173,7 +173,7 @@ static TokenType identifier_type()
     return TOKEN_IDENTIFIER;
 }
 
-static Token identifier() 
+static Token identifier()
 {
     while (is_alpha(peek()) || is_digit(peek())) {
         advance();
@@ -182,7 +182,7 @@ static Token identifier()
     return make_token(identifier_type());
 }
 
-static Token number() 
+static Token number()
 {
     while (is_digit(peek())) {
         advance();
@@ -199,7 +199,7 @@ static Token number()
     return make_token(TOKEN_NUMBER);
 }
 
-static Token string() 
+static Token string()
 {
     while (peek() != '"' && !is_at_end()) {
         if (peek() == '\n') {
@@ -216,7 +216,7 @@ static Token string()
     return make_token(TOKEN_STRING);
 }
 
-Token scan_token() 
+Token scan_token()
 {
     skip_whitespace();
 
@@ -234,7 +234,7 @@ Token scan_token()
         return number();
     }
 
-    switch (c) 
+    switch (c)
     {
         case '(': return make_token(TOKEN_LEFT_PAREN);
         case ')': return make_token(TOKEN_RIGHT_PAREN);
@@ -242,6 +242,7 @@ Token scan_token()
         case ']': return make_token(TOKEN_RIGHT_BRACKET);
         case '{': return make_token(TOKEN_LEFT_BRACE);
         case '}': return make_token(TOKEN_RIGHT_BRACE);
+        case ':': return make_token(TOKEN_COLON);
         case ';': return make_token(TOKEN_SEMICOLON);
         case ',': return make_token(TOKEN_COMMA);
         case '.': return make_token(TOKEN_DOT);
