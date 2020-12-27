@@ -193,6 +193,9 @@ static void free_object(Obj* object)
 		FREE(ObjFunction, object);
 		break;
 	}
+	case OBJ_FOREIGN:
+		FinalizeForeign((ObjForeign*)object);
+		break;
 	case OBJ_INSTANCE:
 	{
 		ObjInstance* instance = (ObjInstance*)object;

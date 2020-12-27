@@ -817,6 +817,7 @@ ParseRule rules[] =
     [TOKEN_TRUE]          = {literal,  NULL,   PREC_NONE},
     [TOKEN_VAR]           = {NULL,     NULL,   PREC_NONE},
     [TOKEN_WHILE]         = {NULL,     NULL,   PREC_NONE},
+    [TOKEN_IMPORT]        = {NULL,     NULL,   PREC_NONE},
     [TOKEN_ERROR]         = {NULL,     NULL,   PREC_NONE},
     [TOKEN_EOF]           = {NULL,     NULL,   PREC_NONE},
 };
@@ -1141,6 +1142,62 @@ static void synchronize()
     }
 }
 
+static void import()
+{
+    ignore_new_lines();
+    consume(TOKEN_STRING, "Expect a string after 'import'.");
+
+    int module_constant = make_constant(OBJ_VAL(copy_string(parser.previous.start + 1, parser.previous.length - 2)));
+
+    // Load the module.
+    emit_byte_arg(OP_IMPORT_MODULE, module_constant);
+
+    // Discard the unused result value from calling the module body's closure.
+    emit_op(OP_POP);
+
+    // The for clause is optional.
+    if (!match(TOKEN_FOR)) {
+        return;
+    }
+
+    // Compile the comma-separated list of variables to import.
+    do
+    {
+        ignore_new_lines();
+
+        consume(TOKEN_IDENTIFIER, "Expect variable name.");
+
+        // We need to hold onto the source variable,
+        // in order to reference it in the import later
+        Token sourceVariableToken = parser.previous;
+
+        // Define a string constant for the original variable name.
+        int sourceVariableConstant = make_constant(OBJ_VAL(copy_string(sourceVariableToken.start, sourceVariableToken.length)));
+
+        // Store the symbol we care about for the variable
+        int slot = -1;
+        //if(match(TOKEN_AS))
+        //{
+        //    //import "module" for Source as Dest
+        //    //Use 'Dest' as the name by declaring a new variable for it.
+        //    //This parses a name after the 'as' and defines it.
+        //    slot = declareNamedVariable(compiler);
+        //}
+        //else
+        {
+            //import "module" for Source
+            //Uses 'Source' as the name directly
+            declare_variable(&sourceVariableToken);
+        }
+
+        // Load the variable from the other module.
+        emit_byte_arg(OP_IMPORT_VARIABLE, sourceVariableConstant);
+
+        // Store the result in the variable here.
+        define_variable(sourceVariableConstant);
+    } while (match(TOKEN_COMMA));
+}
+
 static void declaration()
 {
     ignore_new_lines();
@@ -1154,6 +1211,8 @@ static void declaration()
         fun_declaration();
     } else if (match(TOKEN_VAR)) {
         var_declaration();
+    } else if (match(TOKEN_IMPORT)) {
+        import();
     } else {
         statement();
     }

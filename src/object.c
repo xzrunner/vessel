@@ -9,6 +9,9 @@
 #define ALLOCATE_OBJ(type, objectType) \
     (type*)allocate_object(sizeof(type), objectType)
 
+#define ALLOCATE_FLEX(mainType, objectType, arrayType, count)                          \
+    ((mainType*)allocate_object(sizeof(mainType) + sizeof(arrayType) * (count), objectType))
+
 static Obj* allocate_object(size_t size, ObjType type)
 {
 	Obj* object = (Obj*)reallocate(NULL, 0, size);
@@ -19,7 +22,7 @@ static Obj* allocate_object(size_t size, ObjType type)
 	vm.objects = object;
 
 #ifdef DEBUG_LOG_GC
-	printf("%p allocate %ld for %d\n", (void*)object, size, type);
+	printf("%p allocate %ld for %d\n", (void*)foreign, size, type);
 #endif
 
 	return object;
@@ -51,24 +54,25 @@ ObjClass* new_class(ObjString* name)
 	// hierarchy.
 //	wrenBindSuperclass(vm, metaclass, vm->classClass);
 
-	ObjClass* classObj = new_single_class(0, name);
+	ObjClass* class_obj = new_single_class(0, name);
 
 	//// Make sure the class isn't collected while the inherited methods are being
 	//// bound.
-	//push((Obj*)classObj);
+	//push((Obj*)class_obj);
 
-	classObj->obj.class_obj = metaclass;
-	//wrenBindSuperclass(vm, classObj, superclass);
+	class_obj->obj.class_obj = metaclass;
+	//wrenBindSuperclass(vm, class_obj, superclass);
 
 	//pop();
 	pop();
 
-	return classObj;
+	return class_obj;
 }
 
 ObjClass* new_single_class(int num_fields, ObjString* name)
 {
 	ObjClass* klass = ALLOCATE_OBJ(ObjClass, OBJ_CLASS);
+	klass->superclass = NULL;
 	klass->name = name;
 	klass->num_fields = num_fields;
 	init_table(&klass->methods);
@@ -106,6 +110,13 @@ ObjFunction* new_function(ObjModule* module)
 	init_chunk(&function->chunk);
 	function->module = module;
 	return function;
+}
+
+ObjForeign* new_foreign(size_t size)
+{
+	ObjForeign* foreign = ALLOCATE_FLEX(ObjForeign, OBJ_FOREIGN, uint8_t, size);
+	memset(foreign->data, 0, size);
+	return foreign;
 }
 
 ObjInstance* new_instance(ObjClass* klass)
@@ -217,6 +228,20 @@ ObjUpvalue* new_upvalue(Value* slot)
 	return upvalue;
 }
 
-//void bind_method(ObjClass* class_obj, ObjString* name, ObjMethod* method)
-//{
-//}
+void bind_superclass(ObjClass* subclass, ObjClass* superclass)
+{
+	ASSERT(superclass != NULL, "Must have superclass.");
+
+	subclass->superclass = superclass;
+
+	if (subclass->num_fields != -1) {
+		subclass->num_fields += superclass->num_fields;
+	} else {
+		ASSERT(superclass->num_fields == 0, "A foreign class cannot inherit from a class with fields.");
+	}
+
+	for (int i = 0; i < superclass->methods.count; i++) {
+		Entry* e = &superclass->methods.entries[i];
+		table_set(&subclass->methods, e->key, e->value);
+	}
+}

@@ -150,7 +150,16 @@ static TokenType identifier_type()
                 }
             }
             break;
-        case 'i': return check_keyword(1, 1, "f", TOKEN_IF);
+        case 'i':
+            if (scanner.current - scanner.start > 1)
+            {
+                switch (scanner.start[1])
+                {
+                case 'f': return TOKEN_IF;
+                case 'm': return check_keyword(2, 4, "port", TOKEN_IMPORT);
+                }
+            }
+            break;
         case 'n': return check_keyword(1, 2, "il", TOKEN_NIL);
         case 'o': return check_keyword(1, 1, "r", TOKEN_OR);
         case 'p': return check_keyword(1, 4, "rint", TOKEN_PRINT);

@@ -1,6 +1,10 @@
 #ifndef vessel_common_h
 #define vessel_common_h
 
+#ifndef OPT_RANDOM
+    #define OPT_RANDOM 1
+#endif
+
 //#define NAN_BOXING
 #define DEBUG_PRINT_CODE
 #define DEBUG_TRACE_EXECUTION
@@ -8,14 +12,25 @@
 #define DEBUG_LOG_GC
 #define UINT8_COUNT (UINT8_MAX + 1)
 
-//#define DEBUG_PRINT_STACK
-//#define DEBUG_PRINT_OPCODE
+#define DEBUG_PRINT_STACK
+#define DEBUG_PRINT_OPCODE
 
 #define MAX_MODULE_VARS 65536
 
 #define MAX_PARAMETERS 16
 #define MAX_METHOD_NAME 64
 #define MAX_METHOD_SIGNATURE (MAX_METHOD_NAME + (MAX_PARAMETERS * 2) + 6)
+
+// This is used to clearly mark flexible-sized arrays that appear at the end of
+// some dynamically-allocated structs, known as the "struct hack".
+#if __STDC_VERSION__ >= 199901L
+    // In C99, a flexible array member is just "[]".
+    #define FLEXIBLE_ARRAY
+#else
+    // Elsewhere, use a zero-sized array. It's technically undefined behavior,
+    // but works reliably in most known compilers.
+    #define FLEXIBLE_ARRAY 0
+#endif
 
 #ifdef DEBUG
 

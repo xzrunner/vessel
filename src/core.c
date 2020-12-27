@@ -4,6 +4,27 @@
 #include "primitive.h"
 #include "utils.h"
 
+DEF_PRIMITIVE(object_is)
+{
+	//if (!IS_CLASS(args[1]))
+	//{
+	//	RETURN_ERROR("Right operand must be a class.");
+	//}
+
+	//ObjClass *classObj = wrenGetClass(vm, args[0]);
+	//ObjClass *baseClassObj = AS_CLASS(args[1]);
+
+	//// Walk the superclass chain looking for the class.
+	//do
+	//{
+	//	if (baseClassObj == classObj) RETURN_BOOL(true);
+
+	//	classObj = classObj->superclass;
+	//} while (classObj != NULL);
+
+	RETURN_BOOL(false);
+}
+
 DEF_PRIMITIVE(list_new)
 {
 	RETURN_OBJ(new_list(0));
@@ -302,6 +323,9 @@ void initialize_core()
 	push(OBJ_VAL(core_module));
 	table_set(&vm.modules, copy_string("Core", 4), OBJ_VAL(core_module));
 	pop();
+
+	vm.object_class = new_class(copy_string("Object", 6));
+	PRIMITIVE(vm.object_class, "is(_)", object_is);
 
 	vm.list_class = new_class(copy_string("List", 4));
 	define_variable(core_module, "List", 4, OBJ_VAL(vm.list_class));

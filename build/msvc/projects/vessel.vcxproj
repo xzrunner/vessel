@@ -17,6 +17,7 @@
     <ClCompile Include="..\..\..\src\debug.c" />
     <ClCompile Include="..\..\..\src\memory.c" />
     <ClCompile Include="..\..\..\src\object.c" />
+    <ClCompile Include="..\..\..\src\optional\opt_random.c" />
     <ClCompile Include="..\..\..\src\primitive.c" />
     <ClCompile Include="..\..\..\src\scanner.c" />
     <ClCompile Include="..\..\..\src\table.c" />
@@ -33,12 +34,16 @@
     <ClInclude Include="..\..\..\src\include\vessel.h" />
     <ClInclude Include="..\..\..\src\memory.h" />
     <ClInclude Include="..\..\..\src\object.h" />
+    <ClInclude Include="..\..\..\src\optional\opt_random.h" />
     <ClInclude Include="..\..\..\src\primitive.h" />
     <ClInclude Include="..\..\..\src\scanner.h" />
     <ClInclude Include="..\..\..\src\table.h" />
     <ClInclude Include="..\..\..\src\utils.h" />
     <ClInclude Include="..\..\..\src\value.h" />
     <ClInclude Include="..\..\..\src\vm.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\src\optional\opt_random.ves.inc" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectName>0.vessel</ProjectName>

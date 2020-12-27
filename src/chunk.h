@@ -63,6 +63,8 @@ typedef enum
 	OP_CALL_14,
 	OP_CALL_15,
 	OP_CALL_16,
+	OP_IMPORT_MODULE,
+	OP_IMPORT_VARIABLE,
 } OpCode;
 
 typedef struct

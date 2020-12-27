@@ -6,6 +6,9 @@
 #include "core.h"
 #include "object.h"
 #include "vessel.h"
+#if OPT_RANDOM
+#include "opt_random.h"
+#endif
 
 #include <time.h>
 #include <stdarg.h>
@@ -61,6 +64,11 @@ static void define_native(const char* name, NativeFn function)
 	pop();
 }
 
+void init_configuration(Configuration* config)
+{
+	config->load_module_fn = NULL;
+}
+
 void init_vm()
 {
 	reset_stack();
@@ -81,6 +89,10 @@ void init_vm()
 	vm.init_string = copy_string("init", 4);
 
 	init_table(&vm.modules);
+
+	vm.api_stack = NULL;
+
+	init_configuration(&vm.config);
 
 	init_value_array(&vm.method_names);
 
@@ -408,6 +420,67 @@ static void concatenate()
 	push(OBJ_VAL(result));
 }
 
+static Value import_module(Value name)
+{
+	if (!IS_STRING(name)) {
+		runtime_error("Module name is not string.");
+		return NIL_VAL;
+	}
+
+	Value existing;
+	if (table_get(&vm.modules, AS_STRING(name), &existing)) {
+		return existing;
+	}
+
+	push(name);
+
+	LoadModuleResult result = {0};
+	const char* source = NULL;
+
+	// Let the host try to provide the module.
+	if (vm.config.load_module_fn != NULL) {
+		result = vm.config.load_module_fn(AS_CSTRING(name));
+	}
+
+	// If the host didn't provide it, see if it's a built in optional module.
+	if (result.source == NULL)
+	{
+		result.on_complete = NULL;
+		ObjString* name_string = AS_STRING(name);
+#if OPT_RANDOM
+		if (strncmp(name_string->chars, "random", name_string->length) == 0) {
+			result.source = RandomSource();
+		}
+#endif
+	}
+
+	if (result.source == NULL)
+	{
+		runtime_error("Could not load module.");
+		pop(); // name.
+		return NIL_VAL;
+	}
+
+	ObjFunction* module_func = compile(AS_STRING(name)->chars, result.source);
+
+	// Now that we're done, give the result back in case there's cleanup to do.
+	if (result.on_complete) {
+		result.on_complete(AS_CSTRING(name), result);
+	}
+
+	if (module_func == NULL)
+	{
+		runtime_error("Could not load module.");
+		pop(); // name.
+		return NIL_VAL;
+	}
+
+	pop(); // name.
+
+	// Return the closure that executes the module.
+	return OBJ_VAL(module_func);
+}
+
 static InterpretResult run()
 {
 	CallFrame* frame = &vm.frames[vm.frame_count - 1];
@@ -448,7 +521,7 @@ static InterpretResult run()
 
 		uint8_t instruction = READ_BYTE();
 #ifdef DEBUG_PRINT_OPCODE
-		const char* names[OP_CALL_16 + 1] = {
+		const char* names[OP_IMPORT_VARIABLE + 1] = {
 			"OP_CONSTANT",
 			"OP_NIL",
 			"OP_TRUE",
@@ -504,6 +577,8 @@ static InterpretResult run()
 			"OP_CALL_14",
 			"OP_CALL_15",
 			"OP_CALL_16",
+			"OP_IMPORT_MODULE",
+			"OP_IMPORT_VARIABLE",
 		};
 		printf("%s\n", names[instruction]);
 #endif // DEBUG_PRINT_OPCODE
@@ -916,6 +991,28 @@ static InterpretResult run()
 		case OP_LOAD_MODULE_VAR:
 			push(frame->closure->function->module->variables.values[READ_SHORT()]);
 			break;
+
+		case OP_IMPORT_MODULE:
+			push(import_module(READ_CONSTANT()));
+
+			//if (wrenHasError(fiber)) RUNTIME_ERROR();
+
+			// If we get a closure, call it to execute the module body.
+			if (IS_FUNCTION(peek(0)))
+			{
+				//STORE_FRAME();
+				ObjFunction* func = AS_FUNCTION(peek(0));
+
+				//wrenCallFunction(vm, fiber, closure, 1);
+				//LOAD_FRAME();
+			}
+			else
+			{
+				//// The module has already been loaded. Remember it so we can import
+				//// variables from it if needed.
+				//vm->lastModule = AS_MODULE(PEEK());
+			}
+			break;
 		}
 	}
 
@@ -924,6 +1021,26 @@ static InterpretResult run()
 #undef READ_CONSTANT
 #undef READ_STRING
 #undef BINARY_OP
+}
+
+void FinalizeForeign(ObjForeign* foreign)
+{
+	ObjClass* class_obj = foreign->obj.class_obj;
+
+	Value value;
+	if (!table_get(&class_obj->methods, copy_string("<finalize>", 10), &value)) {
+		return;
+	}
+
+	ObjMethod* method = AS_METHOD(value);
+	if (method->type == METHOD_NONE) {
+		return;
+	}
+
+	ASSERT(method->type == METHOD_FOREIGN, "Finalizer should be foreign.");
+
+	FinalizerFn finalizer = (FinalizerFn)method->as.foreign;
+	finalizer(foreign->data);
 }
 
 InterpretResult interpret(const char* module, const char* source)
@@ -947,4 +1064,63 @@ InterpretResult interpret(const char* module, const char* source)
 	}
 
 	return ret;
+}
+
+static void validate_api_slot(int slot)
+{
+	ASSERT(slot >= 0, "Slot cannot be negative.");
+	ASSERT(slot < GetSlotCount(vm), "Not that many slots.");
+}
+
+int GetSlotCount()
+{
+	if (vm.api_stack == NULL) {
+		return 0;
+	}
+
+	return (int)(vm.stack_top - vm.api_stack);
+}
+
+double GetSlotDouble(int slot)
+{
+	validate_api_slot(slot);
+	ASSERT(IS_NUMBER(vm.api_stack[slot]), "Slot must hold a number.");
+
+	return AS_NUMBER(vm.api_stack[slot]);
+}
+
+void* GetSlotForeign(int slot)
+{
+	validate_api_slot(slot);
+	ASSERT(IS_FOREIGN(vm.api_stack[slot]), "Slot must hold a foreign instance.");
+
+	return AS_FOREIGN(vm.api_stack[slot])->data;
+}
+
+// Stores [value] in [slot] in the foreign call stack.
+static void set_slot(int slot, Value value)
+{
+	validate_api_slot(slot);
+	vm.api_stack[slot] = value;
+}
+
+void SetSlotDouble(int slot, double value)
+{
+	set_slot(slot, NUMBER_VAL(value));
+}
+
+void* SetSlotNewForeign(int slot, int classSlot, size_t size)
+{
+	validate_api_slot(slot);
+	validate_api_slot(classSlot);
+	ASSERT(IS_CLASS(vm.api_stack[classSlot]), "Slot must hold a class.");
+
+	ObjClass* class_obj = AS_CLASS(vm.api_stack[classSlot]);
+	ASSERT(class_obj->num_fields == -1, "Class must be a foreign class.");
+
+	ObjForeign* foreign = new_foreign(size);
+	foreign->obj.class_obj = class_obj;
+	vm.api_stack[slot] = OBJ_VAL(foreign);
+
+	return (void*)foreign->data;
 }

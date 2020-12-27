@@ -54,6 +54,9 @@ static void dump_object(Value value)
 	case OBJ_FUNCTION:
 		dump_function(AS_FUNCTION(value));
 		break;
+	case OBJ_FOREIGN:
+		print2buf("foreign");
+		break;
 	case OBJ_INSTANCE:
 		print2buf("%s instance", AS_INSTANCE(value)->klass->name->chars);
 		break;

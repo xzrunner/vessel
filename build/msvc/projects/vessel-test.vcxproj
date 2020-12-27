@@ -37,6 +37,7 @@
     <ClCompile Include="..\..\..\test\nil.cpp" />
     <ClCompile Include="..\..\..\test\number.cpp" />
     <ClCompile Include="..\..\..\test\operator.cpp" />
+    <ClCompile Include="..\..\..\test\random.cpp" />
     <ClCompile Include="..\..\..\test\return.cpp" />
     <ClCompile Include="..\..\..\test\string.cpp" />
     <ClCompile Include="..\..\..\test\super.cpp" />

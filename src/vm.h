@@ -20,6 +20,7 @@ typedef struct
 {
 	ObjClass* list_class;
 	ObjClass* map_class;
+	ObjClass* object_class;
 
 	CallFrame frames[FRAMES_MAX];
 	int frame_count;
@@ -43,6 +44,10 @@ typedef struct
 	int gray_count;
 	int gray_capacity;
 	Obj** gray_stack;
+
+	Value* api_stack;
+
+	Configuration config;
 
 	ValueArray method_names;
 
