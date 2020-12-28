@@ -3,26 +3,35 @@
 #include "vm.h"
 #include "primitive.h"
 #include "utils.h"
+#include "core.ves.inc"
 
 DEF_PRIMITIVE(object_is)
 {
-	//if (!IS_CLASS(args[1]))
-	//{
-	//	RETURN_ERROR("Right operand must be a class.");
-	//}
+	if (!IS_CLASS(args[1]))
+	{
+		vm.error = OBJ_VAL(copy_string("Right operand must be a class.", sizeof("Right operand must be a class.") - 1));
+		RETURN_BOOL(false);
+	}
 
-	//ObjClass *classObj = wrenGetClass(vm, args[0]);
-	//ObjClass *baseClassObj = AS_CLASS(args[1]);
+	ObjClass* class_obj = get_class(args[0]);
+	ObjClass* base_class_obj = AS_CLASS(args[1]);
 
-	//// Walk the superclass chain looking for the class.
-	//do
-	//{
-	//	if (baseClassObj == classObj) RETURN_BOOL(true);
+	// Walk the superclass chain looking for the class.
+	do
+	{
+		if (base_class_obj == class_obj) {
+			RETURN_BOOL(true);
+		}
 
-	//	classObj = classObj->superclass;
-	//} while (classObj != NULL);
+		class_obj = class_obj->superclass;
+	} while (class_obj != NULL);
 
 	RETURN_BOOL(false);
+}
+
+DEF_PRIMITIVE(object_type)
+{
+	RETURN_OBJ(get_class(args[0]));
 }
 
 DEF_PRIMITIVE(list_new)
@@ -318,6 +327,18 @@ void initialize_core()
 
 	vm.object_class = define_class(core_module, "Object");
 	PRIMITIVE(vm.object_class, "is(_)", object_is);
+	PRIMITIVE(vm.object_class, "type", object_type);
+
+	vm.class_class = define_class(core_module, "Class");
+	bind_superclass(vm.class_class, vm.object_class);
+
+	interpret("Core", coreModuleSource);
+
+	vm.bool_class = AS_CLASS(find_global_variable(core_module, "Bool"));
+	//PRIMITIVE(vm->boolClass, "toString", bool_toString);
+	//PRIMITIVE(vm->boolClass, "!", bool_not);
+
+	vm.num_class = AS_CLASS(find_global_variable(core_module, "Num"));
 
 	vm.list_class = new_class(vm.object_class, copy_string("List", 4));
 	DefineVariable(core_module, "List", 4, OBJ_VAL(vm.list_class), NULL);

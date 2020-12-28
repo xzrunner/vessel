@@ -43,6 +43,7 @@
     <ClInclude Include="..\..\..\src\vm.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\..\src\core.ves.inc" />
     <None Include="..\..\..\src\optional\opt_random.ves.inc" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

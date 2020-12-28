@@ -26,6 +26,7 @@ typedef enum {
     PREC_OR,          // or
     PREC_AND,         // and
     PREC_EQUALITY,    // == !=
+    PREC_IS,          // is
     PREC_COMPARISON,  // < > <= >=
     PREC_TERM,        // + -
     PREC_FACTOR,      // * /
@@ -510,6 +511,21 @@ static void and_(bool can_assign)
     patch_jump(end_jump);
 }
 
+static int signature_symbol(Signature* signature)
+{
+    char name[MAX_METHOD_SIGNATURE];
+    int length;
+    signature_to_string(signature, name, &length);
+
+    return symbol_table_ensure(&vm.method_names, name, length);
+}
+
+static void call_signature(Signature* signature)
+{
+    int symbol = signature_symbol(signature);
+    emit_short_arg((OpCode)(OP_CALL_0 + signature->arity), symbol);
+}
+
 static void binary(bool can_assign)
 {
     TokenType operator_type = parser.previous.type;
@@ -529,6 +545,12 @@ static void binary(bool can_assign)
         case TOKEN_MINUS:         emit_op(OP_SUBTRACT); break;
         case TOKEN_STAR:          emit_op(OP_MULTIPLY); break;
         case TOKEN_SLASH:         emit_op(OP_DIVIDE); break;
+        case TOKEN_IS:
+        {
+            Signature signature = { "is", 2, SIG_METHOD, 1 };
+            call_signature(&signature);
+        }
+            break;
         default:
             return; // Unreachable.
     }
@@ -538,21 +560,6 @@ static void call(bool can_assign)
 {
     uint8_t arg_count = argument_list(TOKEN_RIGHT_PAREN);
     emit_byte_arg(OP_CALL, arg_count);
-}
-
-static int signature_symbol(Signature* signature)
-{
-    char name[MAX_METHOD_SIGNATURE];
-    int length;
-    signature_to_string(signature, name, &length);
-
-    return symbol_table_ensure(&vm.method_names, name, length);
-}
-
-static void call_signature(Signature* signature)
-{
-    int symbol = signature_symbol(signature);
-    emit_short_arg((OpCode)(OP_CALL_0 + signature->arity), symbol);
 }
 
 static void dot(bool can_assign)
@@ -818,6 +825,7 @@ ParseRule rules[] =
     [TOKEN_VAR]           = {NULL,     NULL,   PREC_NONE},
     [TOKEN_WHILE]         = {NULL,     NULL,   PREC_NONE},
     [TOKEN_IMPORT]        = {NULL,     NULL,   PREC_NONE},
+    [TOKEN_IS]            = {NULL,     binary, PREC_IS},
     [TOKEN_ERROR]         = {NULL,     NULL,   PREC_NONE},
     [TOKEN_EOF]           = {NULL,     NULL,   PREC_NONE},
 };

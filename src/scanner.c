@@ -155,8 +155,9 @@ static TokenType identifier_type()
             {
                 switch (scanner.start[1])
                 {
-                case 'f': return TOKEN_IF;
+                case 'f': return check_keyword(2, 0, "", TOKEN_IF);
                 case 'm': return check_keyword(2, 4, "port", TOKEN_IMPORT);
+                case 's': return check_keyword(2, 0, "", TOKEN_IS);
                 }
             }
             break;

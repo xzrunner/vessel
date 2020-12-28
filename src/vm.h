@@ -18,8 +18,11 @@ typedef struct
 
 typedef struct
 {
+	ObjClass* bool_class;
+	ObjClass* class_class;
 	ObjClass* list_class;
 	ObjClass* map_class;
+	ObjClass* num_class;
 	ObjClass* object_class;
 
 	CallFrame frames[FRAMES_MAX];

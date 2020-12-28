@@ -50,5 +50,6 @@
     <None Include="..\..\..\src\optional\opt_random.ves.inc">
       <Filter>optional</Filter>
     </None>
+    <None Include="..\..\..\src\core.ves.inc" />
   </ItemGroup>
 </Project>

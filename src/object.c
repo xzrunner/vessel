@@ -241,5 +241,16 @@ void bind_superclass(ObjClass* subclass, ObjClass* superclass)
 	}
 
 	table_add_all(&superclass->methods, &subclass->methods);
+}
+
+ObjClass* get_class(Value value) 
+{
+	if (IS_OBJ(value)) {
+		return AS_OBJ(value)->class_obj;
+	} else if (IS_BOOL(value)) {
+		return vm.bool_class;
+	} else if (IS_NUMBER(value)) {
+		return vm.num_class;
 	}
+	return NULL;
 }

@@ -185,7 +185,7 @@ typedef struct
 } ObjMap;
 
 ObjBoundMethod* new_bound_method(Value receiver, ObjClosure* method);
-ObjClass* new_class(ObjString* name);
+ObjClass* new_class(ObjClass* superclass, ObjString* name);
 ObjClass* new_single_class(int num_fields, ObjString* name);
 ObjClosure* new_closure(ObjFunction* function);
 ObjMethod* new_method();
@@ -203,6 +203,8 @@ ObjString* copy_string(const char* chars, int length);
 ObjUpvalue* new_upvalue(Value* slot);
 
 void bind_superclass(ObjClass* subclass, ObjClass* superclass);
+
+ObjClass* get_class(Value value);
 
 static inline bool is_obj_type(Value value, ObjType type) {
 	return IS_OBJ(value) && AS_OBJ(value)->type == type;
