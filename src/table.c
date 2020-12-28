@@ -95,14 +95,14 @@ bool table_set(Table* table, ObjString* key, Value value)
 
     Entry* entry = find_entry(table->entries, table->capacity, key);
 
-    bool isNewKey = entry->key == NULL;
-    if (isNewKey && IS_NIL(entry->value)) {
+    bool is_new_key = entry->key == NULL;
+    if (is_new_key && IS_NIL(entry->value)) {
         table->count++;
     }
 
     entry->key = key;
     entry->value = value;
-    return isNewKey;
+    return is_new_key;
 }
 
 bool table_delete(Table* table, ObjString* key)

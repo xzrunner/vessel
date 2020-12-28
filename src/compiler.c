@@ -930,11 +930,11 @@ static void class_declaration()
     emit_byte_arg(OP_CLASS, name_constant);
     define_variable(name_constant);
 
-    ClassCompiler classCompiler;
-    classCompiler.name = parser.previous;
-    classCompiler.has_superclass = false;
-    classCompiler.enclosing = current_class;
-    current_class = &classCompiler;
+    ClassCompiler class_compiler;
+    class_compiler.name = parser.previous;
+    class_compiler.has_superclass = false;
+    class_compiler.enclosing = current_class;
+    current_class = &class_compiler;
 
     if (match(TOKEN_LESS))
     {
@@ -951,7 +951,7 @@ static void class_declaration()
 
         named_variable(class_name, false);
         emit_op(OP_INHERIT);
-        classCompiler.has_superclass = true;
+        class_compiler.has_superclass = true;
     }
 
     named_variable(class_name, false);
@@ -964,7 +964,7 @@ static void class_declaration()
     consume(TOKEN_RIGHT_BRACE, "Expect '}' after class body.");
     emit_op(OP_POP);
 
-    if (classCompiler.has_superclass) {
+    if (class_compiler.has_superclass) {
         end_scope();
     }
 
