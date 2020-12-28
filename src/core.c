@@ -275,32 +275,9 @@ DEF_PRIMITIVE(map_remove)
 //  RETURN_VAL(entry->value);
 //}
 
-static int define_variable(ObjModule* module, const char* name, size_t length, Value value)
+static void define_global_variable(const char* name, size_t length, Value value)
 {
-	if (module->variables.count == MAX_MODULE_VARS) {
-		return -2;
-	}
-
-	if (IS_OBJ(value)) {
-		push(value);
-	}
-
-	int symbol = symbol_table_find(&module->variable_names, name, length);
-	if (symbol == -1)
-	{
-		symbol = symbol_table_add(&module->variable_names, name, length);
-		write_value_array(&module->variables, value);
-	}
-	else
-	{
-		symbol = -1;
-	}
-
-	if (IS_OBJ(value)) {
-		pop();
-	}
-
-	return symbol;
+	table_set(&vm.globals, copy_string(name, strlen(name)), value);
 }
 
 static ObjClass* define_class(ObjModule* module, const char* name)
@@ -310,10 +287,25 @@ static ObjClass* define_class(ObjModule* module, const char* name)
 
 	ObjClass* class_obj = new_single_class(0, name_string);
 
-	define_variable(module, name, name_string->length, OBJ_VAL(class_obj));
+	// fixme
+	DefineVariable(module, name, name_string->length, OBJ_VAL(class_obj), NULL);
+	define_global_variable(name, name_string->length, OBJ_VAL(class_obj));
 
 	pop();
 	return class_obj;
+}
+
+static Value find_global_variable(ObjModule* module, const char* name)
+{
+	//int symbol = wrenSymbolTableFind(&module->variableNames, name, strlen(name));
+	//return module->variables.data[symbol];
+
+	Value ret;
+	if (table_get(&vm.globals, copy_string(name, strlen(name)), &ret)) {
+		return ret;
+	} else {
+		return NIL_VAL;
+	}
 }
 
 void initialize_core()
@@ -324,11 +316,12 @@ void initialize_core()
 	table_set(&vm.modules, copy_string("Core", 4), OBJ_VAL(core_module));
 	pop();
 
-	vm.object_class = new_class(copy_string("Object", 6));
+	vm.object_class = define_class(core_module, "Object");
 	PRIMITIVE(vm.object_class, "is(_)", object_is);
 
-	vm.list_class = new_class(copy_string("List", 4));
-	define_variable(core_module, "List", 4, OBJ_VAL(vm.list_class));
+	vm.list_class = new_class(vm.object_class, copy_string("List", 4));
+	DefineVariable(core_module, "List", 4, OBJ_VAL(vm.list_class), NULL);
+	//define_global_variable("List", 4, OBJ_VAL(vm.list_class));
 	PRIMITIVE(vm.list_class->obj.class_obj, "new()", list_new);
 	PRIMITIVE(vm.list_class, "[_]", list_subscript);
 	PRIMITIVE(vm.list_class, "[_]=(_)", list_subscriptSetter);
@@ -338,8 +331,9 @@ void initialize_core()
 	PRIMITIVE(vm.list_class, "count", list_count);
 	PRIMITIVE(vm.list_class, "removeAt(_)", list_removeAt);
 
-	vm.map_class = new_class(copy_string("Map", 4));
-	define_variable(core_module, "Map", 3, OBJ_VAL(vm.map_class));
+	vm.map_class = new_class(vm.object_class, copy_string("Map", 4));
+	DefineVariable(core_module, "Map", 3, OBJ_VAL(vm.map_class), NULL);
+	//define_global_variable("Map", 3, OBJ_VAL(vm.map_class));
 	PRIMITIVE(vm.map_class->obj.class_obj, "new()", map_new);
 	PRIMITIVE(vm.map_class, "[_]", map_subscript);
 	PRIMITIVE(vm.map_class, "[_]=(_)", map_subscriptSetter);

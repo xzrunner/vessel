@@ -6,7 +6,7 @@ TEST_CASE("closure_in_body")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 var f1
 var f2
 var f3
@@ -44,7 +44,7 @@ TEST_CASE("return_closure")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 fun f() {
   for (;;) {
     var i = "i"
@@ -65,7 +65,7 @@ TEST_CASE("return_inside")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 fun f() {
   for (;;) {
     var i = "i"
@@ -85,7 +85,7 @@ TEST_CASE("for-scope")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 {
   var i = "before"
 
@@ -125,7 +125,7 @@ TEST_CASE("syntax")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 // Single-expression body.
 for (var c = 0; c < 3;) print c = c + 1
 // expect: 1

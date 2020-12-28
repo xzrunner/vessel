@@ -6,7 +6,7 @@ TEST_CASE("bound_method")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"foo(
+    interpret("test", R"foo(
 class A {
   method(arg) {
     print "A.method(" + arg + ")"
@@ -36,7 +36,7 @@ TEST_CASE("call_other_method")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"foo(
+    interpret("test", R"foo(
 class Base {
   foo() {
     print "Base.foo()"
@@ -64,7 +64,7 @@ TEST_CASE("call_same_method")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"foo(
+    interpret("test", R"foo(
 class Base {
   foo() {
     print "Base.foo()"
@@ -92,7 +92,7 @@ TEST_CASE("closure")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 class Base {
   toString() { return "Base" }
 }
@@ -120,7 +120,7 @@ TEST_CASE("constructor")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"foo(
+    interpret("test", R"foo(
 class Base {
   init(a, b) {
     print "Base.init(" + a + ", " + b + ")"
@@ -148,7 +148,7 @@ TEST_CASE("indirectly_inherited")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"foo(
+    interpret("test", R"foo(
 class A {
   foo() {
     print "A.foo()"
@@ -178,7 +178,7 @@ TEST_CASE("reassign_superclass")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"foo(
+    interpret("test", R"foo(
 class Base {
   method() {
     print "Base.method()"
@@ -212,7 +212,7 @@ TEST_CASE("super_in_closure_in_inherited_method")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"foo(
+    interpret("test", R"foo(
 class A {
   say() {
     print "A"
@@ -249,7 +249,7 @@ TEST_CASE("super_in_inherited_method")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"foo(
+    interpret("test", R"foo(
 class A {
   say() {
     print "A"
@@ -283,7 +283,7 @@ TEST_CASE("this_in_superclass_method")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"foo(
+    interpret("test", R"foo(
 class Base {
   init(a) {
     this.a = a

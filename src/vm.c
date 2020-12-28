@@ -1124,3 +1124,31 @@ void* SetSlotNewForeign(int slot, int classSlot, size_t size)
 
 	return (void*)foreign->data;
 }
+
+int DefineVariable(ObjModule* module, const char* name, size_t length, Value value, int* line)
+{
+	if (module->variables.count == MAX_MODULE_VARS) {
+		return -2;
+	}
+
+	if (IS_OBJ(value)) {
+		push(value);
+	}
+
+	int symbol = symbol_table_find(&module->variable_names, name, length);
+	if (symbol == -1)
+	{
+		symbol = symbol_table_add(&module->variable_names, name, length);
+		write_value_array(&module->variables, value);
+	}
+	else
+	{
+		symbol = -1;
+	}
+
+	if (IS_OBJ(value)) {
+		pop();
+	}
+
+	return symbol;
+}

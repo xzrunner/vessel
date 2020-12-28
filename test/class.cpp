@@ -6,7 +6,7 @@ TEST_CASE("class_empty")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 class Foo {}
 
 print Foo // expect: Foo
@@ -20,7 +20,7 @@ TEST_CASE("inherited_method")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 class Foo {
   inFoo() {
     print "in foo"
@@ -55,7 +55,7 @@ TEST_CASE("local_inherit_other")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 class A {}
 
 fun f() {
@@ -74,7 +74,7 @@ TEST_CASE("local_reference_self")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 {
   class Foo {
     returnSelf() {
@@ -94,7 +94,7 @@ TEST_CASE("reference_self")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 class Foo {
   returnSelf() {
     return Foo

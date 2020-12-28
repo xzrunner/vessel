@@ -6,7 +6,7 @@
 //{
 //    ves_str_buf_clear();
 //
-//    interpret(NULL, R"(
+//    interpret("test", R"(
 //var map = {}
 //map[2] = "two"
 //map[0] = "zero"
@@ -25,7 +25,7 @@
 //{
 //    ves_str_buf_clear();
 //
-//    interpret(NULL, R"(
+//    interpret("test", R"(
 //var map = {
 //  "one": 1,
 //  "two": 2,
@@ -62,7 +62,7 @@ TEST_CASE("contains_key")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 var map = {
   "one": 1,
   "two": 2,

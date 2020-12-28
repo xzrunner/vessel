@@ -6,7 +6,7 @@ TEST_CASE("equality")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 print true == true    // expect: true
 print true == false   // expect: false
 print false == true   // expect: false
@@ -57,7 +57,7 @@ TEST_CASE("bool_equality")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 print !true    // expect: false
 print !false   // expect: true
 print !!true   // expect: true
@@ -65,6 +65,24 @@ print !!true   // expect: true
     REQUIRE(std::string(ves_get_str_buf()) == R"(
 false
 true
+true
+)" + 1);
+}
+
+TEST_CASE("bool_type")
+{
+    ves_str_buf_clear();
+
+    interpret("test", R"(
+print(true is Bool)      // expect: true
+print(true is Object)    // expect: true
+print(true is Num)       // expect: false
+print(true.type == Bool) // expect: true
+)");
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
+true
+true
+false
 true
 )" + 1);
 }

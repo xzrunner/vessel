@@ -6,7 +6,7 @@ TEST_CASE("precedence")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 // * has higher precedence than +.
 print 2 + 3 * 4 // expect: 14
 

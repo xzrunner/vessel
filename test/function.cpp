@@ -6,7 +6,7 @@ TEST_CASE("empty_body")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 fun f() {}
 print f() // expect: nil
 )");
@@ -19,7 +19,7 @@ TEST_CASE("local_recursion")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 {
   fun fib(n) {
     if (n < 2) return n
@@ -38,7 +38,7 @@ TEST_CASE("mutual_recursion")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 fun isEven(n) {
   if (n == 0) return true
   return isOdd(n - 1)
@@ -62,7 +62,7 @@ TEST_CASE("parameters")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 fun f0() { return 0 }
 print f0() // expect: 0
 
@@ -107,7 +107,7 @@ TEST_CASE("print")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 fun foo() {}
 print foo // expect: <fn foo>
 
@@ -123,7 +123,7 @@ TEST_CASE("recursion")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 fun fib(n) {
   if (n < 2) return n
   return fib(n - 1) + fib(n - 2)

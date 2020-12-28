@@ -6,7 +6,7 @@ TEST_CASE("call_function_field")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 class Foo {}
 
 fun bar(a, b) {
@@ -34,7 +34,7 @@ TEST_CASE("get_and_set_method")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 // Bound methods have identity equality.
 class Foo {
   method(a) {
@@ -73,7 +73,7 @@ TEST_CASE("method")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 class Foo {
   bar(arg) {
     print arg
@@ -94,7 +94,7 @@ TEST_CASE("method_binds_this")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 class Foo {
   sayName(a) {
     print this.name
@@ -125,7 +125,7 @@ TEST_CASE("on_instance")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 class Foo {}
 
 var foo = Foo()

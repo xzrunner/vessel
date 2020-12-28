@@ -6,7 +6,7 @@ TEST_CASE("this-closure")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 class Foo {
   getClosure() {
     fun closure() {
@@ -30,7 +30,7 @@ TEST_CASE("nested_class")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 class Outer {
   method() {
     print this // expect: Outer instance
@@ -63,7 +63,7 @@ TEST_CASE("this_nested_closure")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 class Foo {
   getClosure() {
     fun f() {
@@ -93,7 +93,7 @@ TEST_CASE("this_in_method")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 class Foo {
   bar() { return this }
   baz() { return "baz" }

@@ -6,7 +6,7 @@ TEST_CASE("evaluate")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 // Note: This is just for the expression evaluating chapter which evaluates an
 // expression directly.
 (5 - (3 - 1)) + -1
@@ -21,7 +21,7 @@ TEST_CASE("parse")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 // Note: This is just for the expression parsing chapter which prints the AST.
 (5 - (3 - 1)) + -1
 // expect: (+ (group (- 5.0 (group (- 3.0 1.0)))) (- 1.0))

@@ -6,7 +6,7 @@ TEST_CASE("empty")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 {} // By itself.
 
 // In a statement.
@@ -24,7 +24,7 @@ TEST_CASE("block-scope")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 var a = "outer"
 
 {

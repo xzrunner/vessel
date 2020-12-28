@@ -36,14 +36,14 @@ ObjBoundMethod* new_bound_method(Value receiver, ObjClosure* method)
 	return bound;
 }
 
-ObjClass* new_class(ObjString* name)
+ObjClass* new_class(ObjClass* superclass, ObjString* name)
 {
 	// Create the metaclass.
-	Value metaclassName = string_format("@ metaclass", OBJ_VAL(name));
-	push(metaclassName);
+	Value metaclass_name = string_format("@ metaclass", OBJ_VAL(name));
+	push(metaclass_name);
 
-	ObjClass* metaclass = new_single_class(0, AS_STRING(metaclassName));
-	metaclass->obj.class_obj = NULL; // vm->classClass
+	ObjClass* metaclass = new_single_class(0, AS_STRING(metaclass_name));
+	metaclass->obj.class_obj = vm.class_class;
 
 	pop();
 
@@ -52,18 +52,18 @@ ObjClass* new_class(ObjString* name)
 
 	// Metaclasses always inherit Class and do not parallel the non-metaclass
 	// hierarchy.
-//	wrenBindSuperclass(vm, metaclass, vm->classClass);
+	bind_superclass(metaclass, vm.class_class);
 
 	ObjClass* class_obj = new_single_class(0, name);
 
-	//// Make sure the class isn't collected while the inherited methods are being
-	//// bound.
-	//push((Obj*)class_obj);
+	// Make sure the class isn't collected while the inherited methods are being
+	// bound.
+	push(OBJ_VAL(class_obj));
 
 	class_obj->obj.class_obj = metaclass;
-	//wrenBindSuperclass(vm, class_obj, superclass);
+	bind_superclass(class_obj, superclass);
 
-	//pop();
+	pop();
 	pop();
 
 	return class_obj;
@@ -240,8 +240,6 @@ void bind_superclass(ObjClass* subclass, ObjClass* superclass)
 		ASSERT(superclass->num_fields == 0, "A foreign class cannot inherit from a class with fields.");
 	}
 
-	for (int i = 0; i < superclass->methods.count; i++) {
-		Entry* e = &superclass->methods.entries[i];
-		table_set(&subclass->methods, e->key, e->value);
+	table_add_all(&superclass->methods, &subclass->methods);
 	}
 }

@@ -1284,11 +1284,32 @@ ObjFunction* compile(const char* module, const char* source)
 {
     ObjModule* obj_module = NULL;
 
-    ObjString* name = module == NULL ? copy_string("Core", 4) : copy_string(module, strlen(module));
+    ObjString* module_str = copy_string(module, strlen(module));
 
     Value v_module;
-    if (table_get(&vm.modules, name, &v_module)) {
+    if (table_get(&vm.modules, module_str, &v_module)) {
         obj_module = AS_MODULE(v_module);
+    }
+
+    if (obj_module == NULL)
+    {
+        obj_module = new_module(module_str);
+
+        push(OBJ_VAL(obj_module));
+        table_set(&vm.modules, module_str, OBJ_VAL(obj_module));
+        pop();
+
+        Value v_core_module;
+        if (!table_get(&vm.modules, copy_string("Core", 4), &v_core_module)) {
+            error("Core module should be loaded.");
+        }
+
+        ObjModule* core_module = AS_MODULE(v_core_module);
+        for (int i = 0; i < core_module->variables.count; ++i)
+        {
+            ObjString* name = AS_STRING(core_module->variable_names.values[i]);
+            DefineVariable(obj_module, name->chars, name->length, core_module->variables.values[i], NULL);
+        }
     }
 
     if (obj_module != NULL) {

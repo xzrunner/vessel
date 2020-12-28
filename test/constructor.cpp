@@ -6,7 +6,7 @@ TEST_CASE("arguments")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 class Foo {
   init(a, b) {
     print "init" // expect: init
@@ -30,7 +30,7 @@ TEST_CASE("call_init_early_return")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 class Foo {
   init() {
     print "init"
@@ -54,7 +54,7 @@ TEST_CASE("call_init_explicitly")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"foo(
+    interpret("test", R"foo(
 class Foo {
   init(arg) {
     print "Foo.init(" + arg + ")"
@@ -83,7 +83,7 @@ TEST_CASE("default")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 class Foo {}
 
 var foo = Foo()
@@ -98,7 +98,7 @@ TEST_CASE("early_return")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 class Foo {
   init() {
     print "init"
@@ -120,7 +120,7 @@ TEST_CASE("init_not_method")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"foo(
+    interpret("test", R"foo(
 class Foo {
   init(arg) {
     print "Foo.init(" + arg + ")"
@@ -143,7 +143,7 @@ TEST_CASE("return_in_nested_function")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 class Foo {
   init() {
     fun init() {

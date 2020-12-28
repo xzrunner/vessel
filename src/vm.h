@@ -56,6 +56,15 @@ typedef struct
 
 extern VM vm;
 
+// Adds a new top-level variable named [name] to [module], and optionally
+// populates line with the line of the implicit first use (line can be NULL).
+//
+// Returns the symbol for the new variable, -1 if a variable with the given name
+// is already defined, or -2 if there are too many variables defined.
+// Returns -3 if this is a top-level lowercase variable (localname) that was
+// used before being defined.
+int DefineVariable(ObjModule* module, const char* name, size_t length, Value value, int* line);
+
 void FinalizeForeign(ObjForeign* foreign);
 
 void push(Value value);

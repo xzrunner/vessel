@@ -6,7 +6,7 @@ TEST_CASE("list_add")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 var a = [1]
 a.add(2)
 print(a) // expect: [1, 2]
@@ -27,7 +27,7 @@ TEST_CASE("list_clear")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 var a = [1, 2, 3]
 a.clear()
 print(a)       // expect: []
@@ -47,7 +47,7 @@ TEST_CASE("list_remove_at")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 var a = [1, 2, 3]
 a.removeAt(0)
 print(a) // expect: [2, 3]
@@ -91,7 +91,7 @@ TEST_CASE("list_subscript")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 // Returns elements.
 var list = ["a", "b", "c", "d"]
 print(list[0]) // expect: a
@@ -122,7 +122,7 @@ TEST_CASE("list_subscript_setter")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 // Basic assignment.
 {
   var list = [1, 2, 3]

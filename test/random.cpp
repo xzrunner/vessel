@@ -8,7 +8,7 @@ TEST_CASE("float")
 
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 import "random" for Random
 
 var random = Random.new(12345)

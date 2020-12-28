@@ -6,7 +6,7 @@ TEST_CASE("multiline")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 var a = "1
 2
 3"

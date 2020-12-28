@@ -6,7 +6,7 @@ TEST_CASE("assign_to_closure")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 var f
 var g
 
@@ -47,7 +47,7 @@ TEST_CASE("assign_to_shadowed_later")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 var a = "global"
 
 {
@@ -72,7 +72,7 @@ TEST_CASE("close_over_function_parameter")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 var f
 
 fun foo(param) {
@@ -94,7 +94,7 @@ TEST_CASE("close_over_later_variable")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 // This is a regression test. There was a bug where if an upvalue for an
 // earlier local (here "a") was captured *after* a later one ("b"), then it
 // would crash because it walked to the end of the upvalue list (correct), but
@@ -121,7 +121,7 @@ TEST_CASE("close_over_method_parameter")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 var f
 
 class Foo {
@@ -145,7 +145,7 @@ TEST_CASE("closed_closure_in_function")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 var f
 
 {
@@ -167,7 +167,7 @@ TEST_CASE("nested_closure")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 var f
 
 fun f1() {
@@ -205,7 +205,7 @@ TEST_CASE("open_closure_in_function")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 {
   var local = "local"
   fun f() {
@@ -223,7 +223,7 @@ TEST_CASE("reference_closure_multiple_times")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 var f
 
 {
@@ -249,7 +249,7 @@ TEST_CASE("reuse_closure_slot")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 {
   var f
 
@@ -276,7 +276,7 @@ TEST_CASE("shadow_closure_with_local")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 {
   var foo = "closure"
   fun f() {
@@ -301,7 +301,7 @@ TEST_CASE("unused_closure")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 // This is a regression test. There was a bug where the VM would try to close
 // an upvalue even if the upvalue was never created because the codepath for
 // the closure was not executed.
@@ -325,7 +325,7 @@ TEST_CASE("unused_later_closure")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 // This is a regression test. When closing upvalues for discarded locals, it
 // wouldn't make sure it discarded the upvalue for the correct stack slot.
 //

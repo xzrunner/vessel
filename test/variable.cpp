@@ -6,7 +6,7 @@ TEST_CASE("early_bound")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 var a = "outer"
 {
   fun foo() {
@@ -28,7 +28,7 @@ TEST_CASE("in_middle_of_block")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 {
   var a = "a"
   print a // expect: a
@@ -52,7 +52,7 @@ TEST_CASE("in_nested_block")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 {
   var a = "outer"
   {
@@ -69,7 +69,7 @@ TEST_CASE("local_from_method")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 var foo = "variable"
 
 class Foo {
@@ -89,7 +89,7 @@ TEST_CASE("redeclare_global")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 var a = "1"
 var a
 print a // expect: nil
@@ -103,7 +103,7 @@ TEST_CASE("redefine_global")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 var a = "1"
 var a = "2"
 print a // expect: 2
@@ -117,7 +117,7 @@ TEST_CASE("scope_reuse_in_different_blocks")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 {
   var a = "first"
   print a // expect: first
@@ -138,7 +138,7 @@ TEST_CASE("shadow_and_local")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 {
   var a = "outer"
   {
@@ -158,7 +158,7 @@ TEST_CASE("shadow_global")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 var a = "global"
 {
   var a = "shadow"
@@ -176,7 +176,7 @@ TEST_CASE("shadow_local")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 {
   var a = "local"
   {
@@ -196,7 +196,7 @@ TEST_CASE("uninitialized")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 var a
 print a // expect: nil
 )");
@@ -209,7 +209,7 @@ TEST_CASE("unreached_undefined")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 if (false) {
   print notDefined
 }
@@ -225,7 +225,7 @@ TEST_CASE("use_global_in_initializer")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 var a = "value"
 var a = a
 print a // expect: value

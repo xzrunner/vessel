@@ -6,7 +6,7 @@ TEST_CASE("and")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 // Note: These tests implicitly depend on ints being truthy.
 
 // Return the first non-true argument.
@@ -42,7 +42,7 @@ TEST_CASE("and_truth")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 // False and nil are false.
 print false and "bad" // expect: false
 print nil and "bad" // expect: nil
@@ -65,7 +65,7 @@ TEST_CASE("or")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 // Note: These tests implicitly depend on ints being truthy.
 
 // Return the first true argument.
@@ -101,7 +101,7 @@ TEST_CASE("or_truth")
 {
     ves_str_buf_clear();
 
-    interpret(NULL, R"(
+    interpret("test", R"(
 // False and nil are false.
 print false or "ok" // expect: ok
 print nil or "ok" // expect: ok
