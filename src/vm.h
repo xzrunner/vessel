@@ -9,6 +9,13 @@
 #define FRAMES_MAX 64
 #define STACK_MAX (FRAMES_MAX * UINT8_COUNT)
 
+typedef enum
+{
+#define OPCODE(name) OP_##name,
+#include "opcodes.h"
+#undef OPCODE
+} OpCode;
+
 typedef struct
 {
 	ObjClosure* closure;

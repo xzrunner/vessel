@@ -37,6 +37,7 @@
     <ClInclude Include="..\..\..\src\optional\opt_random.h">
       <Filter>optional</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\src\opcodes.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="include">

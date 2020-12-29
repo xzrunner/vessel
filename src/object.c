@@ -1,7 +1,6 @@
 #include "object.h"
 #include "vm.h"
 #include "memory.h"
-#include "chunk.h"
 #include "utils.h"
 
 #include <stdio.h>

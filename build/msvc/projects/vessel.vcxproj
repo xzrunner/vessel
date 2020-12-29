@@ -34,6 +34,7 @@
     <ClInclude Include="..\..\..\src\include\vessel.h" />
     <ClInclude Include="..\..\..\src\memory.h" />
     <ClInclude Include="..\..\..\src\object.h" />
+    <ClInclude Include="..\..\..\src\opcodes.h" />
     <ClInclude Include="..\..\..\src\optional\opt_random.h" />
     <ClInclude Include="..\..\..\src\primitive.h" />
     <ClInclude Include="..\..\..\src\scanner.h" />
