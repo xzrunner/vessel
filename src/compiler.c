@@ -1177,10 +1177,10 @@ static void import()
 
         // We need to hold onto the source variable,
         // in order to reference it in the import later
-        Token sourceVariableToken = parser.previous;
+        Token source_variable_token = parser.previous;
 
         // Define a string constant for the original variable name.
-        int sourceVariableConstant = make_constant(OBJ_VAL(copy_string(sourceVariableToken.start, sourceVariableToken.length)));
+        int source_variable_constant = make_constant(OBJ_VAL(copy_string(source_variable_token.start, source_variable_token.length)));
 
         // Store the symbol we care about for the variable
         int slot = -1;
@@ -1195,14 +1195,14 @@ static void import()
         {
             //import "module" for Source
             //Uses 'Source' as the name directly
-            declare_variable(&sourceVariableToken);
+            declare_variable(&source_variable_token);
         }
 
         // Load the variable from the other module.
-        emit_byte_arg(OP_IMPORT_VARIABLE, sourceVariableConstant);
+        emit_byte_arg(OP_IMPORT_VARIABLE, source_variable_constant);
 
         // Store the result in the variable here.
-        define_variable(sourceVariableConstant);
+        define_variable(source_variable_constant);
     } while (match(TOKEN_COMMA));
 }
 

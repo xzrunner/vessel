@@ -243,7 +243,7 @@ void bind_superclass(ObjClass* subclass, ObjClass* superclass)
 	table_add_all(&superclass->methods, &subclass->methods);
 }
 
-ObjClass* get_class(Value value) 
+ObjClass* get_class(Value value)
 {
 	if (IS_OBJ(value)) {
 		return AS_OBJ(value)->class_obj;

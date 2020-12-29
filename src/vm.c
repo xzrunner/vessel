@@ -408,8 +408,10 @@ static Value import_module(Value name)
 		return NIL_VAL;
 	}
 
+	ObjString* name_str = AS_STRING(name);
+
 	Value existing;
-	if (table_get(&vm.modules, AS_STRING(name), &existing)) {
+	if (table_get(&vm.modules, name_str, &existing)) {
 		return existing;
 	}
 
@@ -427,9 +429,8 @@ static Value import_module(Value name)
 	if (result.source == NULL)
 	{
 		result.on_complete = NULL;
-		ObjString* name_string = AS_STRING(name);
 #if OPT_RANDOM
-		if (strncmp(name_string->chars, "random", name_string->length) == 0) {
+		if (strncmp(name_str->chars, "random", name_str->length) == 0) {
 			result.source = RandomSource();
 		}
 #endif

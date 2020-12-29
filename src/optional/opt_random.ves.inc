@@ -1,6 +1,6 @@
 #define QUOTE(...) #__VA_ARGS__
 static const char* randomModuleSource = QUOTE(
-foreign class Random {
+class Random {
   new() {
     seed_()
   }
@@ -65,7 +65,7 @@ foreign class Random {
     // performance for large sample sizes as well as reduces memory usage.
     if (count * 4 < list.count) {
       var picked = {}
-      for (i in list.count - count...list.count) {
+      for (var i = list.count - count; i < list.count; i = i + i) {
         var index = int(i + 1)
         if (picked.containsKey(index)) index = i
         picked[index] = true
@@ -73,7 +73,7 @@ foreign class Random {
       }
     } else {
       var picked = List.filled(list.count, false)
-      for (i in list.count - count...list.count) {
+      for (var i = list.count - count; i < list.count; i = i + i) {
         var index = int(i + 1)
         if (picked[index]) index = i
         picked[index] = true
@@ -85,10 +85,10 @@ foreign class Random {
   }
 
   shuffle(list) {
-    if (list.isEmpty) return
+    if (list.isEmpty) return\n
 
     // Fisher-Yates shuffle.
-    for (i in 0...list.count - 1) {
+    for (var i = 0; i < list.count - 1; i = i + i) {
       var from = int(i, list.count)
       var temp = list[from]
       list[from] = list[i]
