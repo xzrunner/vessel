@@ -1288,7 +1288,7 @@ static ObjModule* get_module(Value name)
     }
 }
 
-ObjFunction* compile(const char* module, const char* source)
+ObjClosure* compile(const char* module, const char* source)
 {
     const bool is_core = strcmp(module, "Core") == 0;
 
@@ -1333,15 +1333,16 @@ ObjFunction* compile(const char* module, const char* source)
         }
     }
 
-    if (obj_module != NULL) {
-        push(v_module);
-    }
     ObjFunction* func = compile_impl(obj_module, source);
-    if (obj_module != NULL) {
-        pop();
+    if (func == NULL) {
+        return NULL;
     }
 
-    return func;
+    push(OBJ_VAL(func));
+    ObjClosure* closure = new_closure(func);
+    pop();
+
+    return closure;
 }
 
 void mark_compiler_roots() {

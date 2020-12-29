@@ -443,14 +443,14 @@ static Value import_module(Value name)
 		return NIL_VAL;
 	}
 
-	ObjFunction* module_func = compile(AS_STRING(name)->chars, result.source);
+	ObjClosure* module_closure = compile(name_str->chars, result.source);
 
 	// Now that we're done, give the result back in case there's cleanup to do.
 	if (result.on_complete) {
 		result.on_complete(AS_CSTRING(name), result);
 	}
 
-	if (module_func == NULL)
+	if (module_closure == NULL)
 	{
 		runtime_error("Could not load module.");
 		pop(); // name.
@@ -460,7 +460,7 @@ static Value import_module(Value name)
 	pop(); // name.
 
 	// Return the closure that executes the module.
-	return OBJ_VAL(module_func);
+	return OBJ_VAL(module_closure);
 }
 
 static InterpretResult run()
@@ -995,15 +995,11 @@ void FinalizeForeign(ObjForeign* foreign)
 
 InterpretResult interpret(const char* module, const char* source)
 {
-	ObjFunction* function = compile(module, source);
-	if (function == NULL) {
+	ObjClosure* closure = compile(module, source);
+	if (closure == NULL) {
 		return INTERPRET_COMPILE_ERROR;
 	}
 
-	push(OBJ_VAL(function));
-
-	ObjClosure* closure = new_closure(function);
-	pop();
 	push(OBJ_VAL(closure));
 	call_value(OBJ_VAL(closure), 0);
 

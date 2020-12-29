@@ -4,7 +4,7 @@
 #include "common.h"
 #include "object.h"
 
-ObjFunction* compile(const char* module, const char* source);
+ObjClosure* compile(const char* module, const char* source);
 void mark_compiler_roots();
 
 typedef enum
