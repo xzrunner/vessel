@@ -284,11 +284,6 @@ DEF_PRIMITIVE(map_remove)
 //  RETURN_VAL(entry->value);
 //}
 
-static void define_global_variable(const char* name, size_t length, Value value)
-{
-	table_set(&vm.globals, copy_string(name, strlen(name)), value);
-}
-
 static ObjClass* define_class(ObjModule* module, const char* name)
 {
 	ObjString* name_string = copy_string(name, strlen(name));
@@ -296,33 +291,29 @@ static ObjClass* define_class(ObjModule* module, const char* name)
 
 	ObjClass* class_obj = new_single_class(0, name_string);
 
-	// fixme
 	DefineVariable(module, name, name_string->length, OBJ_VAL(class_obj), NULL);
-	define_global_variable(name, name_string->length, OBJ_VAL(class_obj));
 
 	pop();
 	return class_obj;
 }
 
-static Value find_global_variable(ObjModule* module, const char* name)
+static Value find_variable(ObjModule* module, const char* name)
 {
-	//int symbol = wrenSymbolTableFind(&module->variableNames, name, strlen(name));
-	//return module->variables.data[symbol];
-
-	Value ret;
-	if (table_get(&vm.globals, copy_string(name, strlen(name)), &ret)) {
-		return ret;
-	} else {
+	int symbol = symbol_table_find(&module->variable_names, name, strlen(name));
+	if (symbol == -1) {
 		return NIL_VAL;
 	}
+	return module->variables.values[symbol];
 }
 
 void initialize_core()
 {
-	ObjModule* core_module = new_module(NULL);
+	ObjString* core_name = copy_string("Core", 4);
+
+	ObjModule* core_module = new_module(core_name);
 
 	push(OBJ_VAL(core_module));
-	table_set(&vm.modules, copy_string("Core", 4), OBJ_VAL(core_module));
+	table_set(&vm.modules, core_name, OBJ_VAL(core_module));
 	pop();
 
 	vm.object_class = define_class(core_module, "Object");
@@ -334,11 +325,11 @@ void initialize_core()
 
 	interpret("Core", coreModuleSource);
 
-	vm.bool_class = AS_CLASS(find_global_variable(core_module, "Bool"));
+	vm.bool_class = AS_CLASS(find_variable(core_module, "Bool"));
 	//PRIMITIVE(vm->boolClass, "toString", bool_toString);
 	//PRIMITIVE(vm->boolClass, "!", bool_not);
 
-	vm.num_class = AS_CLASS(find_global_variable(core_module, "Num"));
+	vm.num_class = AS_CLASS(find_variable(core_module, "Num"));
 
 	vm.list_class = new_class(vm.object_class, copy_string("List", 4));
 	DefineVariable(core_module, "List", 4, OBJ_VAL(vm.list_class), NULL);

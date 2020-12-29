@@ -57,9 +57,14 @@ static void runtime_error(const char* format, ...)
 
 static void define_native(const char* name, NativeFn function)
 {
+	Value module;
+	if (!table_get(&vm.modules, copy_string("Core", 4), &module)) {
+		return;
+	}
+
 	push(OBJ_VAL(copy_string(name, (int)strlen(name))));
 	push(OBJ_VAL(new_native(function)));
-	table_set(&vm.globals, AS_STRING(vm.stack[0]), vm.stack[1]);
+	DefineVariable(AS_MODULE(module), name, strlen(name), vm.stack[1], NULL);
 	pop();
 	pop();
 }
@@ -82,7 +87,6 @@ void init_vm()
 	vm.gray_capacity = 0;
 	vm.gray_stack = NULL;
 
-	init_table(&vm.globals);
 	init_table(&vm.strings);
 
 	vm.init_string = NULL;
@@ -103,7 +107,6 @@ void init_vm()
 
 void free_vm()
 {
-	free_table(&vm.globals);
 	free_table(&vm.strings);
 	vm.init_string = NULL;
 	free_table(&vm.modules);
@@ -470,6 +473,7 @@ static InterpretResult run()
 #define READ_CONSTANT() \
     (frame->closure->function->chunk.constants.values[READ_BYTE()])
 #define READ_STRING() AS_STRING(READ_CONSTANT())
+#define FUNC (frame->closure->function)
 
 #define BINARY_OP(valueType, op) \
     do { \
@@ -586,29 +590,38 @@ static InterpretResult run()
 
 		case OP_GET_GLOBAL: {
 			ObjString* name = READ_STRING();
-			Value value;
-			if (!table_get(&vm.globals, name, &value)) {
+			int symbol = symbol_table_find(&FUNC->module->variable_names, name->chars, name->length);
+			if (symbol == -1) {
 				runtime_error("Undefined variable '%s'.", name->chars);
 				return INTERPRET_RUNTIME_ERROR;
 			}
-			push(value);
+			push(FUNC->module->variables.values[symbol]);
 			break;
 		}
 
 		case OP_DEFINE_GLOBAL: {
 			ObjString* name = READ_STRING();
-			table_set(&vm.globals, name, peek(0));
+			int symbol = DefineVariable(FUNC->module, name->chars, name->length, peek(0), NULL);
+			if (symbol == -1) {
+				int symbol = symbol_table_find(&FUNC->module->variable_names, name->chars, name->length);
+				if (symbol == -1) {
+					runtime_error("Undefined variable '%s'.", name->chars);
+					return INTERPRET_RUNTIME_ERROR;
+				}
+				FUNC->module->variables.values[symbol] = peek(0);
+			}
 			pop();
 			break;
 		}
 
 		case OP_SET_GLOBAL: {
 			ObjString* name = READ_STRING();
-			if (table_set(&vm.globals, name, peek(0))) {
-				table_delete(&vm.globals, name); // [delete]
+			int symbol = symbol_table_find(&FUNC->module->variable_names, name->chars, name->length);
+			if (symbol == -1) {
 				runtime_error("Undefined variable '%s'.", name->chars);
 				return INTERPRET_RUNTIME_ERROR;
 			}
+			FUNC->module->variables.values[symbol] = peek(0);
 			break;
 		}
 
@@ -1074,7 +1087,7 @@ int DefineVariable(ObjModule* module, const char* name, size_t length, Value val
 	int symbol = symbol_table_find(&module->variable_names, name, length);
 	if (symbol == -1)
 	{
-		symbol = symbol_table_add(&module->variable_names, name, length);
+		symbol = symbol_table_ensure(&module->variable_names, name, length);
 		write_value_array(&module->variables, value);
 	}
 	else

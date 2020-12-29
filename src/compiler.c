@@ -1259,14 +1259,14 @@ static void statement()
 
 static ObjFunction* compile_impl(ObjModule* module, const char* source)
 {
+    parser.module = module;
+    parser.had_error = false;
+    parser.panic_mode = false;
+
     init_scanner(source);
 
     Compiler compiler;
     init_compiler(&compiler, TYPE_SCRIPT);
-
-    parser.module = module;
-    parser.had_error = false;
-    parser.panic_mode = false;
 
     advance();
 
@@ -1290,6 +1290,8 @@ static ObjModule* get_module(Value name)
 
 ObjFunction* compile(const char* module, const char* source)
 {
+    const bool is_core = strcmp(module, "Core") == 0;
+
     ObjModule* obj_module = NULL;
 
     ObjString* module_str = copy_string(module, strlen(module));
@@ -1306,7 +1308,18 @@ ObjFunction* compile(const char* module, const char* source)
         push(OBJ_VAL(obj_module));
         table_set(&vm.modules, module_str, OBJ_VAL(obj_module));
         pop();
+    }
+    else
+    {
+        if (!is_core) {
+            free_value_array(&obj_module->variables);
+            free_value_array(&obj_module->variable_names);
+        }
+    }
 
+    // import Core's vars
+    if (!is_core)
+    {
         Value v_core_module;
         if (!table_get(&vm.modules, copy_string("Core", 4), &v_core_module)) {
             error("Core module should be loaded.");

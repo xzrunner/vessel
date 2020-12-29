@@ -252,7 +252,7 @@ static void mark_roots()
 		mark_object((Obj*)upvalue);
 	}
 
-	mark_table(&vm.globals);
+	mark_table(&vm.modules);
 	mark_compiler_roots();
 	mark_object((Obj*)vm.init_string);
 	mark_array(&vm.method_names);
