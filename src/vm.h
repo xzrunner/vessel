@@ -32,6 +32,8 @@ typedef struct
 	ObjClass* num_class;
 	ObjClass* object_class;
 
+	ObjModule* last_module;
+
 	CallFrame frames[FRAMES_MAX];
 	int frame_count;
 

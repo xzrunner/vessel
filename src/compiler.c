@@ -81,6 +81,7 @@ typedef struct ClassCompiler
     struct ClassCompiler* enclosing;
     Token name;
     bool has_superclass;
+    bool is_foreign;
 } ClassCompiler;
 
 Parser parser;
@@ -200,6 +201,17 @@ static void emit_short(int arg)
 
 static void emit_op(OpCode instruction)
 {
+#ifdef DEBUG_PRINT_OPCODE
+#define FUNCTION_NAME(name) #name
+    const char* OP_NAMES[255] = {
+#define OPCODE(name) FUNCTION_NAME(OP_##name),
+    #include "opcodes.h"
+#undef OPCODE
+};
+#undef FUNCTION_NAME
+    printf("emit %s\n", OP_NAMES[instruction]);
+#endif // DEBUG_PRINT_OPCODE
+
     emit_byte(instruction);
 }
 
@@ -230,7 +242,7 @@ static void emit_loop(int loop_start)
 
 static int emit_jump(uint8_t instruction)
 {
-    emit_byte(instruction);
+    emit_op(instruction);
     emit_byte(0xff);
     emit_byte(0xff);
     return current_chunk()->count - 2;
@@ -430,11 +442,13 @@ static void add_local(Token name)
 
 static void declare_variable()
 {
-    if (current->scope_depth == 0) {
+    Token* name = &parser.previous;
+
+    if (current->scope_depth == 0)
+    {
         return;
     }
 
-    Token* name = &parser.previous;
     for (int i = current->local_count - 1; i >= 0; i--)
     {
         Local* local = &current->locals[i];
@@ -646,7 +660,7 @@ static void subscript(bool can_assign)
     call_signature(&signature);
 }
 
-static void map(bool canAssign)
+static void map(bool can_assign)
 {
     load_core_variable("Map");
     call_method(0, "new()", 5);
@@ -696,6 +710,143 @@ static void string(bool can_assign)
     emit_constant(OBJ_VAL(copy_string(parser.previous.start + 1, parser.previous.length - 2)));
 }
 
+static Token synthetic_token(const char* text)
+{
+    Token token;
+    token.start = text;
+    token.length = (int)strlen(text);
+    return token;
+}
+
+static Signature signature_from_token(SignatureType type)
+{
+    Signature signature;
+
+    Token* token = &parser.previous;
+    signature.name = token->start;
+    signature.length = token->length;
+    signature.type = type;
+    signature.arity = 0;
+
+    if (signature.length > MAX_METHOD_NAME)
+    {
+        error("Method names cannot be longer than MAX_METHOD_NAME characters.");
+        signature.length = MAX_METHOD_NAME;
+    }
+
+    return signature;
+}
+
+static void finish_argument_list(Signature* signature)
+{
+    do
+    {
+        ignore_new_lines();
+
+        ++signature->arity;
+        expression();
+    } while (match(TOKEN_COMMA));
+
+    ignore_new_lines();
+}
+
+static void block()
+{
+    while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF)) {
+        declaration();
+    }
+
+    consume(TOKEN_RIGHT_BRACE, "Expect '}' after block.");
+}
+
+static void method_call(Signature* signature)
+{
+    Signature called = { signature->name, signature->length, SIG_GETTER, 0 };
+
+    if (match(TOKEN_LEFT_PAREN))
+    {
+        called.type = SIG_METHOD;
+
+        if (!check(TOKEN_RIGHT_PAREN))
+        {
+            finish_argument_list(&called);
+        }
+        consume(TOKEN_RIGHT_PAREN, "Expect ')' after arguments.");
+    }
+
+    // Parse the block argument, if any.
+    if (match(TOKEN_LEFT_BRACE))
+    {
+        // Include the block argument in the arity.
+        called.type = SIG_METHOD;
+        called.arity++;
+
+        Compiler fn_compiler;
+        init_compiler(&fn_compiler, TYPE_METHOD);
+
+        // Make a dummy signature to track the arity.
+        Signature fn_signature = { "", 0, SIG_METHOD, 0 };
+
+        //// Parse the parameter list, if any.
+        //if (match(TOKEN_PIPE))
+        //{
+        //    finishParameterList(&fn_compiler, &fn_signature);
+        //    consume(TOKEN_PIPE, "Expect '|' after function parameters.");
+        //}
+
+        fn_compiler.function->arity = fn_signature.arity;
+
+        consume(TOKEN_LEFT_BRACE, "Expect '{' before function body.");
+        block();
+        emit_return();
+
+        // Name the function based on the method its passed to.
+        char block_name[MAX_METHOD_SIGNATURE + 15];
+        int block_length;
+        signature_to_string(&called, block_name, &block_length);
+        memmove(block_name + block_length, " block argument", 16);
+
+        end_compiler(&fn_compiler, block_name, block_length + 15);
+    }
+
+    // TODO: Allow Grace-style mixfix methods?
+
+    // If this is a super() call for an initializer, make sure we got an actual
+    // argument list.
+    if (signature->type == SIG_INITIALIZER)
+    {
+        if (called.type != SIG_METHOD)
+        {
+            error("A superclass constructor must have an argument list.");
+        }
+
+        called.type = SIG_INITIALIZER;
+    }
+
+    call_signature(&called);
+}
+
+static void named_call(bool can_assign)
+{
+    // Get the token for the method name.
+    Signature signature = signature_from_token(SIG_GETTER);
+
+    if (can_assign && match(TOKEN_EQUAL))
+    {
+        ignore_new_lines();
+
+        signature.type = SIG_SETTER;
+        signature.arity = 1;
+
+        expression();
+        call_signature(&signature);
+    }
+    else
+    {
+        method_call(&signature);
+    }
+}
+
 static void named_variable(Token name, bool can_assign)
 {
     uint8_t get_op, set_op;
@@ -716,21 +867,30 @@ static void named_variable(Token name, bool can_assign)
         expression();
         emit_byte_arg(set_op, (uint8_t)arg);
     } else {
-        emit_byte_arg(get_op, (uint8_t)arg);
+        if (get_op == OP_GET_GLOBAL)
+        {
+            int symbol = symbol_table_find(&parser.module->variable_names, name.start, name.length);
+            if (symbol >= 0) {
+                emit_short_arg(OP_LOAD_MODULE_VAR, symbol);
+            } else {
+                if (current_class != NULL && check(TOKEN_LEFT_PAREN)) {
+                    named_variable(synthetic_token("this"), false);
+                    named_call(can_assign);
+                } else {
+                    emit_byte_arg(get_op, (uint8_t)arg);
+                }
+            }
+        }
+        else
+        {
+            emit_byte_arg(get_op, (uint8_t)arg);
+        }
     }
 }
 
 static void variable(bool can_assign)
 {
     named_variable(parser.previous, can_assign);
-}
-
-static Token synthetic_token(const char* text)
-{
-    Token token;
-    token.start = text;
-    token.length = (int)strlen(text);
-    return token;
 }
 
 static void super_(bool can_assign)
@@ -826,6 +986,7 @@ ParseRule rules[] =
     [TOKEN_WHILE]         = {NULL,     NULL,   PREC_NONE},
     [TOKEN_IMPORT]        = {NULL,     NULL,   PREC_NONE},
     [TOKEN_IS]            = {NULL,     binary, PREC_IS},
+    [TOKEN_FOREIGN]       = {NULL,     NULL,   PREC_NONE},
     [TOKEN_ERROR]         = {NULL,     NULL,   PREC_NONE},
     [TOKEN_EOF]           = {NULL,     NULL,   PREC_NONE},
 };
@@ -863,17 +1024,10 @@ static void expression()
     parse_precedence(PREC_ASSIGNMENT);
 }
 
-static void block()
+static void function(FunctionType type, bool is_foreign, int* arity)
 {
-    while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF)) {
-        declaration();
-    }
+    Token func_name = parser.previous;
 
-    consume(TOKEN_RIGHT_BRACE, "Expect '}' after block.");
-}
-
-static void function(FunctionType type)
-{
     Compiler compiler;
     init_compiler(&compiler, type);
     begin_scope(); // [no-end-scope]
@@ -886,6 +1040,9 @@ static void function(FunctionType type)
             if (current->function->arity > 255) {
                 error_at_current("Can't have more than 255 parameters.");
             }
+            if (arity) {
+                (*arity)++;
+            }
 
             uint8_t paramConstant = parse_variable("Expect parameter name.");
             define_variable(paramConstant);
@@ -893,46 +1050,107 @@ static void function(FunctionType type)
     }
     consume(TOKEN_RIGHT_PAREN, "Expect ')' after parameters.");
 
-    consume(TOKEN_LEFT_BRACE, "Expect '{' before function body.");
-    block();
+    if (is_foreign)
+    {
+        Signature signature = { func_name.start, func_name.length, SIG_METHOD, current->function->arity };
 
-    ObjFunction* function = end_compiler();
-    emit_byte_arg(OP_CLOSURE, make_constant(OBJ_VAL(function)));
+        char name[MAX_METHOD_SIGNATURE];
+        int length;
+        signature_to_string(&signature, name, &length);
 
-    for (int i = 0; i < function->upvalue_count; i++) {
-        emit_byte(compiler.upvalues[i].is_local ? 1 : 0);
-        emit_byte(compiler.upvalues[i].index);
+        current = current->enclosing;
+
+        emit_constant(OBJ_VAL(copy_string(name, length)));
+    }
+    else
+    {
+        consume(TOKEN_LEFT_BRACE, "Expect '{' before function body.");
+        block();
+
+        ObjFunction* function = end_compiler();
+        emit_byte_arg(OP_CLOSURE, make_constant(OBJ_VAL(function)));
+
+        for (int i = 0; i < function->upvalue_count; i++) {
+            emit_byte(compiler.upvalues[i].is_local ? 1 : 0);
+            emit_byte(compiler.upvalues[i].index);
+        }
     }
 }
 
-static void method()
+static void create_constructor(int arity, int init_symbol, bool is_class_foreign)
 {
+    Compiler method_compiler;
+    init_compiler(&method_compiler, TYPE_INITIALIZER);
+
+    emit_op(is_class_foreign ? OP_FOREIGN_CONSTRUCT : OP_CONSTRUCT);
+
+    // Run its initializer.
+    emit_short_arg((OpCode)(OP_CALL_0 + arity), init_symbol);
+
+    // Return the instance.
+    emit_op(OP_RETURN);
+
+    ObjFunction* function = end_compiler(&method_compiler, "", 0);
+    emit_byte_arg(OP_CLOSURE, make_constant(OBJ_VAL(function)));
+}
+
+static void method(bool is_class_foreign, Token class_name)
+{
+    bool is_foreign = match(TOKEN_FOREIGN);
+
     consume(TOKEN_IDENTIFIER, "Expect method name.");
-    uint8_t constant = identifier_constant(&parser.previous);
+    Signature signature = { parser.previous.start, parser.previous.length, SIG_METHOD, 0 };
+    //uint8_t constant = identifier_constant(&parser.previous);
 
     FunctionType type = TYPE_METHOD;
-    if (parser.previous.length == 4 &&
-        memcmp(parser.previous.start, "init", 4) == 0) {
+    if (parser.previous.length == vm.init_string->length &&
+        memcmp(parser.previous.start, vm.init_string->chars, vm.init_string->length) == 0) {
         type = TYPE_INITIALIZER;
     }
 
-    function(type);
+    int arity = 0;
+    function(type, is_foreign, &arity);
+    signature.arity = arity;
+
+    char name[MAX_METHOD_SIGNATURE];
+    int length;
+    signature_to_string(&signature, name, &length);
+    Token method_name = synthetic_token(name);
+    uint8_t constant = identifier_constant(&method_name);
+
+    named_variable(class_name, false);
     emit_byte_arg(OP_METHOD, constant);
+
+    // define the ctor to meta class
+    if (type == TYPE_INITIALIZER)
+    {
+        int init_symbol = symbol_table_ensure(&vm.method_names, method_name.start, method_name.length);
+        create_constructor(arity, init_symbol, is_class_foreign);
+
+        named_variable(class_name, false);
+        emit_byte_arg(OP_METHOD_STATIC, constant);
+    }
 }
 
-static void class_declaration()
+static void class_declaration(bool is_foreign)
 {
     consume(TOKEN_IDENTIFIER, "Expect class name.");
     Token class_name = parser.previous;
+
     uint8_t name_constant = identifier_constant(&parser.previous);
     declare_variable();
 
-    emit_byte_arg(OP_CLASS, name_constant);
+    if (is_foreign) {
+        emit_byte_arg(OP_FOREIGN_CLASS, name_constant);
+    } else {
+        emit_byte_arg(OP_CLASS, name_constant);
+    }
     define_variable(name_constant);
 
     ClassCompiler class_compiler;
     class_compiler.name = parser.previous;
     class_compiler.has_superclass = false;
+    class_compiler.is_foreign = is_foreign;
     class_compiler.enclosing = current_class;
     current_class = &class_compiler;
 
@@ -955,10 +1173,21 @@ static void class_declaration()
     }
 
     named_variable(class_name, false);
+
+    if (current->scope_depth == 0)
+    {
+        int symbol = symbol_table_find(&parser.module->variable_names, class_name.start, class_name.length);
+        if (symbol < 0) {
+            symbol = symbol_table_ensure(&parser.module->variable_names, class_name.start, class_name.length);
+            write_value_array(&parser.module->variables, NIL_VAL);
+        }
+        emit_short_arg(OP_STORE_MODULE_VAR, symbol);
+    }
+
     consume(TOKEN_LEFT_BRACE, "Expect '{' before class body.");
     while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF)) {
         ignore_new_lines();
-        method();
+        method(is_foreign, class_name);
         ignore_new_lines();
     }
     consume(TOKEN_RIGHT_BRACE, "Expect '}' after class body.");
@@ -975,7 +1204,10 @@ static void fun_declaration()
 {
     uint8_t global = parse_variable("Expect function name.");
     mark_initialized();
-    function(TYPE_FUNCTION);
+
+    bool is_foreign = match(TOKEN_FOREIGN);
+    function(TYPE_FUNCTION, is_foreign, NULL);
+
     define_variable(global);
 }
 
@@ -1214,7 +1446,10 @@ static void declaration()
     }
 
     if (match(TOKEN_CLASS)) {
-        class_declaration();
+        class_declaration(false);
+    } else if (match(TOKEN_FOREIGN)) {
+        consume(TOKEN_CLASS, "Expect 'class' after 'foreign'.");
+        class_declaration(true);
     } else if (match(TOKEN_FUN)) {
         fun_declaration();
     } else if (match(TOKEN_VAR)) {

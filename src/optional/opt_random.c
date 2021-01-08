@@ -104,18 +104,18 @@ const char* RandomSource()
     return randomModuleSource;
 }
 
-ForeignClassMethods RandomBindForeignClass(const char* module, const char* className)
+ForeignClassMethods RandomBindForeignClass(const char* module, const char* class_name)
 {
-    ASSERT(strcmp(className, "Random") == 0, "Should be in Random class.");
+    ASSERT(strcmp(class_name, "Random") == 0, "Should be in Random class.");
     ForeignClassMethods methods;
     methods.allocate = random_allocate;
     methods.finalize = NULL;
     return methods;
 }
 
-ForeignMethodFn RandomBindForeignMethod(const char* className, bool isStatic, const char* signature)
+ForeignMethodFn RandomBindForeignMethod(const char* class_name, bool is_static, const char* signature)
 {
-    ASSERT(strcmp(className, "Random") == 0, "Should be in Random class.");
+    ASSERT(strcmp(class_name, "Random") == 0, "Should be in Random class.");
 
     if (strcmp(signature, "<allocate>") == 0) return random_allocate;
     if (strcmp(signature, "seed_()") == 0) return random_seed0;

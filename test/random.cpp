@@ -4,14 +4,12 @@
 
 TEST_CASE("float")
 {
-    printf("++++++++++++++++++++++++++ random\n");
-
     ves_str_buf_clear();
 
     interpret("test", R"(
 import "random" for Random
 
-var random = Random.new(12345)
+var random = Random.init(12345)
 
 var below = 0
 for (var i = 1; i < 1000; i = i + 1) {

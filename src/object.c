@@ -35,7 +35,7 @@ ObjBoundMethod* new_bound_method(Value receiver, ObjClosure* method)
 	return bound;
 }
 
-ObjClass* new_class(ObjClass* superclass, ObjString* name)
+ObjClass* new_class(ObjClass* superclass, int num_fields, ObjString* name)
 {
 	// Create the metaclass.
 	Value metaclass_name = string_format("@ metaclass", OBJ_VAL(name));
@@ -53,7 +53,7 @@ ObjClass* new_class(ObjClass* superclass, ObjString* name)
 	// hierarchy.
 	bind_superclass(metaclass, vm.class_class);
 
-	ObjClass* class_obj = new_single_class(0, name);
+	ObjClass* class_obj = new_single_class(num_fields, name);
 
 	// Make sure the class isn't collected while the inherited methods are being
 	// bound.
@@ -111,9 +111,10 @@ ObjFunction* new_function(ObjModule* module)
 	return function;
 }
 
-ObjForeign* new_foreign(size_t size)
+ObjForeign* new_foreign(size_t size, ObjClass* klass)
 {
 	ObjForeign* foreign = ALLOCATE_FLEX(ObjForeign, OBJ_FOREIGN, uint8_t, size);
+	foreign->obj.class_obj = klass;
 	memset(foreign->data, 0, size);
 	return foreign;
 }
@@ -244,12 +245,14 @@ void bind_superclass(ObjClass* subclass, ObjClass* superclass)
 
 ObjClass* get_class(Value value)
 {
-	if (IS_OBJ(value)) {
+	if (IS_INSTANCE(value)) {
+		return AS_INSTANCE(value)->klass;
+	} else if (IS_OBJ(value)) {
 		return AS_OBJ(value)->class_obj;
 	} else if (IS_BOOL(value)) {
 		return vm.bool_class;
 	} else if (IS_NUMBER(value)) {
 		return vm.num_class;
-	}
+	} else
 	return NULL;
 }

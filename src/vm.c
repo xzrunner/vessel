@@ -102,6 +102,8 @@ void init_vm()
 
 	initialize_core();
 
+	vm.last_module = NULL;
+
 	define_native("clock", clock_native);
 }
 
@@ -171,11 +173,6 @@ static Value peek(int distance)
 
 static bool call(ObjClosure* closure, int arg_count)
 {
-	if (arg_count != closure->function->arity) {
-		runtime_error("Expected %d arguments but got %d.", closure->function->arity, arg_count);
-		return false;
-	}
-
 	if (vm.frame_count == FRAMES_MAX) {
 		runtime_error("Stack overflow.");
 		return false;
@@ -207,9 +204,18 @@ static bool call_value(Value callee, int arg_count)
 		{
 			ObjClass* klass = AS_CLASS(callee);
 			vm.stack_top[-arg_count - 1] = OBJ_VAL(new_instance(klass));
+
 			Value initializer;
-			if (table_get(&klass->methods, vm.init_string, &initializer)) {
-				return call(AS_CLOSURE(initializer), arg_count);
+
+			Signature signature = { vm.init_string->chars, vm.init_string->length, SIG_METHOD, arg_count };
+			char name[MAX_METHOD_SIGNATURE];
+			int length;
+			signature_to_string(&signature, name, &length);
+			if (table_get(&klass->methods, copy_string(name, length), &initializer)) {
+				ASSERT(IS_METHOD(initializer), "Error method type.");
+				ObjMethod* obj_method = AS_METHOD(initializer);
+				ASSERT(obj_method->type == METHOD_BLOCK, "Method should be block.");
+				return call(obj_method->as.closure, arg_count);
 			} else if (arg_count != 0) {
 				runtime_error("Expected 0 arguments but got %d.", arg_count);
 				return false;
@@ -232,14 +238,34 @@ static bool call_value(Value callee, int arg_count)
 					return false;
 				}
 				break;
-			case METHOD_FUNCTION_CALL:
-				break;
+			//case METHOD_FUNCTION_CALL:
+			//	break;
 			case METHOD_FOREIGN:
+			{
+				ASSERT(vm.api_stack == NULL, "Cannot already be in foreign call.");
+				vm.api_stack = vm.stack_top - arg_count - 1;
+
+				method->as.foreign();
+
+				// Discard the stack slots for the arguments and temporaries but leave one
+				// for the result.
+				vm.stack_top = vm.api_stack + 1;
+
+				vm.api_stack = NULL;
+
+				return true;
+			}
 				break;
 			case METHOD_BLOCK:
+				if (call(method->as.closure, arg_count)) {
+					return true;
+				} else {
+					runtime_error("Run block fail.");
+					return false;
+				}
 				break;
-			case METHOD_NONE:
-				break;
+			//case METHOD_NONE:
+			//	break;
 			default:
 				ASSERT(false, "Unknown method type.");
 			}
@@ -270,12 +296,26 @@ static bool call_value(Value callee, int arg_count)
 static bool invoke_from_class(ObjClass* klass, ObjString* name, int arg_count)
 {
 	Value method;
-	if (!table_get(&klass->methods, name, &method)) {
+
+	Signature signature;
+	signature.name = name->chars;
+	signature.length = name->length;
+	signature.arity = arg_count;
+	signature.type = SIG_METHOD;
+
+	char name_str[MAX_METHOD_SIGNATURE];
+	int length;
+	signature_to_string(&signature, name_str, &length);
+
+	if (!table_get(&klass->methods, copy_string(name_str, length), &method)) {
 		runtime_error("Undefined property '%s'.", name->chars);
 		return false;
 	}
 
-	return call(AS_CLOSURE(method), arg_count);
+	ASSERT(IS_METHOD(method), "Error method type.");
+	ObjMethod* obj_method = AS_METHOD(method);
+	ASSERT(obj_method->type == METHOD_BLOCK, "Method should be block.");
+	return call(obj_method->as.closure, arg_count);
 }
 
 static bool invoke(ObjString* name, int arg_count)
@@ -322,12 +362,31 @@ static bool invoke(ObjString* name, int arg_count)
 static bool bind_method(ObjClass* klass, ObjString* name)
 {
 	Value method;
-	if (!table_get(&klass->methods, name, &method)) {
-		runtime_error("Undefined property '%s'.", name->chars);
-		return false;
+	if (!table_get(&klass->methods, name, &method))
+	{
+		bool find = false;
+		for (int i = 0; i < 16; ++i)
+		{
+			Signature signature = { name->chars, name->length, SIG_METHOD, i };
+			char name[MAX_METHOD_SIGNATURE];
+			int length;
+			signature_to_string(&signature, name, &length);
+			if (table_get(&klass->methods, copy_string(name, length), &method)) {
+				find = true;
+				break;
+			}
+		}
+
+		if (!find) {
+			runtime_error("Undefined property '%s'.", name->chars);
+			return false;
+		}
 	}
 
-	ObjBoundMethod* bound = new_bound_method(peek(0), AS_CLOSURE(method));
+	ASSERT(IS_METHOD(method), "Error method type.");
+	ObjMethod* obj_method = AS_METHOD(method);
+	ASSERT(obj_method->type == METHOD_BLOCK, "Method should be block.");
+	ObjBoundMethod* bound = new_bound_method(peek(0), obj_method->as.closure);
 	pop();
 	push(OBJ_VAL(bound));
 	return true;
@@ -371,11 +430,68 @@ static void close_upvalues(Value* last)
 	}
 }
 
-static void define_method(ObjString* name)
+static ForeignMethodFn find_foreign_method(const char* moduleName, const char* class_name,
+	                                       bool is_static, const char* signature)
 {
-	Value method = peek(0);
-	ObjClass* klass = AS_CLASS(peek(1));
-	table_set(&klass->methods, name, method);
+	ForeignMethodFn method = NULL;
+
+	//if (vm->config.bindForeignMethodFn != NULL)
+	//{
+	//	method = vm->config.bindForeignMethodFn(vm, moduleName, class_name, is_static,
+	//											signature);
+	//}
+
+	// If the host didn't provide it, see if it's an optional one.
+	if (method == NULL)
+	{
+#if OPT_RANDOM
+		if (strcmp(moduleName, "random") == 0)
+		{
+			method = RandomBindForeignMethod(class_name, is_static, signature);
+		}
+#endif
+	}
+
+	return method;
+}
+
+static void define_method(ObjString* name, int method_type, ObjModule* module)
+{
+	Value class = peek(0);
+	ASSERT(IS_CLASS(class), "Should be a class.");
+	ObjClass* klass = AS_CLASS(class);
+
+	Value method_val = peek(1);
+	ObjMethod* method = new_method();
+	if (IS_STRING(method_val))
+	{
+		const char* name = AS_CSTRING(method_val);
+
+		method->type = METHOD_FOREIGN;
+		method->as.foreign = find_foreign_method(module->name->chars,
+			klass->name->chars, method_type == OP_METHOD_STATIC, name);
+
+		if (method->as.foreign == NULL)
+		{
+			runtime_error("Could not find foreign method '@' for class $ in module '$'.",
+				method_val, klass->name->chars, module->name->chars);
+			return;
+		}
+	}
+	else
+	{
+		ASSERT(IS_CLOSURE(method_val), "Error method type.");
+
+		method->type = METHOD_BLOCK;
+		method->as.closure = AS_CLOSURE(method_val);
+	}
+
+	if (method_type == OP_METHOD_STATIC) {
+		klass = klass->obj.class_obj;
+	}
+
+	table_set(&klass->methods, name, OBJ_VAL(method));
+	pop();
 	pop();
 }
 
@@ -461,6 +577,38 @@ static Value import_module(Value name)
 
 	// Return the closure that executes the module.
 	return OBJ_VAL(module_closure);
+}
+
+static void bind_foreign_class(ObjClass* class_obj, ObjModule* module)
+{
+	ForeignClassMethods methods;
+	methods.allocate = NULL;
+	methods.finalize = NULL;
+
+	if (methods.allocate == NULL && methods.finalize == NULL)
+	{
+#if OPT_RANDOM
+		if (strncmp("random", module->name->chars, module->name->length) == 0) {
+			methods = RandomBindForeignClass(module->name->chars, class_obj->name->chars);
+		}
+#endif
+	}
+
+	if (methods.allocate != NULL)
+	{
+		ObjMethod* method = new_method();
+		method->type = METHOD_FOREIGN;
+		method->as.foreign = methods.allocate;
+		table_set(&class_obj->methods, copy_string("<allocate>", 10), OBJ_VAL(method));
+	}
+
+	if (methods.finalize != NULL)
+	{
+		ObjMethod* method = new_method();
+		method->type = METHOD_FOREIGN;
+		method->as.foreign = (ForeignMethodFn)methods.finalize;
+		table_set(&class_obj->methods, copy_string("<finalize>", 10), OBJ_VAL(method));
+	}
 }
 
 static InterpretResult run()
@@ -630,14 +778,14 @@ static InterpretResult run()
 								return INTERPRET_RUNTIME_ERROR;
 							}
 							break;
-						case METHOD_FUNCTION_CALL:
-							break;
-						case METHOD_FOREIGN:
-							break;
-						case METHOD_BLOCK:
-							break;
-						case METHOD_NONE:
-							break;
+						//case METHOD_FUNCTION_CALL:
+						//	break;
+						//case METHOD_FOREIGN:
+						//	break;
+						//case METHOD_BLOCK:
+						//	break;
+						//case METHOD_NONE:
+						//	break;
 						default:
 							ASSERT(false, "Unknown method type.");
 						}
@@ -791,14 +939,33 @@ static InterpretResult run()
 					return INTERPRET_RUNTIME_ERROR;
 				}
 				break;
-			case METHOD_FUNCTION_CALL:
-				break;
+			//case METHOD_FUNCTION_CALL:
+			//	break;
 			case METHOD_FOREIGN:
+			{
+				ASSERT(vm.api_stack == NULL, "Cannot already be in foreign call.");
+				vm.api_stack = vm.stack_top - arg_count;
+
+				method->as.foreign();
+
+				// Discard the stack slots for the arguments and temporaries but leave one
+				// for the result.
+				vm.stack_top = vm.api_stack + 1;
+
+				vm.api_stack = NULL;
+			}
 				break;
 			case METHOD_BLOCK:
+				if (call(method->as.closure, arg_count - 1)) {
+					//// The result is now in the first arg slot. Discard the other stack slots.
+					//vm.stack_top -= arg_count - 1;
+					frame = &vm.frames[vm.frame_count - 1];
+				} else {
+					runtime_error("Run block fail.");
+				}
 				break;
-			case METHOD_NONE:
-				break;
+			//case METHOD_NONE:
+			//	break;
 			default:
 				ASSERT(false, "Unknown method type.");
 			}
@@ -866,7 +1033,15 @@ static InterpretResult run()
 		}
 
 		case OP_CLASS:
-			push(OBJ_VAL(new_class(vm.object_class, READ_STRING())));
+			push(OBJ_VAL(new_class(vm.object_class, 0, READ_STRING())));
+			break;
+
+		case OP_FOREIGN_CLASS:
+		{
+			ObjClass* class_obj = new_class(vm.object_class, -1, READ_STRING());
+			push(OBJ_VAL(class_obj));
+			bind_foreign_class(class_obj, frame->closure->function->module);
+		}
 			break;
 
 		case OP_INHERIT: {
@@ -883,33 +1058,81 @@ static InterpretResult run()
 		}
 
 		case OP_METHOD:
-			define_method(READ_STRING());
+		case OP_METHOD_STATIC:
+			define_method(READ_STRING(), instruction, frame->closure->function->module);
 			break;
 
 		case OP_LOAD_MODULE_VAR:
 			push(frame->closure->function->module->variables.values[READ_SHORT()]);
 			break;
 
+		case OP_STORE_MODULE_VAR:
+			FUNC->module->variables.values[READ_SHORT()] = peek(0);
+			break;
+
 		case OP_IMPORT_MODULE:
-			push(import_module(READ_CONSTANT()));
-
-			//if (wrenHasError(fiber)) RUNTIME_ERROR();
-
-			// If we get a closure, call it to execute the module body.
-			if (IS_FUNCTION(peek(0)))
+		{
+			Value name = READ_CONSTANT();
+			push(import_module(name));
+			if (IS_CLOSURE(peek(0)))
 			{
-				//STORE_FRAME();
-				ObjFunction* func = AS_FUNCTION(peek(0));
+				ASSERT(IS_STRING(name), "Should be string.");
+				Value val;
+				if (!table_get(&vm.modules, AS_STRING(name), &val)) {
+					ASSERT(false, "Get module fail.");
+				}
+				ASSERT(IS_MODULE(val), "Get module fail.");
+				vm.last_module = AS_MODULE(val);
 
-				//wrenCallFunction(vm, fiber, closure, 1);
+				//STORE_FRAME();
+				call(AS_CLOSURE(peek(0)), 0);
 				//LOAD_FRAME();
+
+				frame = &vm.frames[vm.frame_count - 1];
 			}
 			else
 			{
-				//// The module has already been loaded. Remember it so we can import
-				//// variables from it if needed.
-				//vm->lastModule = AS_MODULE(PEEK());
+				vm.last_module = AS_MODULE(peek(0));
 			}
+		}
+			break;
+
+		case OP_IMPORT_VARIABLE:
+		{
+			ObjString* variable = READ_STRING();
+			ASSERT(vm.last_module != NULL, "Should have already imported module.");
+			int symbol = symbol_table_find(&vm.last_module->variable_names, variable->chars, variable->length);
+			if (symbol != -1) {
+				push(vm.last_module->variables.values[symbol]);
+			}
+		}
+			break;
+
+		case OP_CONSTRUCT:
+			break;
+
+		case OP_FOREIGN_CONSTRUCT:
+		{
+			ASSERT(IS_CLASS(frame->slots[0]), "'this' should be a class.");
+
+			ObjClass* class_obj = AS_CLASS(frame->slots[0]);
+			ASSERT(class_obj->num_fields == -1, "Class must be a foreign class.");
+
+			Value value;
+			bool find = table_get(&class_obj->methods, copy_string("<allocate>", 10), &value);
+			ASSERT(find, "Not find allocator.");
+
+			ObjMethod* method = AS_METHOD(value);
+			ASSERT(method->type == METHOD_FOREIGN, "Allocator should be foreign.");
+
+			// Pass the constructor arguments to the allocator as well.
+			ASSERT(vm.api_stack == NULL, "Cannot already be in foreign call.");
+			vm.api_stack = frame->slots;
+
+			method->as.foreign();
+
+			vm.api_stack = NULL;
+		}
 			break;
 		}
 	}
@@ -1012,7 +1235,7 @@ void* SetSlotNewForeign(int slot, int classSlot, size_t size)
 	ObjClass* class_obj = AS_CLASS(vm.api_stack[classSlot]);
 	ASSERT(class_obj->num_fields == -1, "Class must be a foreign class.");
 
-	ObjForeign* foreign = new_foreign(size);
+	ObjForeign* foreign = new_foreign(size, class_obj);
 	foreign->obj.class_obj = class_obj;
 	vm.api_stack[slot] = OBJ_VAL(foreign);
 

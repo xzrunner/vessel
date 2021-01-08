@@ -131,7 +131,7 @@ typedef struct
 	{
 		Primitive primitive;
 		ForeignMethodFn foreign;
-		//ObjClosure* closure;
+		ObjClosure* closure;
 	} as;
 } ObjMethod;
 
@@ -185,12 +185,12 @@ typedef struct
 } ObjMap;
 
 ObjBoundMethod* new_bound_method(Value receiver, ObjClosure* method);
-ObjClass* new_class(ObjClass* superclass, ObjString* name);
+ObjClass* new_class(ObjClass* superclass, int num_fields, ObjString* name);
 ObjClass* new_single_class(int num_fields, ObjString* name);
 ObjClosure* new_closure(ObjFunction* function);
 ObjMethod* new_method();
 ObjFunction* new_function(ObjModule* module);
-ObjForeign* new_foreign(size_t size);
+ObjForeign* new_foreign(size_t size, ObjClass* klass);
 ObjInstance* new_instance(ObjClass* klass);
 ObjNative* new_native(NativeFn function);
 ObjModule* new_module(ObjString* name);

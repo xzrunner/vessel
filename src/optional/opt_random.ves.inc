@@ -1,11 +1,11 @@
 #define QUOTE(...) #__VA_ARGS__
 static const char* randomModuleSource = QUOTE(
-class Random {
-  new() {
+foreign class Random {
+  init() {
     seed_()
   }
 
-  new(seed) {
+  init(seed) {
     if (seed is Num) {
       seed_(seed)
     } else if (seed is List) {
@@ -13,12 +13,13 @@ class Random {
 
       // TODO: Empty sequence.
       var seeds = []
-      for (var i = 0; i < seed.count; i = i + i) {
+      var break = false
+      for (var i = 0; i < seed.count and !break; i = i + i) {
         var element = seed[i]
         if (!(element is Num)) Fiber.abort("List elements must all be numbers.")
 
         seeds.add(element)
-        if (seeds.count == 16) break
+        if (seeds.count == 16) break = true
       }
 
       // Cycle the values to fill in any missing slots.

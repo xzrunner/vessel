@@ -48,16 +48,7 @@ typedef void (*FinalizerFn)(void* data);
 
 typedef struct
 {
-	// The callback invoked when the foreign object is created.
-	//
-	// This must be provided. Inside the body of this, it must call
-	// [wrenSetSlotNewForeign()] exactly once.
 	ForeignMethodFn allocate;
-
-	// The callback invoked when the garbage collector is about to collect a
-	// foreign object's memory.
-	//
-	// This may be `NULL` if the foreign class does not need to finalize.
 	FinalizerFn finalize;
 } ForeignClassMethods;
 

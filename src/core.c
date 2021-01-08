@@ -331,7 +331,7 @@ void initialize_core()
 
 	vm.num_class = AS_CLASS(find_variable(core_module, "Num"));
 
-	vm.list_class = new_class(vm.object_class, copy_string("List", 4));
+	vm.list_class = new_class(vm.object_class, 0, copy_string("List", 4));
 	DefineVariable(core_module, "List", 4, OBJ_VAL(vm.list_class), NULL);
 	//define_global_variable("List", 4, OBJ_VAL(vm.list_class));
 	PRIMITIVE(vm.list_class->obj.class_obj, "new()", list_new);
@@ -343,7 +343,7 @@ void initialize_core()
 	PRIMITIVE(vm.list_class, "count", list_count);
 	PRIMITIVE(vm.list_class, "removeAt(_)", list_removeAt);
 
-	vm.map_class = new_class(vm.object_class, copy_string("Map", 4));
+	vm.map_class = new_class(vm.object_class, 0, copy_string("Map", 4));
 	DefineVariable(core_module, "Map", 3, OBJ_VAL(vm.map_class), NULL);
 	//define_global_variable("Map", 3, OBJ_VAL(vm.map_class));
 	PRIMITIVE(vm.map_class->obj.class_obj, "new()", map_new);
