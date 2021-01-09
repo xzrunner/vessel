@@ -4,22 +4,22 @@
 
 TEST_CASE("empty_body")
 {
-    ves_str_buf_clear();
+    vessel_str_buf_clear();
 
-    interpret("test", R"(
+    vessel_interpret("test", R"(
 fun f() {}
 print f() // expect: nil
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(vessel_get_str_buf()) == R"(
 nil
 )" + 1);
 }
 
 TEST_CASE("local_recursion")
 {
-    ves_str_buf_clear();
+    vessel_str_buf_clear();
 
-    interpret("test", R"(
+    vessel_interpret("test", R"(
 {
   fun fib(n) {
     if (n < 2) return n
@@ -29,16 +29,16 @@ TEST_CASE("local_recursion")
   print fib(8) // expect: 21
 }
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(vessel_get_str_buf()) == R"(
 21
 )" + 1);
 }
 
 TEST_CASE("mutual_recursion")
 {
-    ves_str_buf_clear();
+    vessel_str_buf_clear();
 
-    interpret("test", R"(
+    vessel_interpret("test", R"(
 fun isEven(n) {
   if (n == 0) return true
   return isOdd(n - 1)
@@ -52,7 +52,7 @@ fun isOdd(n) {
 print isEven(4) // expect: true
 print isOdd(3) // expect: true
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(vessel_get_str_buf()) == R"(
 true
 true
 )" + 1);
@@ -60,9 +60,9 @@ true
 
 TEST_CASE("parameters")
 {
-    ves_str_buf_clear();
+    vessel_str_buf_clear();
 
-    interpret("test", R"(
+    vessel_interpret("test", R"(
 fun f0() { return 0 }
 print f0() // expect: 0
 
@@ -90,7 +90,7 @@ print f7(1, 2, 3, 4, 5, 6, 7) // expect: 28
 fun f8(a, b, c, d, e, f, g, h) { return a + b + c + d + e + f + g + h }
 print f8(1, 2, 3, 4, 5, 6, 7, 8) // expect: 36
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(vessel_get_str_buf()) == R"(
 0
 1
 3
@@ -105,15 +105,15 @@ print f8(1, 2, 3, 4, 5, 6, 7, 8) // expect: 36
 
 TEST_CASE("print")
 {
-    ves_str_buf_clear();
+    vessel_str_buf_clear();
 
-    interpret("test", R"(
+    vessel_interpret("test", R"(
 fun foo() {}
 print foo // expect: <fn foo>
 
 print clock // expect: <native fn>
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(vessel_get_str_buf()) == R"(
 <fn foo>
 <native fn>
 )" + 1);
@@ -121,9 +121,9 @@ print clock // expect: <native fn>
 
 TEST_CASE("recursion")
 {
-    ves_str_buf_clear();
+    vessel_str_buf_clear();
 
-    interpret("test", R"(
+    vessel_interpret("test", R"(
 fun fib(n) {
   if (n < 2) return n
   return fib(n - 1) + fib(n - 2)
@@ -131,7 +131,7 @@ fun fib(n) {
 
 print fib(8) // expect: 21
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(vessel_get_str_buf()) == R"(
 21
 )" + 1);
 }

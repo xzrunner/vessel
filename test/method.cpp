@@ -4,9 +4,9 @@
 
 TEST_CASE("arity")
 {
-    ves_str_buf_clear();
+    vessel_str_buf_clear();
 
-    interpret("test", R"(
+    vessel_interpret("test", R"(
 class Foo {
   method0() { return "no args" }
   method1(a) { return a }
@@ -30,7 +30,7 @@ print foo.method6(1, 2, 3, 4, 5, 6) // expect: 21
 print foo.method7(1, 2, 3, 4, 5, 6, 7) // expect: 28
 print foo.method8(1, 2, 3, 4, 5, 6, 7, 8) // expect: 36
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(vessel_get_str_buf()) == R"(
 no args
 1
 3
@@ -45,32 +45,32 @@ no args
 
 TEST_CASE("empty_block")
 {
-    ves_str_buf_clear();
+    vessel_str_buf_clear();
 
-    interpret("test", R"(
+    vessel_interpret("test", R"(
 class Foo {
   bar() {}
 }
 
 print Foo().bar() // expect: nil
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(vessel_get_str_buf()) == R"(
 nil
 )" + 1);
 }
 
 TEST_CASE("print_bound_method")
 {
-    ves_str_buf_clear();
+    vessel_str_buf_clear();
 
-    interpret("test", R"(
+    vessel_interpret("test", R"(
 class Foo {
   method() { }
 }
 var foo = Foo()
 print foo.method // expect: <fn method>
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(vessel_get_str_buf()) == R"(
 <fn method>
 )" + 1);
 }

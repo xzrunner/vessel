@@ -69,12 +69,12 @@ static void define_native(const char* name, NativeFn function)
 	pop();
 }
 
-void init_configuration(Configuration* config)
+void init_configuration(VesselConfiguration* config)
 {
 	config->load_module_fn = NULL;
 }
 
-void init_vm()
+void vessel_init_vm()
 {
 	reset_stack();
 
@@ -107,7 +107,7 @@ void init_vm()
 	define_native("clock", clock_native);
 }
 
-void free_vm()
+void vessel_free_vm()
 {
 	free_table(&vm.strings);
 	vm.init_string = NULL;
@@ -430,10 +430,10 @@ static void close_upvalues(Value* last)
 	}
 }
 
-static ForeignMethodFn find_foreign_method(const char* moduleName, const char* class_name,
+static VesselForeignMethodFn find_foreign_method(const char* moduleName, const char* class_name,
 	                                       bool is_static, const char* signature)
 {
-	ForeignMethodFn method = NULL;
+	VesselForeignMethodFn method = NULL;
 
 	//if (vm->config.bindForeignMethodFn != NULL)
 	//{
@@ -533,7 +533,7 @@ static Value import_module(Value name)
 
 	push(name);
 
-	LoadModuleResult result = {0};
+	VesselLoadModuleResult result = {0};
 	const char* source = NULL;
 
 	// Let the host try to provide the module.
@@ -581,7 +581,7 @@ static Value import_module(Value name)
 
 static void bind_foreign_class(ObjClass* class_obj, ObjModule* module)
 {
-	ForeignClassMethods methods;
+	VesselForeignClassMethods methods;
 	methods.allocate = NULL;
 	methods.finalize = NULL;
 
@@ -606,12 +606,12 @@ static void bind_foreign_class(ObjClass* class_obj, ObjModule* module)
 	{
 		ObjMethod* method = new_method();
 		method->type = METHOD_FOREIGN;
-		method->as.foreign = (ForeignMethodFn)methods.finalize;
+		method->as.foreign = (VesselForeignMethodFn)methods.finalize;
 		table_set(&class_obj->methods, copy_string("<finalize>", 10), OBJ_VAL(method));
 	}
 }
 
-static InterpretResult run()
+static VesselInterpretResult run()
 {
 	CallFrame* frame = &vm.frames[vm.frame_count - 1];
 
@@ -628,7 +628,7 @@ static InterpretResult run()
     do { \
         if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) { \
             runtime_error("Operands must be numbers."); \
-            return INTERPRET_RUNTIME_ERROR; \
+            return VESSEL_INTERPRET_RUNTIME_ERROR; \
         } \
         double b = AS_NUMBER(pop()); \
         double a = AS_NUMBER(pop()); \
@@ -690,7 +690,7 @@ static InterpretResult run()
 			int symbol = symbol_table_find(&FUNC->module->variable_names, name->chars, name->length);
 			if (symbol == -1) {
 				runtime_error("Undefined variable '%s'.", name->chars);
-				return INTERPRET_RUNTIME_ERROR;
+				return VESSEL_INTERPRET_RUNTIME_ERROR;
 			}
 			push(FUNC->module->variables.values[symbol]);
 			break;
@@ -703,7 +703,7 @@ static InterpretResult run()
 				int symbol = symbol_table_find(&FUNC->module->variable_names, name->chars, name->length);
 				if (symbol == -1) {
 					runtime_error("Undefined variable '%s'.", name->chars);
-					return INTERPRET_RUNTIME_ERROR;
+					return VESSEL_INTERPRET_RUNTIME_ERROR;
 				}
 				FUNC->module->variables.values[symbol] = peek(0);
 			}
@@ -716,7 +716,7 @@ static InterpretResult run()
 			int symbol = symbol_table_find(&FUNC->module->variable_names, name->chars, name->length);
 			if (symbol == -1) {
 				runtime_error("Undefined variable '%s'.", name->chars);
-				return INTERPRET_RUNTIME_ERROR;
+				return VESSEL_INTERPRET_RUNTIME_ERROR;
 			}
 			FUNC->module->variables.values[symbol] = peek(0);
 			break;
@@ -748,7 +748,7 @@ static InterpretResult run()
 					break;
 				}
 				if (!bind_method(instance->klass, name)) {
-					return INTERPRET_RUNTIME_ERROR;
+					return VESSEL_INTERPRET_RUNTIME_ERROR;
 				}
 			}
 			else
@@ -756,7 +756,7 @@ static InterpretResult run()
 				ObjClass* class_obj = get_class(receiver);
 				if (class_obj == NULL) {
 					runtime_error("Unknown type, no class_obj.");
-					return INTERPRET_RUNTIME_ERROR;
+					return VESSEL_INTERPRET_RUNTIME_ERROR;
 				}
 
 				ObjString* name = READ_STRING();
@@ -775,7 +775,7 @@ static InterpretResult run()
 								vm.stack_top += 1;
 							} else {
 								runtime_error("Run primitive fail.");
-								return INTERPRET_RUNTIME_ERROR;
+								return VESSEL_INTERPRET_RUNTIME_ERROR;
 							}
 							break;
 						//case METHOD_FUNCTION_CALL:
@@ -803,7 +803,7 @@ static InterpretResult run()
 		case OP_SET_PROPERTY: {
 			if (!IS_INSTANCE(peek(1))) {
 				runtime_error("Only instances have fields.");
-				return INTERPRET_RUNTIME_ERROR;
+				return VESSEL_INTERPRET_RUNTIME_ERROR;
 			}
 
 			ObjInstance* instance = AS_INSTANCE(peek(1));
@@ -819,7 +819,7 @@ static InterpretResult run()
 			ObjString* name = READ_STRING();
 			ObjClass* superclass = AS_CLASS(pop());
 			if (!bind_method(superclass, name)) {
-				return INTERPRET_RUNTIME_ERROR;
+				return VESSEL_INTERPRET_RUNTIME_ERROR;
 			}
 			break;
 		}
@@ -843,7 +843,7 @@ static InterpretResult run()
 				push(NUMBER_VAL(a + b));
 			} else {
 				runtime_error("Operands must be two numbers or two strings.");
-				return INTERPRET_RUNTIME_ERROR;
+				return VESSEL_INTERPRET_RUNTIME_ERROR;
 			}
 			break;
 		}
@@ -856,7 +856,7 @@ static InterpretResult run()
 		case OP_NEGATE:
 			if (!IS_NUMBER(peek(0))) {
 				runtime_error("Operand must be a number.");
-				return INTERPRET_RUNTIME_ERROR;
+				return VESSEL_INTERPRET_RUNTIME_ERROR;
 			}
 
 			push(NUMBER_VAL(-AS_NUMBER(pop())));
@@ -889,7 +889,7 @@ static InterpretResult run()
 		case OP_CALL: {
 			int arg_count = READ_BYTE();
 			if (!call_value(peek(arg_count), arg_count)) {
-				return INTERPRET_RUNTIME_ERROR;
+				return VESSEL_INTERPRET_RUNTIME_ERROR;
 			}
 			frame = &vm.frames[vm.frame_count - 1];
 			break;
@@ -924,7 +924,7 @@ static InterpretResult run()
 			Value v_method;
 			if (!table_get(&class_obj->methods, symbol, &v_method)) {
 				runtime_error("Method does not implement.");
-				return INTERPRET_RUNTIME_ERROR;
+				return VESSEL_INTERPRET_RUNTIME_ERROR;
 			}
 
 			ObjMethod* method = AS_METHOD(v_method);
@@ -936,7 +936,7 @@ static InterpretResult run()
 					vm.stack_top -= arg_count - 1;
 				} else {
 					runtime_error("Run primitive fail.");
-					return INTERPRET_RUNTIME_ERROR;
+					return VESSEL_INTERPRET_RUNTIME_ERROR;
 				}
 				break;
 			//case METHOD_FUNCTION_CALL:
@@ -976,7 +976,7 @@ static InterpretResult run()
 			ObjString* method = READ_STRING();
 			int arg_count = READ_BYTE();
 			if (!invoke(method, arg_count)) {
-				return INTERPRET_RUNTIME_ERROR;
+				return VESSEL_INTERPRET_RUNTIME_ERROR;
 			}
 			frame = &vm.frames[vm.frame_count - 1];
 			break;
@@ -987,7 +987,7 @@ static InterpretResult run()
 			int arg_count = READ_BYTE();
 			ObjClass* superclass = AS_CLASS(pop());
 			if (!invoke_from_class(superclass, method, arg_count)) {
-				return INTERPRET_RUNTIME_ERROR;
+				return VESSEL_INTERPRET_RUNTIME_ERROR;
 			}
 			frame = &vm.frames[vm.frame_count - 1];
 			break;
@@ -1022,7 +1022,7 @@ static InterpretResult run()
 			vm.frame_count--;
 			if (vm.frame_count == 0) {
 				pop();
-				return INTERPRET_OK;
+				return VESSEL_INTERPRET_OK;
 			}
 
 			vm.stack_top = frame->slots;
@@ -1048,7 +1048,7 @@ static InterpretResult run()
 			Value superclass = peek(1);
 			if (!IS_CLASS(superclass)) {
 				runtime_error("Superclass must be a class.");
-				return INTERPRET_RUNTIME_ERROR;
+				return VESSEL_INTERPRET_RUNTIME_ERROR;
 			}
 
 			ObjClass* subclass = AS_CLASS(peek(0));
@@ -1160,21 +1160,21 @@ void FinalizeForeign(ObjForeign* foreign)
 
 	ASSERT(method->type == METHOD_FOREIGN, "Finalizer should be foreign.");
 
-	FinalizerFn finalizer = (FinalizerFn)method->as.foreign;
+	VesselFinalizerFn finalizer = (VesselFinalizerFn)method->as.foreign;
 	finalizer(foreign->data);
 }
 
-InterpretResult interpret(const char* module, const char* source)
+VesselInterpretResult vessel_interpret(const char* module, const char* source)
 {
 	ObjClosure* closure = compile(module, source);
 	if (closure == NULL) {
-		return INTERPRET_COMPILE_ERROR;
+		return VESSEL_INTERPRET_COMPILE_ERROR;
 	}
 
 	push(OBJ_VAL(closure));
 	call_value(OBJ_VAL(closure), 0);
 
-	InterpretResult ret = run();
+	VesselInterpretResult ret = run();
 
 	if (vm.stack_top - &vm.stack[0] != 0) {
 		runtime_error("Stack not empty.");
@@ -1186,10 +1186,10 @@ InterpretResult interpret(const char* module, const char* source)
 static void validate_api_slot(int slot)
 {
 	ASSERT(slot >= 0, "Slot cannot be negative.");
-	ASSERT(slot < GetSlotCount(vm), "Not that many slots.");
+	ASSERT(slot < vessel_get_slot_count(vm), "Not that many slots.");
 }
 
-int GetSlotCount()
+int vessel_get_slot_count()
 {
 	if (vm.api_stack == NULL) {
 		return 0;
@@ -1198,7 +1198,7 @@ int GetSlotCount()
 	return (int)(vm.stack_top - vm.api_stack);
 }
 
-double GetSlotDouble(int slot)
+double vessel_get_slot_double(int slot)
 {
 	validate_api_slot(slot);
 	ASSERT(IS_NUMBER(vm.api_stack[slot]), "Slot must hold a number.");
@@ -1206,7 +1206,7 @@ double GetSlotDouble(int slot)
 	return AS_NUMBER(vm.api_stack[slot]);
 }
 
-void* GetSlotForeign(int slot)
+void* vessel_get_slot_foreign(int slot)
 {
 	validate_api_slot(slot);
 	ASSERT(IS_FOREIGN(vm.api_stack[slot]), "Slot must hold a foreign instance.");
@@ -1221,12 +1221,12 @@ static void set_slot(int slot, Value value)
 	vm.api_stack[slot] = value;
 }
 
-void SetSlotDouble(int slot, double value)
+void vessel_set_slot_double(int slot, double value)
 {
 	set_slot(slot, NUMBER_VAL(value));
 }
 
-void* SetSlotNewForeign(int slot, int classSlot, size_t size)
+void* vessel_set_slot_new_foreign(int slot, int classSlot, size_t size)
 {
 	validate_api_slot(slot);
 	validate_api_slot(classSlot);

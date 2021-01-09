@@ -39,13 +39,13 @@ static uint32_t advance_state(Well512* well)
 
 static void random_allocate()
 {
-    Well512* well = (Well512*)SetSlotNewForeign(0, 0, sizeof(Well512));
+    Well512* well = (Well512*)vessel_set_slot_new_foreign(0, 0, sizeof(Well512));
     well->index = 0;
 }
 
 static void random_seed0()
 {
-    Well512* well = (Well512*)GetSlotForeign(0);
+    Well512* well = (Well512*)vessel_get_slot_foreign(0);
 
     srand((uint32_t)time(NULL));
     for (int i = 0; i < 16; i++) {
@@ -55,9 +55,9 @@ static void random_seed0()
 
 static void random_seed1()
 {
-    Well512* well = (Well512*)GetSlotForeign(0);
+    Well512* well = (Well512*)vessel_get_slot_foreign(0);
 
-    srand((uint32_t)GetSlotDouble(1));
+    srand((uint32_t)vessel_get_slot_double(1));
     for (int i = 0; i < 16; i++) {
         well->state[i] = rand();
     }
@@ -65,16 +65,16 @@ static void random_seed1()
 
 static void random_seed16()
 {
-    Well512* well = (Well512*)GetSlotForeign(0);
+    Well512* well = (Well512*)vessel_get_slot_foreign(0);
 
     for (int i = 0; i < 16; i++) {
-        well->state[i] = (uint32_t)GetSlotDouble(i + 1);
+        well->state[i] = (uint32_t)vessel_get_slot_double(i + 1);
     }
 }
 
 static void random_float()
 {
-    Well512* well = (Well512*)GetSlotForeign(0);
+    Well512* well = (Well512*)vessel_get_slot_foreign(0);
 
     // A double has 53 bits of precision in its mantissa, and we'd like to take
     // full advantage of that, so we need 53 bits of random source data.
@@ -89,14 +89,14 @@ static void random_float()
     // from 0 to 1.0 (half-inclusive).
     result /= 9007199254740992.0;
 
-    SetSlotDouble(0, result);
+    vessel_set_slot_double(0, result);
 }
 
 static void random_int0()
 {
-    Well512* well = (Well512*)GetSlotForeign(0);
+    Well512* well = (Well512*)vessel_get_slot_foreign(0);
 
-    SetSlotDouble(0, (double)advance_state(well));
+    vessel_set_slot_double(0, (double)advance_state(well));
 }
 
 const char* RandomSource()
@@ -104,16 +104,16 @@ const char* RandomSource()
     return randomModuleSource;
 }
 
-ForeignClassMethods RandomBindForeignClass(const char* module, const char* class_name)
+VesselForeignClassMethods RandomBindForeignClass(const char* module, const char* class_name)
 {
     ASSERT(strcmp(class_name, "Random") == 0, "Should be in Random class.");
-    ForeignClassMethods methods;
+    VesselForeignClassMethods methods;
     methods.allocate = random_allocate;
     methods.finalize = NULL;
     return methods;
 }
 
-ForeignMethodFn RandomBindForeignMethod(const char* class_name, bool is_static, const char* signature)
+VesselForeignMethodFn RandomBindForeignMethod(const char* class_name, bool is_static, const char* signature)
 {
     ASSERT(strcmp(class_name, "Random") == 0, "Should be in Random class.");
 

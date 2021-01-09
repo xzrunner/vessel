@@ -9,8 +9,8 @@
 #if OPT_RANDOM
 
 const char* RandomSource();
-ForeignClassMethods RandomBindForeignClass(const char* module, const char* class_name);
-ForeignMethodFn RandomBindForeignMethod(const char* class_name, bool is_static, const char* signature);
+VesselForeignClassMethods RandomBindForeignClass(const char* module, const char* class_name);
+VesselForeignMethodFn RandomBindForeignMethod(const char* class_name, bool is_static, const char* signature);
 
 #endif
 

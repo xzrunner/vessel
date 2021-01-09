@@ -4,9 +4,9 @@
 
 TEST_CASE("inheritance_constructor")
 {
-    ves_str_buf_clear();
+    vessel_str_buf_clear();
 
-    interpret("test", R"(
+    vessel_interpret("test", R"(
 class A {
   init(param) {
     this.field = param
@@ -22,16 +22,16 @@ class B < A {}
 var b = B("value")
 b.test() // expect: value
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(vessel_get_str_buf()) == R"(
 value
 )" + 1);
 }
 
 TEST_CASE("inherit_methods")
 {
-    ves_str_buf_clear();
+    vessel_str_buf_clear();
 
-    interpret("test", R"(
+    vessel_interpret("test", R"(
 class Foo {
   methodOnFoo() { print "foo" }
   override() { print "foo" }
@@ -47,7 +47,7 @@ bar.methodOnFoo() // expect: foo
 bar.methodOnBar() // expect: bar
 bar.override() // expect: bar
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(vessel_get_str_buf()) == R"(
 foo
 bar
 bar
@@ -56,9 +56,9 @@ bar
 
 TEST_CASE("set_fields_from_base_class")
 {
-    ves_str_buf_clear();
+    vessel_str_buf_clear();
 
-    interpret("test", R"(
+    vessel_interpret("test", R"(
 class Foo {
   foo(a, b) {
     this.field1 = a
@@ -98,7 +98,7 @@ bar.fooPrint()
 // expect: bar 1
 // expect: bar 2
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(vessel_get_str_buf()) == R"(
 foo 1
 foo 2
 bar 1

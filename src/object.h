@@ -121,7 +121,7 @@ typedef enum
 } MethodType;
 
 typedef bool (*Primitive)(Value* args);
-typedef void (*ForeignMethodFn)();
+typedef void (*VesselForeignMethodFn)();
 
 typedef struct
 {
@@ -130,7 +130,7 @@ typedef struct
 	union
 	{
 		Primitive primitive;
-		ForeignMethodFn foreign;
+		VesselForeignMethodFn foreign;
 		ObjClosure* closure;
 	} as;
 } ObjMethod;

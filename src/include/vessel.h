@@ -8,20 +8,20 @@ extern "C"
 
 // Called after load_module_fn is called for module [name]. The original returned result
 // is handed back to you in this callback, so that you can free memory if appropriate.
-typedef void (*LoadModuleCompleteFn)(const char* name, struct LoadModuleResult result);
+typedef void (*VesselLoadModuleCompleteFn)(const char* name, struct VesselLoadModuleResult result);
 
 // The result of a load_module_fn call.
 // [source] is the source code for the module, or NULL if the module is not found.
 // [onComplete] an optional callback that will be called once Wren is done with the result.
-typedef struct LoadModuleResult
+typedef struct VesselLoadModuleResult
 {
 	const char* source;
-	LoadModuleCompleteFn on_complete;
+	VesselLoadModuleCompleteFn on_complete;
 	void* user_data;
-} LoadModuleResult;
+} VesselLoadModuleResult;
 
 // Loads and returns the source code for the module [name].
-typedef LoadModuleResult(*LoadModuleFn)(const char* name);
+typedef VesselLoadModuleResult(*VesselLoadModuleFn)(const char* name);
 
 typedef struct
 {
@@ -40,35 +40,35 @@ typedef struct
   //
   // If a module with the given name could not be found by the embedder, it
   // should return NULL and Wren will report that as a runtime error.
-  LoadModuleFn load_module_fn;
-} Configuration;
+  VesselLoadModuleFn load_module_fn;
+} VesselConfiguration;
 
-typedef void (*ForeignMethodFn)();
-typedef void (*FinalizerFn)(void* data);
+typedef void (*VesselForeignMethodFn)();
+typedef void (*VesselFinalizerFn)(void* data);
 
 typedef struct
 {
-	ForeignMethodFn allocate;
-	FinalizerFn finalize;
-} ForeignClassMethods;
+	VesselForeignMethodFn allocate;
+	VesselFinalizerFn finalize;
+} VesselForeignClassMethods;
 
 // Returns the number of slots available to the current foreign method.
-int GetSlotCount();
+int vessel_get_slot_count();
 
 // Reads a number from [slot].
 //
 // It is an error to call this if the slot does not contain a number.
-double GetSlotDouble(int slot);
+double vessel_get_slot_double(int slot);
 
 // Reads a foreign object from [slot] and returns a pointer to the foreign data
 // stored with it.
 //
 // It is an error to call this if the slot does not contain an instance of a
 // foreign class.
-void* GetSlotForeign(int slot);
+void* vessel_get_slot_foreign(int slot);
 
 // Stores the numeric [value] in [slot].
-void SetSlotDouble(int slot, double value);
+void vessel_set_slot_double(int slot, double value);
 
 // Creates a new instance of the foreign class stored in [classSlot] with [size]
 // bytes of raw storage and places the resulting object in [slot].
@@ -79,22 +79,22 @@ void SetSlotDouble(int slot, double value);
 // and then the constructor will be invoked when the allocator returns.
 //
 // Returns a pointer to the foreign object's data.
-void* SetSlotNewForeign(int slot, int classSlot, size_t size);
+void* vessel_set_slot_new_foreign(int slot, int classSlot, size_t size);
 
 typedef enum
 {
-	INTERPRET_OK,
-	INTERPRET_COMPILE_ERROR,
-	INTERPRET_RUNTIME_ERROR
-} InterpretResult;
+	VESSEL_INTERPRET_OK,
+	VESSEL_INTERPRET_COMPILE_ERROR,
+	VESSEL_INTERPRET_RUNTIME_ERROR
+} VesselInterpretResult;
 
-InterpretResult interpret(const char* module, const char* source);
+VesselInterpretResult vessel_interpret(const char* module, const char* source);
 
-void ves_str_buf_clear();
-const char* ves_get_str_buf();
+void vessel_str_buf_clear();
+const char* vessel_get_str_buf();
 
-void init_vm();
-void free_vm();
+void vessel_init_vm();
+void vessel_free_vm();
 
 #endif // vessel_h
 

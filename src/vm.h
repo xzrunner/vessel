@@ -58,7 +58,7 @@ typedef struct
 
 	Value* api_stack;
 
-	Configuration config;
+	VesselConfiguration config;
 
 	ValueArray method_names;
 
