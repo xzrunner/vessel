@@ -987,6 +987,7 @@ ParseRule rules[] =
     [TOKEN_IMPORT]        = {NULL,     NULL,   PREC_NONE},
     [TOKEN_IS]            = {NULL,     binary, PREC_IS},
     [TOKEN_FOREIGN]       = {NULL,     NULL,   PREC_NONE},
+    [TOKEN_STATIC]        = {NULL,     NULL,   PREC_NONE},
     [TOKEN_ERROR]         = {NULL,     NULL,   PREC_NONE},
     [TOKEN_EOF]           = {NULL,     NULL,   PREC_NONE},
 };
@@ -1097,6 +1098,7 @@ static void create_constructor(int arity, int init_symbol, bool is_class_foreign
 static void method(bool is_class_foreign, Token class_name)
 {
     bool is_foreign = match(TOKEN_FOREIGN);
+    bool is_static = match(TOKEN_STATIC);
 
     consume(TOKEN_IDENTIFIER, "Expect method name.");
     Signature signature = { parser.previous.start, parser.previous.length, SIG_METHOD, 0 };
@@ -1119,7 +1121,11 @@ static void method(bool is_class_foreign, Token class_name)
     uint8_t constant = identifier_constant(&method_name);
 
     named_variable(class_name, false);
-    emit_byte_arg(OP_METHOD, constant);
+    if (is_static) {
+        emit_byte_arg(OP_METHOD_STATIC, constant);
+    } else {
+        emit_byte_arg(OP_METHOD, constant);
+    }
 
     // define the ctor to meta class
     if (type == TYPE_INITIALIZER)
