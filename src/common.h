@@ -38,6 +38,7 @@
 #ifdef DEBUG
 
 #include <stdlib.h>
+#include <stdio.h>
 
 #define ASSERT(condition, message)                                       \
 do                                                                       \
