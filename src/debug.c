@@ -117,7 +117,7 @@ void ves_dump_value(Value value)
 		print2buf("nil");
 		break;
 	case VAL_NUMBER:
-		print2buf("%g", AS_NUMBER(value));
+		print2buf("%.14g", AS_NUMBER(value));
 		break;
 	case VAL_OBJ:
 		dump_object(value);
