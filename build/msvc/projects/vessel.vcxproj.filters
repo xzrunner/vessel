@@ -16,6 +16,9 @@
     <ClCompile Include="..\..\..\src\optional\opt_random.c">
       <Filter>optional</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\optional\opt_math.c">
+      <Filter>optional</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\chunk.h" />
@@ -38,6 +41,9 @@
       <Filter>optional</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\src\opcodes.h" />
+    <ClInclude Include="..\..\..\src\optional\opt_math.h">
+      <Filter>optional</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="include">
@@ -52,5 +58,8 @@
       <Filter>optional</Filter>
     </None>
     <None Include="..\..\..\src\core.ves.inc" />
+    <None Include="..\..\..\src\optional\opt_math.ves.inc">
+      <Filter>optional</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -44,12 +44,12 @@ foreign class Random {
   foreign seed_(n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14, n15, n16)
 
   foreign float()
-  float(end) { float() * end }
-  float(start, end) { float() * (end - start) + start }
+  float(end) { return float() * end }
+  float(start, end) { return float() * (end - start) + start }
 
   foreign int()
-  int(end) { (float() * end).floor }
-  int(start, end) { (float() * (end - start)).floor + start }
+  int(end) { return (float() * end).floor }
+  int(start, end) { return (float() * (end - start)).floor + start }
 
   sample(list) {
     if (list.count == 0) Fiber.abort("Not enough elements to sample.")

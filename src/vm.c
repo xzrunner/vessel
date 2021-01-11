@@ -8,7 +8,10 @@
 #include "utils.h"
 #if OPT_RANDOM
 #include "opt_random.h"
-#endif
+#endif // OPT_RANDOM
+#if OPT_MATH
+#include "opt_math.h"
+#endif // OPT_MATH
 
 #include <time.h>
 #include <stdarg.h>
@@ -450,6 +453,12 @@ static VesselForeignMethodFn find_foreign_method(const char* moduleName, const c
 			method = RandomBindForeignMethod(class_name, is_static, signature);
 		}
 #endif
+#if OPT_MATH
+		if (strcmp(moduleName, "math") == 0)
+		{
+			method = MathBindMethod(class_name, is_static, signature);
+		}
+#endif
 	}
 
 	return method;
@@ -548,6 +557,11 @@ static Value import_module(Value name)
 #if OPT_RANDOM
 		if (strncmp(name_str->chars, "random", name_str->length) == 0) {
 			result.source = RandomSource();
+		}
+#endif
+#if OPT_MATH
+		if (strncmp(name_str->chars, "math", name_str->length) == 0) {
+			result.source = MathSource();
 		}
 #endif
 	}

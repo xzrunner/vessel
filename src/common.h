@@ -4,6 +4,9 @@
 #ifndef OPT_RANDOM
     #define OPT_RANDOM 1
 #endif
+#ifndef OPT_MATH
+    #define OPT_MATH 1
+#endif
 
 //#define NAN_BOXING
 #define DEBUG_PRINT_CODE
