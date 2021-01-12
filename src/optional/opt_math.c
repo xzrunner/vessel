@@ -37,6 +37,11 @@ DEF_MATH_FUNC(log, log)
 DEF_MATH_FUNC(log2, log2)
 DEF_MATH_FUNC(exp, exp)
 
+static void math_pi()
+{
+	vessel_set_slot_double(0, 3.14159265358979323846264338327950288);
+}
+
 const char* MathSource()
 {
 	return mathModuleSource;
@@ -61,6 +66,8 @@ VesselForeignMethodFn MathBindMethod(const char* class_name, bool is_static, con
 	CALL_MATH_FUNC(log)
 	CALL_MATH_FUNC(log2)
 	CALL_MATH_FUNC(exp)
+
+	if (strcmp(signature, "pi()") == 0) return math_pi;
 
     ASSERT(false, "Unknown method.");
     return NULL;

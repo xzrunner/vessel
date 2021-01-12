@@ -106,22 +106,25 @@ print(Math.ceil(-12.3))
 )" + 1);
 }
 
-//// todo Math's const
-//TEST_CASE("cos")
-//{
-//    vessel_str_buf_clear();
-//
-//    vessel_interpret("test", R"(
-//import "math" for Math
-//
-//System.print(0.cos)             // expect: 1
-//System.print(Num.pi.cos)        // expect: -1
-//System.print((2 * Num.pi).cos)  // expect: 1
-//System.print((Num.pi / 2).cos.abs < 1.0e-16) // expect: true
-//)");
-//    REQUIRE(std::string(vessel_get_str_buf()) == R"(
-//)" + 1);
-//}
+TEST_CASE("cos")
+{
+    vessel_str_buf_clear();
+
+    vessel_interpret("test", R"(
+import "math" for Math
+
+print(Math.cos(0))                                  // expect: 1
+print(Math.cos(Math.pi()))                          // expect: -1
+print(Math.cos(2 * Math.pi()))                      // expect: 1
+print(Math.abs(Math.cos(Math.pi() / 2)) < 0.000001) // expect: true
+)");
+    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+1
+-1
+1
+true
+)" + 1);
+}
 
 TEST_CASE("floor")
 {
@@ -179,26 +182,27 @@ print(Math.round(-12.3))
 )" + 1);
 }
 
-//// todo Math's const
-//TEST_CASE("sin")
-//{
-//    vessel_str_buf_clear();
-//
-//    vessel_interpret("test", R"(
-//import "math" for Math
-//
-//System.print(0.sin)             // expect: 0
-//System.print((Num.pi / 2).sin)  // expect: 1
-//
-//// these should of course be 0, but it's not that precise
-//System.print(Num.pi.sin.abs < 1.0e-15)        // expect: true
-//System.print((2 * Num.pi).sin.abs < 1.0e-15)  // expect: true
-//)");
-//    REQUIRE(std::string(vessel_get_str_buf()) == R"(
-//0
-//0.78539816339745
-//)" + 1);
-//}
+TEST_CASE("sin")
+{
+    vessel_str_buf_clear();
+
+    vessel_interpret("test", R"(
+import "math" for Math
+
+print(Math.sin(0))              // expect: 0
+print(Math.sin(Math.pi() / 2))  // expect: 1
+
+// these should of course be 0, but it's not that precise
+print(Math.abs(Math.sin(Math.pi())) < 0.0000000001)        // expect: true
+print(Math.abs(Math.sin(Math.pi() * 2)) < 0.0000000001)    // expect: true
+)");
+    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+0
+1
+true
+true
+)" + 1);
+}
 
 TEST_CASE("sqrt")
 {
@@ -224,22 +228,24 @@ print(Math.sqrt(2))
 )" + 1);
 }
 
-//TEST_CASE("tan")
-//{
-//    vessel_str_buf_clear();
-//
-//    vessel_interpret("test", R"(
-//import "math" for Math
-//
-//System.print(0.tan)             // expect: 0
-//System.print((Num.pi / 4).tan)  // expect: 1
-//System.print((-Num.pi / 4).tan) // expect: -1
-//
-//)");
-//    REQUIRE(std::string(vessel_get_str_buf()) == R"(
-//
-//)" + 1);
-//}
+TEST_CASE("tan")
+{
+    vessel_str_buf_clear();
+
+    vessel_interpret("test", R"(
+import "math" for Math
+
+print(Math.tan(0))               // expect: 0
+print(Math.tan(Math.pi() / 4))   // expect: 1
+print(Math.tan(- Math.pi() / 4)) // expect: -1
+
+)");
+    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+0
+1
+-1
+)" + 1);
+}
 
 TEST_CASE("log")
 {

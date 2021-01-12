@@ -16,5 +16,6 @@ class Math {
   foreign static log(num)
   foreign static log2(num)
   foreign static exp(num)
+  foreign static pi()
 }
 );

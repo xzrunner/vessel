@@ -1033,23 +1033,26 @@ static void function(FunctionType type, bool is_foreign, int* arity)
     init_compiler(&compiler, type);
     begin_scope(); // [no-end-scope]
 
-    consume(TOKEN_LEFT_PAREN, "Expect '(' after function name.");
-    if (!check(TOKEN_RIGHT_PAREN))
+    //consume(TOKEN_LEFT_PAREN, "Expect '(' after function name.");
+    if (match(TOKEN_LEFT_PAREN))
     {
-        do {
-            current->function->arity++;
-            if (current->function->arity > 255) {
-                error_at_current("Can't have more than 255 parameters.");
-            }
-            if (arity) {
-                (*arity)++;
-            }
+        if (!check(TOKEN_RIGHT_PAREN))
+        {
+            do {
+                current->function->arity++;
+                if (current->function->arity > 255) {
+                    error_at_current("Can't have more than 255 parameters.");
+                }
+                if (arity) {
+                    (*arity)++;
+                }
 
-            uint8_t paramConstant = parse_variable("Expect parameter name.");
-            define_variable(paramConstant);
-        } while (match(TOKEN_COMMA));
+                uint8_t paramConstant = parse_variable("Expect parameter name.");
+                define_variable(paramConstant);
+            } while (match(TOKEN_COMMA));
+        }
+        consume(TOKEN_RIGHT_PAREN, "Expect ')' after parameters.");
     }
-    consume(TOKEN_RIGHT_PAREN, "Expect ')' after parameters.");
 
     if (is_foreign)
     {
