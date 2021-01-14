@@ -22,6 +22,7 @@
 #define IS_MODULE(value)       is_obj_type(value, OBJ_MODULE)
 #define IS_LIST(value)         is_obj_type(value, OBJ_LIST)
 #define IS_MAP(value)          is_obj_type(value, OBJ_MAP)
+#define IS_RANGE(value)        is_obj_type(value, OBJ_RANGE)
 
 #define AS_METHOD(value)       ((ObjMethod*)AS_OBJ(value))
 #define AS_BOUND_METHOD(value) ((ObjBoundMethod*)AS_OBJ(value))
@@ -36,6 +37,7 @@
 #define AS_MODULE(value)       ((ObjModule*)AS_OBJ(value))
 #define AS_LIST(value)         ((ObjList*)AS_OBJ(value))
 #define AS_MAP(value)          ((ObjMap*)AS_OBJ(value))
+#define AS_RANGE(value)        ((ObjRange*)AS_OBJ(value))
 
 typedef enum
 {
@@ -52,6 +54,7 @@ typedef enum
 	OBJ_MODULE,
 	OBJ_LIST,
 	OBJ_MAP,
+	OBJ_RANGE,
 } ObjType;
 
 typedef struct ObjClass ObjClass;
@@ -184,6 +187,13 @@ typedef struct
 	Table entries;
 } ObjMap;
 
+typedef struct
+{
+	Obj obj;
+	double from;
+	double to;
+} ObjRange;
+
 ObjBoundMethod* new_bound_method(Value receiver, ObjClosure* method);
 ObjClass* new_class(ObjClass* superclass, int num_fields, ObjString* name);
 ObjClass* new_single_class(int num_fields, ObjString* name);
@@ -201,6 +211,7 @@ ObjString* allocate_string(char* chars, int length, uint32_t hash);
 ObjString* take_string(char* chars, int length);
 ObjString* copy_string(const char* chars, int length);
 ObjUpvalue* new_upvalue(Value* slot);
+ObjRange* new_range();
 
 void bind_superclass(ObjClass* subclass, ObjClass* superclass);
 

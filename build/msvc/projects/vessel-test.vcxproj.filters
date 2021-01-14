@@ -89,6 +89,9 @@
     <ClCompile Include="..\..\..\test\math.cpp">
       <Filter>tests</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\test\range.cpp">
+      <Filter>tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="tests">

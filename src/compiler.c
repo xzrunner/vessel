@@ -593,6 +593,28 @@ static void dot(bool can_assign)
     }
 }
 
+static void load_core_variable(const char* name)
+{
+    int symbol = symbol_table_find(&parser.module->variable_names, name, strlen(name));
+    ASSERT(symbol != -1, "Should have already defined core name.");
+    emit_short_arg(OP_LOAD_MODULE_VAR, symbol);
+}
+
+static void call_method(int num_args, const char* name, int length)
+{
+    int symbol = symbol_table_ensure(&vm.method_names, name, length);
+    emit_short_arg((OpCode)(OP_CALL_0 + num_args), symbol);
+}
+
+static void range(bool can_assign)
+{
+    load_core_variable("Range");
+    call_method(0, "new()", 5);
+
+    expression();
+    call_method(1, "setEnd(_)", 9);
+}
+
 static void literal(bool can_assign)
 {
     switch (parser.previous.type)
@@ -609,19 +631,6 @@ static void grouping(bool can_assign)
 {
     expression();
     consume(TOKEN_RIGHT_PAREN, "Expect ')' after expression.");
-}
-
-static void load_core_variable(const char* name)
-{
-    int symbol = symbol_table_find(&parser.module->variable_names, name, strlen(name));
-    ASSERT(symbol != -1, "Should have already defined core name.");
-    emit_short_arg(OP_LOAD_MODULE_VAR, symbol);
-}
-
-static void call_method(int num_args, const char* name, int length)
-{
-    int symbol = symbol_table_ensure(&vm.method_names, name, length);
-    emit_short_arg((OpCode)(OP_CALL_0 + num_args), symbol);
 }
 
 static void list(bool can_assign)
@@ -952,6 +961,7 @@ ParseRule rules[] =
     [TOKEN_COLON]         = {NULL,     NULL,   PREC_NONE},
     [TOKEN_COMMA]         = {NULL,     NULL,   PREC_NONE},
     [TOKEN_DOT]           = {NULL,     dot,    PREC_CALL},
+    [TOKEN_DOTDOT]        = {NULL,     range,  PREC_CALL},
     [TOKEN_MINUS]         = {unary,    binary, PREC_TERM},
     [TOKEN_PLUS]          = {NULL,     binary, PREC_TERM},
     [TOKEN_SEMICOLON]     = {NULL,     NULL,   PREC_NONE},

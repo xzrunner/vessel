@@ -228,6 +228,15 @@ ObjUpvalue* new_upvalue(Value* slot)
 	return upvalue;
 }
 
+ObjRange* new_range()
+{
+	ObjRange* range = ALLOCATE_OBJ(ObjRange, OBJ_RANGE);
+	range->obj.class_obj = vm.range_class;
+	range->from = 0;
+	range->to = 0;
+	return range;
+}
+
 void bind_superclass(ObjClass* subclass, ObjClass* superclass)
 {
 	ASSERT(superclass != NULL, "Must have superclass.");

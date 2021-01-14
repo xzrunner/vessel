@@ -75,6 +75,11 @@ DEF_PRIMITIVE(list_removeAt)
 	RETURN_VAL(array_remove_at(&list->elements, index));
 }
 
+DEF_PRIMITIVE(list_isEmpty)
+{
+	RETURN_BOOL(AS_LIST(args[0])->elements.count == 0);
+}
+
 DEF_PRIMITIVE(list_subscript)
 {
 	ObjList* list = AS_LIST(args[0]);
@@ -284,6 +289,33 @@ DEF_PRIMITIVE(map_remove)
 //  RETURN_VAL(entry->value);
 //}
 
+DEF_PRIMITIVE(range_new)
+{
+	if (!IS_NUMBER(args[-1])) {
+		return false;
+	}
+
+	ObjRange* range = new_range();
+	range->from = AS_NUMBER(args[-1]);
+
+	pop();
+
+	args[-1] = OBJ_VAL(range);
+	return true;
+}
+
+DEF_PRIMITIVE(range_setEnd)
+{
+	if (!IS_NUMBER(args[1])) {
+		return false;
+	}
+
+	AS_RANGE(args[0])->to = AS_NUMBER(args[1]);
+
+	//RETURN_NULL;
+	RETURN_VAL(args[0]);
+}
+
 static ObjClass* define_class(ObjModule* module, const char* name)
 {
 	ObjString* name_string = copy_string(name, strlen(name));
@@ -342,6 +374,7 @@ void initialize_core()
 	PRIMITIVE(vm.list_class, "clear()", list_clear);
 	PRIMITIVE(vm.list_class, "count", list_count);
 	PRIMITIVE(vm.list_class, "removeAt(_)", list_removeAt);
+	PRIMITIVE(vm.list_class, "isEmpty", list_isEmpty);
 
 	vm.map_class = new_class(vm.object_class, 0, copy_string("Map", 4));
 	DefineVariable(core_module, "Map", 3, OBJ_VAL(vm.map_class), NULL);
@@ -357,4 +390,9 @@ void initialize_core()
 	PRIMITIVE(vm.map_class, "iterate(_)", map_iterate);
 	//PRIMITIVE(vm.map_class, "keyIteratorValue_(_)", map_keyIteratorValue);
 	//PRIMITIVE(vm.map_class, "valueIteratorValue_(_)", map_valueIteratorValue);
+
+	vm.range_class = new_class(vm.object_class, 0, copy_string("Range", 5));
+	DefineVariable(core_module, "Range", 5, OBJ_VAL(vm.range_class), NULL);
+	PRIMITIVE(vm.range_class->obj.class_obj, "new()", range_new);
+	PRIMITIVE(vm.range_class, "setEnd(_)", range_setEnd);
 }

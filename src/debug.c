@@ -89,6 +89,12 @@ static void dump_object(Value value)
 	case OBJ_MAP:
 		print2buf("map");
 		break;
+	case OBJ_RANGE:
+	{
+		ObjRange* range = AS_RANGE(value);
+		print2buf("range(%.14g, %.14g)", range->from, range->to);
+	}
+		break;
 	}
 }
 
@@ -102,7 +108,7 @@ void ves_dump_value(Value value)
 		print2buf("nil");
 	}
 	else if (IS_NUMBER(value)) {
-		print2buf("%g", AS_NUMBER(value));
+		print2buf("%.14g", AS_NUMBER(value));
 	}
 	else if (IS_OBJ(value)) {
 		dump_object(value);
