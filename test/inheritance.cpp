@@ -17,7 +17,7 @@ class A {
   }
 }
 
-class B < A {}
+class B is A {}
 
 var b = B("value")
 b.test() // expect: value
@@ -37,7 +37,7 @@ class Foo {
   override() { print "foo" }
 }
 
-class Bar < Foo {
+class Bar is Foo {
   methodOnBar() { print "bar" }
   override() { print "bar" }
 }
@@ -71,7 +71,7 @@ class Foo {
   }
 }
 
-class Bar < Foo {
+class Bar is Foo {
   bar(a, b) {
     this.field1 = a
     this.field2 = b

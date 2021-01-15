@@ -13,7 +13,7 @@ class A {
   }
 }
 
-class B < A {
+class B is A {
   getClosure() {
     return super.method
   }
@@ -43,7 +43,7 @@ class Base {
 }
 }
 
-class Derived < Base{
+class Derived is Base{
   bar() {
     print "Derived.bar()"
     super.foo()
@@ -71,7 +71,7 @@ class Base {
   }
 }
 
-class Derived < Base {
+class Derived is Base {
   foo() {
     print "Derived.foo()"
     super.foo()
@@ -97,7 +97,7 @@ class Base {
   toString() { return "Base" }
 }
 
-class Derived < Base {
+class Derived is Base {
   getClosure() {
     fun closure() {
       return super.toString()
@@ -127,7 +127,7 @@ class Base {
 }
 }
 
-class Derived < Base{
+class Derived is Base{
   init() {
     print "Derived.init()"
     super.init("a", "b")
@@ -155,9 +155,9 @@ class A {
   }
 }
 
-class B < A {}
+class B is A {}
 
-class C < B {
+class C is B {
   foo() {
     print "C.foo()"
     super.foo()
@@ -185,7 +185,7 @@ class Base {
   }
 }
 
-class Derived < Base {
+class Derived is Base {
   method() {
     super.method()
   }
@@ -219,7 +219,7 @@ class A {
   }
 }
 
-class B < A {
+class B is A {
   getClosure() {
     fun closure() {
       super.say()
@@ -232,7 +232,7 @@ class B < A {
   }
 }
 
-class C < B {
+class C is B {
   say() {
     print "C"
   }
@@ -256,7 +256,7 @@ class A {
   }
 }
 
-class B < A {
+class B is A {
   test() {
     super.say()
   }
@@ -266,7 +266,7 @@ class B < A {
   }
 }
 
-class C < B {
+class C is B {
   say() {
     print "C"
   }
@@ -290,7 +290,7 @@ class Base {
   }
 }
 
-class Derived < Base {
+class Derived is Base {
   init(a, b) {
     super.init(a)
     this.b = b

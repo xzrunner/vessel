@@ -1185,7 +1185,7 @@ static void class_declaration(bool is_foreign)
     class_compiler.enclosing = current_class;
     current_class = &class_compiler;
 
-    if (match(TOKEN_LESS))
+    if (match(TOKEN_IS))
     {
         consume(TOKEN_IDENTIFIER, "Expect superclass name.");
         variable(false);

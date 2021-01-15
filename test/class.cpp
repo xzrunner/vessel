@@ -27,13 +27,13 @@ class Foo {
   }
 }
 
-class Bar < Foo {
+class Bar is Foo {
   inBar() {
     print "in bar"
   }
 }
 
-class Baz < Bar {
+class Baz is Bar {
   inBaz() {
     print "in baz"
   }
@@ -59,7 +59,7 @@ TEST_CASE("local_inherit_other")
 class A {}
 
 fun f() {
-  class B < A {}
+  class B is A {}
   return B
 }
 

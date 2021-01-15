@@ -13,6 +13,6 @@ class Sequence {
   }
 }
 
-class Range < Sequence {}
+class Range is Sequence {}
 
 );
