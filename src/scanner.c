@@ -272,7 +272,14 @@ Token scan_token()
         case ':': return make_token(TOKEN_COLON);
         case ';': return make_token(TOKEN_SEMICOLON);
         case ',': return make_token(TOKEN_COMMA);
-        case '.': return make_token(match('.') ? TOKEN_DOTDOT : TOKEN_DOT);
+        case '.':
+        {
+            if (match('.')) {
+                return make_token(match('=') ? TOKEN_DOTDOT_EQUAL : TOKEN_DOTDOT);
+            } else {
+                return make_token(TOKEN_DOT);
+            }
+        }
         case '-': return make_token(TOKEN_MINUS);
         case '+': return make_token(TOKEN_PLUS);
         case '/': return make_token(TOKEN_SLASH);

@@ -210,3 +210,20 @@ for (var i in 0..3) {
 2
 )" + 1);
 }
+
+TEST_CASE("in_range_equal")
+{
+    vessel_str_buf_clear();
+
+    vessel_interpret("test", R"(
+for (var i in 0..=3) {
+    print(i)
+}
+)");
+    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+0
+1
+2
+3
+)" + 1);
+}

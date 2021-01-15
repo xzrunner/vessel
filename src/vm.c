@@ -139,7 +139,7 @@ void push(Value value)
 		break;
 	case VAL_OBJ:
 	{
-		const char* names[OBJ_MAP + 1] = {
+		const char* names[OBJ_RANGE + 1] = {
 			"bound_method",
 			"class",
 			"closure",
@@ -152,6 +152,7 @@ void push(Value value)
 			"module",
 			"list",
 			"map",
+			"range",
 		};
 		printf("push obj %s, %d\n", names[OBJ_TYPE(value)], stack_sz);
 	}

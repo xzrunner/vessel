@@ -1,6 +1,18 @@
-// Generated automatically from src/vm/wren_core.wren. Do not edit.
-static const char* coreModuleSource =
-"class Bool {}\n"
-"class Null {}\n"
-"class Num {}\n"
-;
+#define QUOTE(...) #__VA_ARGS__
+static const char* coreModuleSource = QUOTE(
+class Bool {}
+class Null {}
+class Num {}
+
+class Sequence {
+  contains(element) {
+    for (var item in this) {
+      if (element == item) return true
+    }
+    return false
+  }
+}
+
+class Range < Sequence {}
+
+);

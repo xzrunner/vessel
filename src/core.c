@@ -304,7 +304,17 @@ DEF_PRIMITIVE(range_new)
 	return true;
 }
 
-DEF_PRIMITIVE(range_setEnd)
+DEF_PRIMITIVE(range_from)
+{
+	RETURN_NUM(AS_RANGE(args[0])->from);
+}
+
+DEF_PRIMITIVE(range_to)
+{
+	RETURN_NUM(AS_RANGE(args[0])->to);
+}
+
+DEF_PRIMITIVE(range_setTo)
 {
 	if (!IS_NUMBER(args[1])) {
 		return false;
@@ -312,10 +322,19 @@ DEF_PRIMITIVE(range_setEnd)
 
 	AS_RANGE(args[0])->to = AS_NUMBER(args[1]);
 
-	//RETURN_NULL;
 	RETURN_VAL(args[0]);
 }
 
+DEF_PRIMITIVE(range_setInclusive)
+{
+	if (!IS_BOOL(args[1])) {
+		return false;
+	}
+
+	AS_RANGE(args[0])->is_inclusive = AS_BOOL(args[1]);
+
+	RETURN_VAL(args[0]);
+}
 
 DEF_PRIMITIVE(range_iterate)
 {
@@ -441,10 +460,13 @@ void initialize_core()
 	//PRIMITIVE(vm.map_class, "keyIteratorValue_(_)", map_keyIteratorValue);
 	//PRIMITIVE(vm.map_class, "valueIteratorValue_(_)", map_valueIteratorValue);
 
-	vm.range_class = new_class(vm.object_class, 0, copy_string("Range", 5));
+	vm.range_class = AS_CLASS(find_variable(core_module, "Range"));
 	DefineVariable(core_module, "Range", 5, OBJ_VAL(vm.range_class), NULL);
 	PRIMITIVE(vm.range_class->obj.class_obj, "new()", range_new);
-	PRIMITIVE(vm.range_class, "setEnd(_)", range_setEnd);
+	PRIMITIVE(vm.range_class, "from", range_from);
+	PRIMITIVE(vm.range_class, "to", range_to);
+	PRIMITIVE(vm.range_class, "setTo(_)", range_setTo);
+	PRIMITIVE(vm.range_class, "setInclusive(_)", range_setInclusive);
 	PRIMITIVE(vm.range_class, "iterate(_)", range_iterate);
 	PRIMITIVE(vm.range_class, "iteratorValue(_)", range_iteratorValue);
 }

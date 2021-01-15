@@ -192,6 +192,7 @@ typedef struct
 	Obj obj;
 	double from;
 	double to;
+	bool is_inclusive;
 } ObjRange;
 
 ObjBoundMethod* new_bound_method(Value receiver, ObjClosure* method);

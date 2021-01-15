@@ -28,6 +28,7 @@ typedef enum {
     PREC_EQUALITY,    // == !=
     PREC_IS,          // is
     PREC_COMPARISON,  // < > <= >=
+    PREC_RANGE,       // ..
     PREC_TERM,        // + -
     PREC_FACTOR,      // * /
     PREC_UNARY,       // ! -
@@ -608,11 +609,20 @@ static void call_method(int num_args, const char* name, int length)
 
 static void range(bool can_assign)
 {
+    bool is_inclusive = parser.previous.type == TOKEN_DOTDOT_EQUAL;
+
     load_core_variable("Range");
     call_method(0, "new()", 5);
 
     expression();
-    call_method(1, "setEnd(_)", 9);
+    call_method(1, "setTo(_)", 8);
+
+    if (is_inclusive) {
+        emit_op(OP_TRUE);
+    } else {
+        emit_op(OP_FALSE);
+    }
+    call_method(1, "setInclusive(_)", 15);
 }
 
 static void literal(bool can_assign)
@@ -961,7 +971,8 @@ ParseRule rules[] =
     [TOKEN_COLON]         = {NULL,     NULL,   PREC_NONE},
     [TOKEN_COMMA]         = {NULL,     NULL,   PREC_NONE},
     [TOKEN_DOT]           = {NULL,     dot,    PREC_CALL},
-    [TOKEN_DOTDOT]        = {NULL,     range,  PREC_CALL},
+    [TOKEN_DOTDOT]        = {NULL,     range,  PREC_RANGE},
+    [TOKEN_DOTDOT_EQUAL]  = {NULL,     range,  PREC_RANGE},
     [TOKEN_MINUS]         = {unary,    binary, PREC_TERM},
     [TOKEN_PLUS]          = {NULL,     binary, PREC_TERM},
     [TOKEN_SEMICOLON]     = {NULL,     NULL,   PREC_NONE},
