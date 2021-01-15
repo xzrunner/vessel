@@ -998,6 +998,7 @@ ParseRule rules[] =
     [TOKEN_IS]            = {NULL,     binary, PREC_IS},
     [TOKEN_FOREIGN]       = {NULL,     NULL,   PREC_NONE},
     [TOKEN_STATIC]        = {NULL,     NULL,   PREC_NONE},
+    [TOKEN_IN]            = {NULL,     NULL,   PREC_NONE},
     [TOKEN_ERROR]         = {NULL,     NULL,   PREC_NONE},
     [TOKEN_EOF]           = {NULL,     NULL,   PREC_NONE},
 };
@@ -1259,7 +1260,57 @@ static void for_statement()
         // No initializer.
     } else if (match(TOKEN_VAR)) {
         var_declaration();
-        consume(TOKEN_SEMICOLON, "Expect ';' after loop init.");
+
+        Token token_var = parser.previous;
+        if (match(TOKEN_IN))
+        {
+            expression();
+
+            consume(TOKEN_RIGHT_PAREN, "Expect ')' after loop expression.");
+
+            Token token_seq = synthetic_token("seq ");
+            Token token_iter = synthetic_token("iter ");
+
+            add_local(token_seq);
+            mark_initialized();
+            add_local(token_iter);
+            mark_initialized();
+
+            emit_byte_arg(OP_SET_LOCAL, (uint8_t)resolve_local(current, &token_seq));
+            emit_op(OP_NIL);
+            emit_byte_arg(OP_SET_LOCAL, (uint8_t)resolve_local(current, &token_iter));
+
+            int loop_start = current_chunk()->count;
+
+            emit_byte_arg(OP_GET_LOCAL, (uint8_t)resolve_local(current, &token_seq));
+            emit_byte_arg(OP_GET_LOCAL, (uint8_t)resolve_local(current, &token_iter));
+            call_method(1, "iterate(_)", 10);
+            emit_byte_arg(OP_SET_LOCAL, (uint8_t)resolve_local(current, &token_iter));
+
+            int exit_jump = emit_jump(OP_JUMP_IF_FALSE);
+            emit_op(OP_POP); // Condition.
+
+            emit_byte_arg(OP_GET_LOCAL, (uint8_t)resolve_local(current, &token_seq));
+            emit_byte_arg(OP_GET_LOCAL, (uint8_t)resolve_local(current, &token_iter));
+            call_method(1, "iteratorValue(_)", 16);
+            emit_byte_arg(OP_SET_LOCAL, (uint8_t)resolve_local(current, &token_var));
+            emit_op(OP_POP);
+
+            statement();
+
+            emit_loop(loop_start);
+
+            patch_jump(exit_jump);
+            emit_op(OP_POP); // Condition.
+
+            end_scope();
+
+            return;
+        }
+        else
+        {
+            consume(TOKEN_SEMICOLON, "Expect ';' after loop init.");
+        }
     } else {
         expression_statement();
         consume(TOKEN_SEMICOLON, "Expect ';' after loop init.");

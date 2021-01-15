@@ -316,6 +316,56 @@ DEF_PRIMITIVE(range_setEnd)
 	RETURN_VAL(args[0]);
 }
 
+
+DEF_PRIMITIVE(range_iterate)
+{
+	ObjRange* range = AS_RANGE(args[0]);
+
+	// Special case: empty range.
+	if (range->from == range->to && !range->is_inclusive) {
+		RETURN_FALSE;
+	}
+
+	// Start the iteration.
+	if (IS_NIL(args[1])) {
+		RETURN_NUM(range->from);
+	}
+
+	if (!IS_NUMBER(args[1])) {
+		RETURN_FALSE;
+	}
+
+	double iterator = AS_NUMBER(args[1]);
+
+	// Iterate towards [to] from [from].
+	if (range->from < range->to)
+	{
+		iterator++;
+		if (iterator > range->to) {
+			RETURN_FALSE;
+		}
+	}
+	else
+	{
+		iterator--;
+		if (iterator < range->to) {
+			RETURN_FALSE;
+		}
+	}
+
+	if (!range->is_inclusive && iterator == range->to) {
+		RETURN_FALSE;
+	}
+
+	RETURN_NUM(iterator);
+}
+
+DEF_PRIMITIVE(range_iteratorValue)
+{
+	// Assume the iterator is a number so that is the value of the range.
+	RETURN_VAL(args[1]);
+}
+
 static ObjClass* define_class(ObjModule* module, const char* name)
 {
 	ObjString* name_string = copy_string(name, strlen(name));
@@ -395,4 +445,6 @@ void initialize_core()
 	DefineVariable(core_module, "Range", 5, OBJ_VAL(vm.range_class), NULL);
 	PRIMITIVE(vm.range_class->obj.class_obj, "new()", range_new);
 	PRIMITIVE(vm.range_class, "setEnd(_)", range_setEnd);
+	PRIMITIVE(vm.range_class, "iterate(_)", range_iterate);
+	PRIMITIVE(vm.range_class, "iteratorValue(_)", range_iteratorValue);
 }
