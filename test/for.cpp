@@ -227,3 +227,41 @@ for (var i in 0..=3) {
 3
 )" + 1);
 }
+
+TEST_CASE("in_list")
+{
+    vessel_str_buf_clear();
+
+    vessel_interpret("test", R"(
+var list = [0,2,3]
+for (var i in list) {
+    print(i)
+}
+)");
+    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+0
+2
+3
+)" + 1);
+}
+
+TEST_CASE("in_map")
+{
+    vessel_str_buf_clear();
+
+    vessel_interpret("test", R"(
+var map = {
+  "one": 1,
+  "two": 2,
+  "three": 3
+}
+for (var i in map) {
+    print(i)
+}
+)");
+    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+2
+3
+1
+)" + 1);
+}

@@ -13,6 +13,8 @@ class Sequence {
   }
 }
 
+class List is Sequence {}
+class Map is Sequence {}
 class Range is Sequence {}
 
 );

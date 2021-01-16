@@ -39,47 +39,6 @@ DEF_PRIMITIVE(list_new)
 	RETURN_OBJ(new_list(0));
 }
 
-DEF_PRIMITIVE(list_add)
-{
-	write_value_array(&AS_LIST(args[0])->elements, args[1]);
-	RETURN_VAL(args[1]);
-}
-
-DEF_PRIMITIVE(list_addCore)
-{
-	write_value_array(&AS_LIST(args[0])->elements, args[1]);
-
-	// Return the list.
-	RETURN_VAL(args[0]);
-}
-
-DEF_PRIMITIVE(list_clear)
-{
-	free_value_array(&AS_LIST(args[0])->elements);
-	RETURN_NULL;
-}
-
-DEF_PRIMITIVE(list_count)
-{
-	RETURN_NUM(AS_LIST(args[0])->elements.count);
-}
-
-DEF_PRIMITIVE(list_removeAt)
-{
-	ObjList* list = AS_LIST(args[0]);
-	uint32_t index = validate_index(args[1], list->elements.count, "Index");
-	if (index == UINT32_MAX) {
-		return false;
-	}
-
-	RETURN_VAL(array_remove_at(&list->elements, index));
-}
-
-DEF_PRIMITIVE(list_isEmpty)
-{
-	RETURN_BOOL(AS_LIST(args[0])->elements.count == 0);
-}
-
 DEF_PRIMITIVE(list_subscript)
 {
 	ObjList* list = AS_LIST(args[0]);
@@ -123,6 +82,82 @@ DEF_PRIMITIVE(list_subscriptSetter)
 
 	list->elements.values[index] = args[2];
 	RETURN_VAL(args[2]);
+}
+
+DEF_PRIMITIVE(list_add)
+{
+	write_value_array(&AS_LIST(args[0])->elements, args[1]);
+	RETURN_VAL(args[1]);
+}
+
+DEF_PRIMITIVE(list_addCore)
+{
+	write_value_array(&AS_LIST(args[0])->elements, args[1]);
+
+	// Return the list.
+	RETURN_VAL(args[0]);
+}
+
+DEF_PRIMITIVE(list_clear)
+{
+	free_value_array(&AS_LIST(args[0])->elements);
+	RETURN_NULL;
+}
+
+DEF_PRIMITIVE(list_count)
+{
+	RETURN_NUM(AS_LIST(args[0])->elements.count);
+}
+
+DEF_PRIMITIVE(list_removeAt)
+{
+	ObjList* list = AS_LIST(args[0]);
+	uint32_t index = validate_index(args[1], list->elements.count, "Index");
+	if (index == UINT32_MAX) {
+		return false;
+	}
+
+	RETURN_VAL(array_remove_at(&list->elements, index));
+}
+
+DEF_PRIMITIVE(list_isEmpty)
+{
+	RETURN_BOOL(AS_LIST(args[0])->elements.count == 0);
+}
+
+DEF_PRIMITIVE(list_iterate)
+{
+	ObjList* list = AS_LIST(args[0]);
+
+	if (IS_NIL(args[1]))
+	{
+		if (list->elements.count == 0) {
+			RETURN_FALSE;
+		}
+		RETURN_NUM(0);
+	}
+
+	if (!validate_int(args[1], "Iterator")) {
+		return false;
+	}
+
+	double index = AS_NUMBER(args[1]);
+	if (index < 0 || index >= list->elements.count - 1) {
+		RETURN_FALSE;
+	}
+
+	RETURN_NUM(index + 1);
+}
+
+DEF_PRIMITIVE(list_iteratorValue)
+{
+	ObjList* list = AS_LIST(args[0]);
+	uint32_t index = validate_index(args[1], list->elements.count, "Iterator");
+	if (index == UINT32_MAX) {
+		return false;
+	}
+
+	RETURN_VAL(list->elements.values[index]);
 }
 
 DEF_PRIMITIVE(map_new)
@@ -200,6 +235,20 @@ DEF_PRIMITIVE(map_count)
 	RETURN_NUM(AS_MAP(args[0])->entries.count);
 }
 
+DEF_PRIMITIVE(map_remove)
+{
+	//if (!validate_key(args[1])) {
+	//	return false;
+	//}
+	if (!IS_STRING(args[1])) {
+		return false;
+	}
+
+	table_delete(&AS_MAP(args[0])->entries, AS_STRING(args[1]));
+	//RETURN_VAL(table_delete(&AS_MAP(args[0])->entries, AS_STRING(args[1])));
+	RETURN_NULL;
+}
+
 DEF_PRIMITIVE(map_iterate)
 {
 	ObjMap* map = AS_MAP(args[0]);
@@ -223,7 +272,7 @@ DEF_PRIMITIVE(map_iterate)
 		}
 		index = (uint32_t)AS_NUMBER(args[1]);
 
-		if (index >= map->entries.capacity) {
+		if (index > map->entries.capacity) {
 			RETURN_FALSE;
 		}
 
@@ -232,7 +281,7 @@ DEF_PRIMITIVE(map_iterate)
 	}
 
 	// Find a used entry, if any.
-	for (; index < map->entries.capacity; index++)
+	for (; index <= map->entries.capacity; index++)
 	{
 		if (map->entries.entries[index].key) {
 			RETURN_NUM(index);
@@ -243,51 +292,17 @@ DEF_PRIMITIVE(map_iterate)
 	RETURN_FALSE;
 }
 
-DEF_PRIMITIVE(map_remove)
+DEF_PRIMITIVE(map_iteratorValue)
 {
-	//if (!validate_key(args[1])) {
-	//	return false;
-	//}
-	if (!IS_STRING(args[1])) {
-		return false;
-	}
+  ObjMap* map = AS_MAP(args[0]);
+  uint32_t index = validate_index(args[1], map->entries.capacity + 1, "Iterator");
+  if (index == UINT32_MAX) {
+	  return false;
+  }
 
-	table_delete(&AS_MAP(args[0])->entries, AS_STRING(args[1]));
-	//RETURN_VAL(table_delete(&AS_MAP(args[0])->entries, AS_STRING(args[1])));
-	RETURN_NULL;
+  RETURN_VAL(map->entries.entries[index].value);
+  //RETURN_VAL(OBJ_VAL(map->entries.entries[index].key));
 }
-
-//DEF_PRIMITIVE(map_keyIteratorValue)
-//{
-//  ObjMap* map = AS_MAP(args[0]);
-//  uint32_t index = validate_index(args[1], map->entries.capacity, "Iterator");
-//  if (index == UINT32_MAX) {
-//	  return false;
-//  }
-//
-//  MapEntry* entry = &map->entries[index];
-//  if (IS_UNDEFINED(entry->key))
-//  {
-//    RETURN_ERROR("Invalid map iterator.");
-//  }
-//
-//  RETURN_VAL(entry->key);
-//}
-//
-//DEF_PRIMITIVE(map_valueIteratorValue)
-//{
-//  ObjMap* map = AS_MAP(args[0]);
-//  uint32_t index = validate_index(args[1], map->entries.capacity, "Iterator");
-//  if (index == UINT32_MAX) return false;
-//
-//  MapEntry* entry = &map->entries[index];
-//  if (IS_UNDEFINED(entry->key))
-//  {
-//    RETURN_ERROR("Invalid map iterator.");
-//  }
-//
-//  RETURN_VAL(entry->value);
-//}
 
 DEF_PRIMITIVE(range_new)
 {
@@ -432,9 +447,7 @@ void initialize_core()
 
 	vm.num_class = AS_CLASS(find_variable(core_module, "Num"));
 
-	vm.list_class = new_class(vm.object_class, 0, copy_string("List", 4));
-	DefineVariable(core_module, "List", 4, OBJ_VAL(vm.list_class), NULL);
-	//define_global_variable("List", 4, OBJ_VAL(vm.list_class));
+	vm.list_class = AS_CLASS(find_variable(core_module, "List"));
 	PRIMITIVE(vm.list_class->obj.class_obj, "new()", list_new);
 	PRIMITIVE(vm.list_class, "[_]", list_subscript);
 	PRIMITIVE(vm.list_class, "[_]=(_)", list_subscriptSetter);
@@ -444,10 +457,10 @@ void initialize_core()
 	PRIMITIVE(vm.list_class, "count", list_count);
 	PRIMITIVE(vm.list_class, "removeAt(_)", list_removeAt);
 	PRIMITIVE(vm.list_class, "isEmpty", list_isEmpty);
+	PRIMITIVE(vm.list_class, "iterate(_)", list_iterate);
+	PRIMITIVE(vm.list_class, "iteratorValue(_)", list_iteratorValue);
 
-	vm.map_class = new_class(vm.object_class, 0, copy_string("Map", 4));
-	DefineVariable(core_module, "Map", 3, OBJ_VAL(vm.map_class), NULL);
-	//define_global_variable("Map", 3, OBJ_VAL(vm.map_class));
+	vm.map_class = AS_CLASS(find_variable(core_module, "Map"));
 	PRIMITIVE(vm.map_class->obj.class_obj, "new()", map_new);
 	PRIMITIVE(vm.map_class, "[_]", map_subscript);
 	PRIMITIVE(vm.map_class, "[_]=(_)", map_subscriptSetter);
@@ -457,8 +470,7 @@ void initialize_core()
 	PRIMITIVE(vm.map_class, "count", map_count);
 	PRIMITIVE(vm.map_class, "remove(_)", map_remove);
 	PRIMITIVE(vm.map_class, "iterate(_)", map_iterate);
-	//PRIMITIVE(vm.map_class, "keyIteratorValue_(_)", map_keyIteratorValue);
-	//PRIMITIVE(vm.map_class, "valueIteratorValue_(_)", map_valueIteratorValue);
+	PRIMITIVE(vm.map_class, "iteratorValue(_)", map_iteratorValue);
 
 	vm.range_class = AS_CLASS(find_variable(core_module, "Range"));
 	DefineVariable(core_module, "Range", 5, OBJ_VAL(vm.range_class), NULL);
