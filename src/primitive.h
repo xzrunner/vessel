@@ -34,7 +34,7 @@
 #define RETURN_ERROR(msg)                                                      \
     do                                                                         \
     {                                                                          \
-      vm.error = copy_string(msg, sizeof(msg) - 1);                            \
+      vm.error = OBJ_VAL(copy_string(msg, sizeof(msg) - 1));                   \
       return false;                                                            \
     } while (false)
 

@@ -260,8 +260,8 @@ for (var i in map) {
 }
 )");
     REQUIRE(std::string(vessel_get_str_buf()) == R"(
-2
-3
-1
+two
+three
+one
 )" + 1);
 }

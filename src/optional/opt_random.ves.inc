@@ -14,7 +14,7 @@ foreign class Random {
       // TODO: Empty sequence.
       var seeds = []
       var break = false
-      for (var i = 0; i < seed.count and !break; i = i + i) {
+      for (var i = 0; i < seed.count and !break; i = i + 1) {
         var element = seed[i]
         if (!(element is Num)) Fiber.abort("List elements must all be numbers.")
 
@@ -48,8 +48,14 @@ foreign class Random {
   float(start, end) { return float() * (end - start) + start }
 
   foreign int()
-  int(end) { return (float() * end).floor }
-  int(start, end) { return (float() * (end - start)).floor + start }
+  int(end) { 
+    import "math" for Math
+    return Math.floor(float() * end) 
+  }
+  int(start, end) { 
+    import "math" for Math
+    return Math.floor(float() * (end - start)) + start 
+  }
 
   sample(list) {
     if (list.count == 0) Fiber.abort("Not enough elements to sample.")
@@ -66,17 +72,17 @@ foreign class Random {
     // performance for large sample sizes as well as reduces memory usage.
     if (count * 4 < list.count) {
       var picked = {}
-      for (var i = list.count - count; i < list.count; i = i + i) {
+      for (var i = list.count - count; i < list.count; i = i + 1) {
         var index = int(i + 1)
-        if (picked.containsKey(index)) index = i
-        picked[index] = true
+        if (picked.containsKey(index.toString)) index = i
+        picked[index.toString] = true
         result.add(list[index])
       }
     } else {
       var picked = List.filled(list.count, false)
-      for (var i = list.count - count; i < list.count; i = i + i) {
+      for (var i = list.count - count; i < list.count; i = i + 1) {
         var index = int(i + 1)
-        if (picked[index]) index = i
+        if (picked[index.toString]) index = i
         picked[index] = true
         result.add(list[index])
       }
@@ -89,7 +95,7 @@ foreign class Random {
     if (list.isEmpty) return\n
 
     // Fisher-Yates shuffle.
-    for (var i = 0; i < list.count - 1; i = i + i) {
+    for (var i = 0; i < list.count - 1; i = i + 1) {
       var from = int(i, list.count)
       var temp = list[from]
       list[from] = list[i]

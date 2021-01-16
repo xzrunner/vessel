@@ -20,6 +20,8 @@ static void print2buf(const char* format, ...)
 		out_ptr = 0;
 	}
 
+	//vprintf(format, args);
+
 	out_ptr += vsprintf(&out_buf[out_ptr], format, args);
 
 	va_end(args);

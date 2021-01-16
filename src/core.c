@@ -5,6 +5,8 @@
 #include "utils.h"
 #include "core.ves.inc"
 
+#include <math.h>
+
 DEF_PRIMITIVE(object_is)
 {
 	if (!IS_CLASS(args[1]))
@@ -34,9 +36,72 @@ DEF_PRIMITIVE(object_type)
 	RETURN_OBJ(get_class(args[0]));
 }
 
+static Value num_to_string(double value)
+{
+  // Edge case: If the value is NaN or infinity, different versions of libc
+  // produce different outputs (some will format it signed and some won't). To
+  // get reliable output, handle it ourselves.
+  if (isnan(value)) return OBJ_VAL(copy_string("nan", 3));
+  if (isinf(value))
+  {
+    if (value > 0.0)
+    {
+      return OBJ_VAL(copy_string("infinity", 8));
+    }
+    else
+    {
+	  return OBJ_VAL(copy_string("-infinity", 9));
+    }
+  }
+
+  // This is large enough to hold any double converted to a string using
+  // "%.14g". Example:
+  //
+  //     -1.12345678901234e-1022
+  //
+  // So we have:
+  //
+  // + 1 char for sign
+  // + 1 char for digit
+  // + 1 char for "."
+  // + 14 chars for decimal digits
+  // + 1 char for "e"
+  // + 1 char for "-" or "+"
+  // + 4 chars for exponent
+  // + 1 char for "\0"
+  // = 24
+  char buffer[24];
+  int length = sprintf(buffer, "%.14g", value);
+  return OBJ_VAL(copy_string(buffer, length));
+}
+
+DEF_PRIMITIVE(num_toString)
+{
+	RETURN_VAL(num_to_string(AS_NUMBER(args[0])));
+}
+
 DEF_PRIMITIVE(list_new)
 {
 	RETURN_OBJ(new_list(0));
+}
+
+DEF_PRIMITIVE(list_filled)
+{
+	if (!validate_int(args[1], "Size")) {
+		return false;
+	}
+	if (AS_NUMBER(args[1]) < 0) {
+		RETURN_ERROR("Size cannot be negative.");
+	}
+
+	uint32_t size = (uint32_t)AS_NUMBER(args[1]);
+	ObjList* list = new_list(size);
+
+	for (uint32_t i = 0; i < size; i++) {
+		list->elements.values[i] = args[2];
+	}
+
+	RETURN_OBJ(list);
 }
 
 DEF_PRIMITIVE(list_subscript)
@@ -75,6 +140,7 @@ DEF_PRIMITIVE(list_subscript)
 DEF_PRIMITIVE(list_subscriptSetter)
 {
 	ObjList* list = AS_LIST(args[0]);
+
 	uint32_t index = validate_index(args[1], list->elements.count, "Subscript");
 	if (index == UINT32_MAX) {
 		return false;
@@ -160,6 +226,12 @@ DEF_PRIMITIVE(list_iteratorValue)
 	RETURN_VAL(list->elements.values[index]);
 }
 
+DEF_PRIMITIVE(list_toString)
+{
+	ObjList* list = AS_LIST(args[0]);
+	RETURN_VAL(OBJ_VAL(copy_string("List", 4)));
+}
+
 DEF_PRIMITIVE(map_new)
 {
   RETURN_OBJ(new_map());
@@ -173,6 +245,8 @@ DEF_PRIMITIVE(map_subscript)
 	if (!IS_STRING(args[1])) {
 		return false;
 	}
+
+	ObjString* str = AS_STRING(args[1]);
 
 	Value value;
 	table_get(&AS_MAP(args[0])->entries, AS_STRING(args[1]), &value);
@@ -300,8 +374,8 @@ DEF_PRIMITIVE(map_iteratorValue)
 	  return false;
   }
 
-  RETURN_VAL(map->entries.entries[index].value);
-  //RETURN_VAL(OBJ_VAL(map->entries.entries[index].key));
+  //RETURN_VAL(map->entries.entries[index].value);
+  RETURN_VAL(OBJ_VAL(map->entries.entries[index].key));
 }
 
 DEF_PRIMITIVE(range_new)
@@ -446,9 +520,11 @@ void initialize_core()
 	//PRIMITIVE(vm->boolClass, "!", bool_not);
 
 	vm.num_class = AS_CLASS(find_variable(core_module, "Num"));
+	PRIMITIVE(vm.num_class, "toString", num_toString);
 
 	vm.list_class = AS_CLASS(find_variable(core_module, "List"));
 	PRIMITIVE(vm.list_class->obj.class_obj, "new()", list_new);
+	PRIMITIVE(vm.list_class->obj.class_obj, "filled(_,_)", list_filled);
 	PRIMITIVE(vm.list_class, "[_]", list_subscript);
 	PRIMITIVE(vm.list_class, "[_]=(_)", list_subscriptSetter);
 	PRIMITIVE(vm.list_class, "add(_)", list_add);
@@ -459,6 +535,7 @@ void initialize_core()
 	PRIMITIVE(vm.list_class, "isEmpty", list_isEmpty);
 	PRIMITIVE(vm.list_class, "iterate(_)", list_iterate);
 	PRIMITIVE(vm.list_class, "iteratorValue(_)", list_iteratorValue);
+	PRIMITIVE(vm.list_class, "toString", list_toString);
 
 	vm.map_class = AS_CLASS(find_variable(core_module, "Map"));
 	PRIMITIVE(vm.map_class->obj.class_obj, "new()", map_new);
