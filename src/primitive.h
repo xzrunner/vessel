@@ -50,5 +50,6 @@ bool validate_int_value(double value, const char* arg_name);
 bool validate_int(Value arg, const char* arg_name);
 bool validate_key(Value arg);
 uint32_t validate_index(Value arg, uint32_t count, const char* arg_name);
+uint32_t validate_index_value(uint32_t count, double value, const char* arg_name);
 
 #endif // vessel_primitive_h

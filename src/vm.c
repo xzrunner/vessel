@@ -75,6 +75,13 @@ static void define_native(const char* name, NativeFn function)
 void init_configuration(VesselConfiguration* config)
 {
 	config->load_module_fn = NULL;
+	config->bind_foreign_method_fn = NULL;
+	config->bind_foreign_class_fn = NULL;
+}
+
+VesselConfiguration* vessel_get_config()
+{
+	return &vm.config;
 }
 
 void vessel_init_vm()
@@ -439,11 +446,10 @@ static VesselForeignMethodFn find_foreign_method(const char* moduleName, const c
 {
 	VesselForeignMethodFn method = NULL;
 
-	//if (vm->config.bindForeignMethodFn != NULL)
-	//{
-	//	method = vm->config.bindForeignMethodFn(vm, moduleName, class_name, is_static,
-	//											signature);
-	//}
+	if (vm.config.bind_foreign_method_fn != NULL)
+	{
+		method = vm.config.bind_foreign_method_fn(moduleName, class_name, is_static, signature);
+	}
 
 	// If the host didn't provide it, see if it's an optional one.
 	if (method == NULL)
@@ -599,6 +605,11 @@ static void bind_foreign_class(ObjClass* class_obj, ObjModule* module)
 	VesselForeignClassMethods methods;
 	methods.allocate = NULL;
 	methods.finalize = NULL;
+
+	if (vm.config.bind_foreign_class_fn != NULL)
+	{
+		methods = vm.config.bind_foreign_class_fn(module->name->chars, class_obj->name->chars);
+	}
 
 	if (methods.allocate == NULL && methods.finalize == NULL)
 	{
@@ -1213,12 +1224,93 @@ int vessel_get_slot_count()
 	return (int)(vm.stack_top - vm.api_stack);
 }
 
+VesselType vessel_get_slot_type(int slot)
+{
+	validate_api_slot(slot);
+	if (IS_BOOL(vm.api_stack[slot])) return VESSEL_TYPE_BOOL;
+	if (IS_NUMBER(vm.api_stack[slot])) return VESSEL_TYPE_NUM;
+	if (IS_FOREIGN(vm.api_stack[slot])) return VESSEL_TYPE_FOREIGN;
+	if (IS_LIST(vm.api_stack[slot])) return VESSEL_TYPE_LIST;
+	if (IS_MAP(vm.api_stack[slot])) return VESSEL_TYPE_MAP;
+	if (IS_NIL(vm.api_stack[slot])) return VESSEL_TYPE_NULL;
+	if (IS_STRING(vm.api_stack[slot])) return VESSEL_TYPE_STRING;
+
+	return VESSEL_TYPE_UNKNOWN;
+}
+
+bool vessel_get_slot_bool(int slot)
+{
+	validate_api_slot(slot);
+	ASSERT(IS_BOOL(vm.api_stack[slot]), "Slot must hold a bool.");
+
+	return AS_BOOL(vm.api_stack[slot]);
+}
+
 double vessel_get_slot_double(int slot)
 {
 	validate_api_slot(slot);
 	ASSERT(IS_NUMBER(vm.api_stack[slot]), "Slot must hold a number.");
 
 	return AS_NUMBER(vm.api_stack[slot]);
+}
+
+const char* vessel_get_slot_string(int slot)
+{
+	validate_api_slot(slot);
+	ASSERT(IS_STRING(vm.api_stack[slot]), "Slot must hold a string.");
+
+	return AS_STRING(vm.api_stack[slot])->chars;
+}
+
+int vessel_get_list_count(int slot)
+{
+	validate_api_slot(slot);
+	ASSERT(IS_LIST(vm.api_stack[slot]), "Slot must hold a list.");
+
+	return AS_LIST(vm.api_stack[slot])->elements.count;
+}
+
+void vessel_get_list_element(int listSlot, int index, int elementSlot)
+{
+	validate_api_slot(listSlot);
+	validate_api_slot(elementSlot);
+	ASSERT(IS_LIST(vm.api_stack[listSlot]), "Slot must hold a list.");
+
+	ValueArray* elements = &AS_LIST(vm.api_stack[listSlot])->elements;
+
+	uint32_t used_index = validate_index_value(elements->count, (double)index, "Index");
+	ASSERT(used_index != UINT32_MAX, "Index out of bounds.");
+
+	vm.api_stack[elementSlot] = elements->values[used_index];
+}
+
+bool vessel_get_map_contains_key(int mapSlot, int keySlot)
+{
+	validate_api_slot(mapSlot);
+	validate_api_slot(keySlot);
+	ASSERT(IS_MAP(vm.api_stack[mapSlot]), "Slot must hold a map.");
+	ASSERT(IS_STRING(vm.api_stack[keySlot]), "Key must be a string.");
+
+	Value key = vm.api_stack[keySlot];
+	if (!validate_key(key)) {
+		return false;
+	}
+
+	ObjMap* map = AS_MAP(vm.api_stack[mapSlot]);
+	Value value = NIL_VAL;
+	return table_get(&map->entries, AS_STRING(vm.api_stack[keySlot]), &value);
+}
+
+void vessel_get_map_value(int mapSlot, const char* key, int valueSlot)
+{
+	validate_api_slot(mapSlot);
+	validate_api_slot(valueSlot);
+	ASSERT(IS_MAP(vm.api_stack[mapSlot]), "Slot must hold a map.");
+
+	ObjMap* map = AS_MAP(vm.api_stack[mapSlot]);
+	Value value = NIL_VAL;
+	table_get(&map->entries, copy_string(key, strlen(key)), &value);
+	vm.api_stack[valueSlot] = value;
 }
 
 void* vessel_get_slot_foreign(int slot)
