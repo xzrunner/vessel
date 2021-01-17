@@ -6,6 +6,7 @@
 #include "core.h"
 #include "object.h"
 #include "utils.h"
+#include "primitive.h"
 #if OPT_RANDOM
 #include "opt_random.h"
 #endif // OPT_RANDOM
