@@ -9,6 +9,7 @@
 #include <string.h>
 #include <time.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 // Implements the well equidistributed long-period linear PRNG (WELL512a).
 //

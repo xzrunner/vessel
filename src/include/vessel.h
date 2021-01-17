@@ -6,6 +6,9 @@ extern "C"
 #ifndef vessel_h
 #define vessel_h
 
+#include <stdbool.h>
+#include <stdint.h>
+
 // Called after load_module_fn is called for module [name]. The original returned result
 // is handed back to you in this callback, so that you can free memory if appropriate.
 typedef void (*VesselLoadModuleCompleteFn)(const char* name, struct VesselLoadModuleResult result);

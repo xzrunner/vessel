@@ -6,6 +6,7 @@
 #include "core.ves.inc"
 
 #include <math.h>
+#include <stdio.h>
 
 DEF_PRIMITIVE(object_is)
 {
