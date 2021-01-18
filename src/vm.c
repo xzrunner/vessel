@@ -675,7 +675,7 @@ static VesselInterpretResult run()
 		printf("          ");
 		for (Value* slot = vm.stack; slot < vm.stack_top; slot++) {
 			printf("[ ");
-			ves_dump_value(*slot);
+			ves_dump_value(*slot, false);
 			printf(" ]");
 		}
 		printf("\n");
@@ -897,7 +897,7 @@ static VesselInterpretResult run()
 			break;
 
 		case OP_PRINT: {
-			ves_dump_value(pop());
+			ves_dump_value(pop(), true);
 			ves_str_buf_newline();
 			break;
 		}
