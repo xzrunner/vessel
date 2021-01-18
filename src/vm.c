@@ -80,7 +80,14 @@ void init_configuration(VesselConfiguration* config)
 	config->bind_foreign_class_fn = NULL;
 }
 
-VesselConfiguration* vessel_get_config()
+void vessel_set_config(VesselConfiguration* cfg)
+{
+	if (cfg) {
+		memcpy(&vm.config, cfg, sizeof(VesselConfiguration));
+	}
+}
+
+void* vessel_get_config()
 {
 	return &vm.config;
 }

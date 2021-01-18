@@ -145,7 +145,7 @@ VesselInterpretResult vessel_interpret(const char* module, const char* source);
 void vessel_str_buf_clear();
 const char* vessel_get_str_buf();
 
-VesselConfiguration* vessel_get_config();
+void vessel_set_config(VesselConfiguration* cfg);
 
 void vessel_init_vm();
 void vessel_free_vm();
