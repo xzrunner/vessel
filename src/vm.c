@@ -160,6 +160,7 @@ void push(Value value)
 			"closure",
 			"method",
 			"function",
+			"foreign",
 			"instance",
 			"native",
 			"string",
