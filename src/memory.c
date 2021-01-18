@@ -103,6 +103,8 @@ static void blacken_object(Obj* object)
 	case OBJ_CLASS:
 	{
 		ObjClass* klass = (ObjClass*)object;
+		mark_object(klass->obj.class_obj);
+		mark_object(klass->superclass);
 		mark_object((Obj*)klass->name);
 		mark_table(&klass->methods);
 		break;
