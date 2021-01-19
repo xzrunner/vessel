@@ -37,6 +37,11 @@ DEF_PRIMITIVE(object_type)
 	RETURN_OBJ(get_class(args[0]));
 }
 
+DEF_PRIMITIVE(class_name)
+{
+	RETURN_OBJ(AS_CLASS(args[0])->name);
+}
+
 static Value num_to_string(double value)
 {
   // Edge case: If the value is NaN or infinity, different versions of libc
@@ -512,6 +517,7 @@ void initialize_core()
 	PRIMITIVE(vm.object_class, "type", object_type);
 
 	vm.class_class = define_class(core_module, "Class");
+	PRIMITIVE(vm.class_class, "name", class_name);
 	bind_superclass(vm.class_class, vm.object_class);
 
 	vessel_interpret("Core", coreModuleSource);
