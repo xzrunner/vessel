@@ -1169,6 +1169,10 @@ static VesselInterpretResult run()
 			vm.api_stack = NULL;
 		}
 			break;
+
+		case OP_END_MODULE:
+			vm.last_module = FUNC->module;
+			break;
 		}
 	}
 

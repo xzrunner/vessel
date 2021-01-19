@@ -1590,6 +1590,8 @@ static ObjFunction* compile_impl(ObjModule* module, const char* source)
         declaration();
     }
 
+    emit_op(OP_END_MODULE);
+
     ObjFunction* function = end_compiler();
     return parser.had_error ? NULL : function;
 }
