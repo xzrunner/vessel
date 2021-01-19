@@ -121,6 +121,9 @@ static void blacken_object(Obj* object)
 	case OBJ_METHOD:
 	{
 		ObjMethod* method = (ObjMethod*)object;
+		if (method->type == METHOD_BLOCK) {
+			mark_object((Obj*)method->as.closure);
+		}
 		break;
 	}
 	case OBJ_FUNCTION:
