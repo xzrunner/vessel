@@ -1090,6 +1090,8 @@ static void function(FunctionType type, bool is_foreign, int* arity)
     }
     else
     {
+        ignore_new_lines();
+
         consume(TOKEN_LEFT_BRACE, "Expect '{' before function body.");
         block();
 
@@ -1215,6 +1217,7 @@ static void class_declaration(bool is_foreign)
         emit_short_arg(OP_STORE_MODULE_VAR, symbol);
     }
 
+    ignore_new_lines();
     consume(TOKEN_LEFT_BRACE, "Expect '{' before class body.");
     while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF)) {
         ignore_new_lines();
