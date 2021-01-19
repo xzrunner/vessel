@@ -654,10 +654,10 @@ static VesselInterpretResult run()
 #define READ_SHORT() \
     (frame->ip += 2, \
     (uint16_t)((frame->ip[-2] << 8) | frame->ip[-1]))
-#define READ_CONSTANT() \
-    (frame->closure->function->chunk.constants.values[READ_BYTE()])
-#define READ_STRING() AS_STRING(READ_CONSTANT())
 #define FUNC (frame->closure->function)
+#define READ_CONSTANT() \
+    (FUNC->chunk.constants.values[READ_BYTE()])
+#define READ_STRING() AS_STRING(READ_CONSTANT())
 
 #define BINARY_OP(valueType, op) \
     do { \
@@ -681,8 +681,7 @@ static VesselInterpretResult run()
 		}
 		printf("\n");
 
-		disassembleInstruction(&frame->closure->function->chunk,
-			(int)(frame->ip - frame->closure->function->chunk.code));
+		disassembleInstruction(&FUNC->chunk, (int)(frame->ip - FUNC->chunk.code));
 #endif
 
 		uint8_t instruction = READ_BYTE();
@@ -722,6 +721,9 @@ static VesselInterpretResult run()
 
 		case OP_GET_GLOBAL: {
 			ObjString* name = READ_STRING();
+#ifdef DEBUG_PRINT_OPCODE
+			printf("++ name %s\n", name->chars);
+#endif // DEBUG_PRINT_OPCODE
 			int symbol = symbol_table_find(&FUNC->module->variable_names, name->chars, name->length);
 			if (symbol == -1) {
 				runtime_error("Undefined variable '%s'.", name->chars);
@@ -733,6 +735,9 @@ static VesselInterpretResult run()
 
 		case OP_DEFINE_GLOBAL: {
 			ObjString* name = READ_STRING();
+#ifdef DEBUG_PRINT_OPCODE
+			printf("++ name %s\n", name->chars);
+#endif // DEBUG_PRINT_OPCODE
 			int symbol = DefineVariable(FUNC->module, name->chars, name->length, peek(0), NULL);
 			if (symbol == -1) {
 				int symbol = symbol_table_find(&FUNC->module->variable_names, name->chars, name->length);
@@ -748,6 +753,9 @@ static VesselInterpretResult run()
 
 		case OP_SET_GLOBAL: {
 			ObjString* name = READ_STRING();
+#ifdef DEBUG_PRINT_OPCODE
+			printf("++ name %s\n", name->chars);
+#endif // DEBUG_PRINT_OPCODE
 			int symbol = symbol_table_find(&FUNC->module->variable_names, name->chars, name->length);
 			if (symbol == -1) {
 				runtime_error("Undefined variable '%s'.", name->chars);
@@ -952,6 +960,10 @@ static VesselInterpretResult run()
 			int arg_count = instruction - OP_CALL_0 + 1;
 			ObjString* symbol = AS_STRING(vm.method_names.values[READ_SHORT()]);
 
+#ifdef DEBUG_PRINT_OPCODE
+			printf("++ name %s\n", symbol->chars);
+#endif // DEBUG_PRINT_OPCODE
+
 			Value* args = vm.stack_top - arg_count;
 			ObjClass* class_obj = get_class(args[0]);
 			ASSERT(class_obj, "Should have class_obj.");
@@ -1075,7 +1087,7 @@ static VesselInterpretResult run()
 		{
 			ObjClass* class_obj = new_class(vm.object_class, -1, READ_STRING());
 			push(OBJ_VAL(class_obj));
-			bind_foreign_class(class_obj, frame->closure->function->module);
+			bind_foreign_class(class_obj, FUNC->module);
 		}
 			break;
 
@@ -1094,11 +1106,11 @@ static VesselInterpretResult run()
 
 		case OP_METHOD:
 		case OP_METHOD_STATIC:
-			define_method(READ_STRING(), instruction, frame->closure->function->module);
+			define_method(READ_STRING(), instruction, FUNC->module);
 			break;
 
 		case OP_LOAD_MODULE_VAR:
-			push(frame->closure->function->module->variables.values[READ_SHORT()]);
+			push(FUNC->module->variables.values[READ_SHORT()]);
 			break;
 
 		case OP_STORE_MODULE_VAR:
@@ -1108,6 +1120,9 @@ static VesselInterpretResult run()
 		case OP_IMPORT_MODULE:
 		{
 			Value name = READ_CONSTANT();
+#ifdef DEBUG_PRINT_OPCODE
+			printf("++ name %s\n", AS_STRING(name)->chars);
+#endif // DEBUG_PRINT_OPCODE
 			push(import_module(name));
 			if (IS_CLOSURE(peek(0)))
 			{
@@ -1116,6 +1131,7 @@ static VesselInterpretResult run()
 				if (!table_get(&vm.modules, AS_STRING(name), &val)) {
 					ASSERT(false, "Get module fail.");
 				}
+
 				ASSERT(IS_MODULE(val), "Get module fail.");
 				vm.last_module = AS_MODULE(val);
 
@@ -1135,6 +1151,9 @@ static VesselInterpretResult run()
 		case OP_IMPORT_VARIABLE:
 		{
 			ObjString* variable = READ_STRING();
+#ifdef DEBUG_PRINT_OPCODE
+			printf("++ name %s\n", variable->chars);
+#endif // DEBUG_PRINT_OPCODE
 			ASSERT(vm.last_module != NULL, "Should have already imported module.");
 			int symbol = symbol_table_find(&vm.last_module->variable_names, variable->chars, variable->length);
 			if (symbol != -1) {
