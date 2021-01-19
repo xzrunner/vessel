@@ -771,6 +771,7 @@ static void finish_argument_list(Signature* signature)
 
 static void block()
 {
+    ignore_new_lines();
     while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF)) {
         declaration();
     }
