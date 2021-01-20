@@ -893,12 +893,12 @@ static void named_variable(Token name, bool can_assign)
             if (symbol >= 0) {
                 emit_short_arg(OP_LOAD_MODULE_VAR, symbol);
             } else {
-                if (current_class != NULL && check(TOKEN_LEFT_PAREN)) {
-                    named_variable(synthetic_token("this"), false);
-                    named_call(can_assign);
-                } else {
+                //if (current_class != NULL && check(TOKEN_LEFT_PAREN)) {
+                //    named_variable(synthetic_token("this"), false);
+                //    named_call(can_assign);
+                //} else {
                     emit_byte_arg(get_op, (uint8_t)arg);
-                }
+                //}
             }
         }
         else
