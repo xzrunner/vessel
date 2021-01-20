@@ -170,7 +170,19 @@ void push(Value value)
 			"map",
 			"range",
 		};
-		printf("push obj %s, %d\n", names[OBJ_TYPE(value)], stack_sz);
+		const char* name = NULL;
+		if (IS_INSTANCE(value)) {
+			name = AS_INSTANCE(value)->klass->name->chars;
+		} else if (IS_STRING(value)) {
+			name = AS_STRING(value)->chars;
+		} else if (IS_CLASS(value)) {
+			name = AS_CLASS(value)->name->chars;
+		}
+		if (name == NULL) {
+			printf("push obj %s, %d\n", names[OBJ_TYPE(value)], stack_sz);
+		} else {
+			printf("push obj %s %s, %d\n", names[OBJ_TYPE(value)], name, stack_sz);
+		}
 	}
 		break;
 	}
