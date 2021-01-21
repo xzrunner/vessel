@@ -234,8 +234,20 @@ static void free_object(Obj* object)
 		ObjList* list = (ObjList*)object;
 		free_value_array(&list->elements);
 		FREE(ObjList, list);
+		break;
 	}
-	break;
+	case OBJ_MAP:
+	{
+		ObjMap* map = (ObjMap*)object;
+		free_table(&map->entries);
+		FREE(ObjMap, map);
+		break;
+	}
+	case OBJ_RANGE:
+		FREE(ObjRange, object);
+		break;
+	default:
+		assert(0);
 	}
 }
 
