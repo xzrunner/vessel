@@ -1236,7 +1236,16 @@ void FinalizeForeign(ObjForeign* foreign)
 
 VesselInterpretResult vessel_interpret(const char* module, const char* source)
 {
-	ObjClosure* closure = compile(module, source);
+	return vessel_run(vessel_compile(module, source));
+}
+
+void* vessel_compile(const char* module, const char* source)
+{
+	return compile(module, source);
+}
+
+VesselInterpretResult vessel_run(void* closure)
+{
 	if (closure == NULL) {
 		return VESSEL_INTERPRET_COMPILE_ERROR;
 	}

@@ -142,6 +142,9 @@ typedef enum
 
 VesselInterpretResult vessel_interpret(const char* module, const char* source);
 
+void* vessel_compile(const char* module, const char* source);
+VesselInterpretResult vessel_run(void* closure);
+
 void vessel_str_buf_clear();
 const char* vessel_get_str_buf();
 
