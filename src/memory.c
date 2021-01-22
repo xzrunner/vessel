@@ -9,6 +9,7 @@
 #endif
 
 #include <stdlib.h>
+#include <assert.h>
 
 #define GC_HEAP_GROW_FACTOR 2
 
@@ -133,6 +134,8 @@ static void blacken_object(Obj* object)
 		mark_array(&function->chunk.constants);
 		break;
 	}
+	case OBJ_FOREIGN:
+		break;
 	case OBJ_INSTANCE:
 	{
 		ObjInstance* instance = (ObjInstance*)object;
@@ -140,11 +143,12 @@ static void blacken_object(Obj* object)
 		mark_table(&instance->fields);
 		break;
 	}
+	case OBJ_NATIVE:
+		break;
+	case OBJ_STRING:
+		break;
 	case OBJ_UPVALUE:
 		mark_value(((ObjUpvalue*)object)->closed);
-		break;
-	case OBJ_NATIVE:
-	case OBJ_STRING:
 		break;
 	case OBJ_MODULE:
 	{
@@ -160,6 +164,16 @@ static void blacken_object(Obj* object)
 		mark_array(&list->elements);
 	}
 	break;
+	case OBJ_MAP:
+	{
+		ObjMap* map = (ObjMap*)object;
+		mark_table(&map->entries);
+	}
+		break;
+	case OBJ_RANGE:
+		break;
+	default:
+		assert(0);
 	}
 }
 
