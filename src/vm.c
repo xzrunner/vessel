@@ -346,8 +346,31 @@ static bool invoke_from_class(ObjClass* klass, ObjString* name, int arg_count)
 
 	ASSERT(IS_METHOD(method), "Error method type.");
 	ObjMethod* obj_method = AS_METHOD(method);
-	ASSERT(obj_method->type == METHOD_BLOCK, "Method should be block.");
-	return call(obj_method->as.closure, arg_count);
+
+	bool ret = false;
+	switch (obj_method->type)
+	{
+	case METHOD_BLOCK:
+		ret = call(obj_method->as.closure, arg_count);
+		break;
+	case METHOD_FOREIGN:
+	{
+		ASSERT(vm.api_stack == NULL, "Cannot already be in foreign call.");
+		vm.api_stack = vm.stack_top - arg_count;
+
+		obj_method->as.foreign();
+
+		// Discard the stack slots for the arguments and temporaries but leave one
+		// for the result.
+		vm.stack_top = vm.api_stack + 1;
+
+		vm.api_stack = NULL;
+	}
+		break;
+	default:
+		runtime_error("error method type.");
+	}
+	return ret;
 }
 
 static bool invoke(ObjString* name, int arg_count)
