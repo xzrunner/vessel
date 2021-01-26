@@ -147,7 +147,7 @@ void ves_str_buf_newline(bool to_buf)
 	print2buf(to_buf, "\n");
 }
 
-void vessel_str_buf_clear()
+void ves_str_buf_clear()
 {
 	if (out_buf) {
 		out_buf[0] = 0;
@@ -155,7 +155,7 @@ void vessel_str_buf_clear()
 	out_ptr = 0;
 }
 
-const char* vessel_get_str_buf()
+const char* ves_get_str_buf()
 {
 	return out_buf;
 }

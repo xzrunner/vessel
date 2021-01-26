@@ -40,13 +40,13 @@ static uint32_t advance_state(Well512* well)
 
 static void random_allocate()
 {
-    Well512* well = (Well512*)vessel_set_slot_new_foreign(0, 0, sizeof(Well512));
+    Well512* well = (Well512*)ves_set_newforeign(0, 0, sizeof(Well512));
     well->index = 0;
 }
 
 static void random_seed0()
 {
-    Well512* well = (Well512*)vessel_get_slot_foreign(0);
+    Well512* well = (Well512*)ves_toforeign(0);
 
     srand((uint32_t)time(NULL));
     for (int i = 0; i < 16; i++) {
@@ -56,9 +56,9 @@ static void random_seed0()
 
 static void random_seed1()
 {
-    Well512* well = (Well512*)vessel_get_slot_foreign(0);
+    Well512* well = (Well512*)ves_toforeign(0);
 
-    srand((uint32_t)vessel_get_slot_double(1));
+    srand((uint32_t)ves_tonumber(1));
     for (int i = 0; i < 16; i++) {
         well->state[i] = rand();
     }
@@ -66,16 +66,16 @@ static void random_seed1()
 
 static void random_seed16()
 {
-    Well512* well = (Well512*)vessel_get_slot_foreign(0);
+    Well512* well = (Well512*)ves_toforeign(0);
 
     for (int i = 0; i < 16; i++) {
-        well->state[i] = (uint32_t)vessel_get_slot_double(i + 1);
+        well->state[i] = (uint32_t)ves_tonumber(i + 1);
     }
 }
 
 static void random_float()
 {
-    Well512* well = (Well512*)vessel_get_slot_foreign(0);
+    Well512* well = (Well512*)ves_toforeign(0);
 
     // A double has 53 bits of precision in its mantissa, and we'd like to take
     // full advantage of that, so we need 53 bits of random source data.
@@ -90,14 +90,14 @@ static void random_float()
     // from 0 to 1.0 (half-inclusive).
     result /= 9007199254740992.0;
 
-    vessel_set_slot_double(0, result);
+    ves_set_number(0, result);
 }
 
 static void random_int0()
 {
-    Well512* well = (Well512*)vessel_get_slot_foreign(0);
+    Well512* well = (Well512*)ves_toforeign(0);
 
-    vessel_set_slot_double(0, (double)advance_state(well));
+    ves_set_number(0, (double)advance_state(well));
 }
 
 const char* RandomSource()

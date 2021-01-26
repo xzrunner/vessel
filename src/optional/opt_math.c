@@ -7,18 +7,18 @@
 #include <math.h>
 #include <string.h>
 
-#define DEF_MATH_FUNC(name, fn)                     \
-static void math_##name()                           \
-{                                                   \
-	double num = vessel_get_slot_double(1);         \
-	vessel_set_slot_double(0, fn(num));             \
+#define DEF_MATH_FUNC(name, fn)           \
+static void math_##name()                 \
+{                                         \
+	double num = ves_tonumber(1);         \
+	ves_set_number(0, fn(num));      \
 }
 
 #define PPCAT_NX(A, B) A ## B
 #define PPCAT(A, B) PPCAT_NX(A, B)
 #define STRINGIZE_NX(A) #A
 #define STRINGIZE(A) STRINGIZE_NX(A)
-#define	CALL_MATH_FUNC(name)                        \
+#define	CALL_MATH_FUNC(name)              \
 if (strcmp(signature, STRINGIZE(PPCAT(name, (_)))) == 0) return math_##name;
 
 DEF_MATH_FUNC(abs, fabs)
@@ -39,7 +39,7 @@ DEF_MATH_FUNC(exp, exp)
 
 static void math_pi()
 {
-	vessel_set_slot_double(0, 3.14159265358979323846264338327950288);
+	ves_set_number(0, 3.14159265358979323846264338327950288);
 }
 
 const char* MathSource()

@@ -520,7 +520,7 @@ void initialize_core()
 	PRIMITIVE(vm.class_class, "name", class_name);
 	bind_superclass(vm.class_class, vm.object_class);
 
-	vessel_interpret("Core", coreModuleSource);
+	ves_interpret("Core", coreModuleSource);
 
 	vm.bool_class = AS_CLASS(find_variable(core_module, "Bool"));
 	//PRIMITIVE(vm->boolClass, "toString", bool_toString);

@@ -85,73 +85,59 @@ typedef struct
   VesselBindForeignClassFn bind_foreign_class_fn;
 } VesselConfiguration;
 
-int vessel_get_slot_count();
-
 typedef enum
 {
-	VESSEL_TYPE_BOOL,
-	VESSEL_TYPE_NUM,
-	VESSEL_TYPE_FOREIGN,
-	VESSEL_TYPE_LIST,
-	VESSEL_TYPE_MAP,
-	VESSEL_TYPE_NULL,
-	VESSEL_TYPE_STRING,
-
-	// The object is of a type that isn't accessible by the C API.
-	VESSEL_TYPE_UNKNOWN
-} VesselType;
-
-VesselType vessel_get_slot_type(int slot);
-
-bool vessel_get_slot_bool(int slot);
-double vessel_get_slot_double(int slot);
-const char* vessel_get_slot_string(int slot);
-
-int vessel_get_list_count(int slot);
-void vessel_get_list_element(int listSlot, int index, int elementSlot);
-
-void vessel_get_map_value(int mapSlot, const char* key, int valueSlot);
-
-// Reads a foreign object from [slot] and returns a pointer to the foreign data
-// stored with it.
-//
-// It is an error to call this if the slot does not contain an instance of a
-// foreign class.
-void* vessel_get_slot_foreign(int slot);
-
-// Stores the numeric [value] in [slot].
-void vessel_set_slot_double(int slot, double value);
-
-// Creates a new instance of the foreign class stored in [classSlot] with [size]
-// bytes of raw storage and places the resulting object in [slot].
-//
-// This does not invoke the foreign class's constructor on the new instance. If
-// you need that to happen, call the constructor from Vessel, which will then
-// call the allocator foreign method. In there, call this to create the object
-// and then the constructor will be invoked when the allocator returns.
-//
-// Returns a pointer to the foreign object's data.
-void* vessel_set_slot_new_foreign(int slot, int classSlot, size_t size);
-
-typedef enum
-{
-	VESSEL_INTERPRET_OK,
-	VESSEL_INTERPRET_COMPILE_ERROR,
-	VESSEL_INTERPRET_RUNTIME_ERROR
+	VES_INTERPRET_OK,
+	VES_INTERPRET_COMPILE_ERROR,
+	VES_INTERPRET_RUNTIME_ERROR
 } VesselInterpretResult;
 
-VesselInterpretResult vessel_interpret(const char* module, const char* source);
+VesselInterpretResult ves_interpret(const char* module, const char* source);
 
-void* vessel_compile(const char* module, const char* source);
-VesselInterpretResult vessel_run(void* closure);
+void* ves_compile(const char* module, const char* source);
+VesselInterpretResult ves_run(void* closure);
 
-void vessel_str_buf_clear();
-const char* vessel_get_str_buf();
+void ves_str_buf_clear();
+const char* ves_get_str_buf();
 
-void vessel_set_config(VesselConfiguration* cfg);
+void ves_set_config(VesselConfiguration* cfg);
 
-void vessel_init_vm();
-void vessel_free_vm();
+void ves_init_vm();
+void ves_free_vm();
+
+int ves_gettop();
+
+typedef enum
+{
+	VES_TYPE_BOOL,
+	VES_TYPE_NUM,
+	VES_TYPE_FOREIGN,
+	VES_TYPE_LIST,
+	VES_TYPE_MAP,
+	VES_TYPE_NULL,
+	VES_TYPE_STRING,
+
+	// The object is of a type that isn't accessible by the C API.
+	VES_TYPE_UNKNOWN
+} VesselType;
+
+VesselType ves_type(int index);
+
+int ves_len(int index);
+
+void ves_geti(int index, int i);
+
+double ves_tonumber(int index);
+bool ves_toboolean(int index);
+const char* ves_tostring(int index);
+void* ves_toforeign(int index);
+
+void ves_pop(int n);
+
+int ves_getfield(int index, const char* k);
+
+void ves_set_number(int slot, double value);
+void* ves_set_newforeign(int slot, int class_slot, size_t size);
 
 #endif // vessel_h
 

@@ -80,19 +80,19 @@ void init_configuration(VesselConfiguration* config)
 	config->bind_foreign_class_fn = NULL;
 }
 
-void vessel_set_config(VesselConfiguration* cfg)
+void ves_set_config(VesselConfiguration* cfg)
 {
 	if (cfg) {
 		memcpy(&vm.config, cfg, sizeof(VesselConfiguration));
 	}
 }
 
-void* vessel_get_config()
+void* ves_get_config()
 {
 	return &vm.config;
 }
 
-void vessel_init_vm()
+void ves_init_vm()
 {
 	reset_stack();
 
@@ -125,7 +125,7 @@ void vessel_init_vm()
 	define_native("clock", clock_native);
 }
 
-void vessel_free_vm()
+void ves_free_vm()
 {
 	free_table(&vm.strings);
 	vm.init_string = NULL;
@@ -140,7 +140,7 @@ void push(Value value)
 	vm.stack_top++;
 
 #ifdef DEBUG_PRINT_STACK
-	const int stack_sz = vm.stack_top - &vm.stack[0];
+	const int stack_sz = ves_gettop();
 	switch (value.type)
 	{
 	case VAL_BOOL:
@@ -193,7 +193,7 @@ Value pop()
 {
 	vm.stack_top--;
 #ifdef DEBUG_PRINT_STACK
-	printf("pop %d\n", vm.stack_top - &vm.stack[0]);
+	printf("pop %d\n", ves_gettop());
 #endif // DEBUG_PRINT_STACK
 	return *vm.stack_top;
 }
@@ -698,7 +698,7 @@ static VesselInterpretResult run()
     do { \
         if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) { \
             runtime_error("Operands must be numbers."); \
-            return VESSEL_INTERPRET_RUNTIME_ERROR; \
+            return VES_INTERPRET_RUNTIME_ERROR; \
         } \
         double b = AS_NUMBER(pop()); \
         double a = AS_NUMBER(pop()); \
@@ -762,7 +762,7 @@ static VesselInterpretResult run()
 			int symbol = symbol_table_find(&FUNC->module->variable_names, name->chars, name->length);
 			if (symbol == -1) {
 				runtime_error("Undefined variable '%s'.", name->chars);
-				return VESSEL_INTERPRET_RUNTIME_ERROR;
+				return VES_INTERPRET_RUNTIME_ERROR;
 			}
 			push(FUNC->module->variables.values[symbol]);
 			break;
@@ -778,7 +778,7 @@ static VesselInterpretResult run()
 				int symbol = symbol_table_find(&FUNC->module->variable_names, name->chars, name->length);
 				if (symbol == -1) {
 					runtime_error("Undefined variable '%s'.", name->chars);
-					return VESSEL_INTERPRET_RUNTIME_ERROR;
+					return VES_INTERPRET_RUNTIME_ERROR;
 				}
 				FUNC->module->variables.values[symbol] = peek(0);
 			}
@@ -794,7 +794,7 @@ static VesselInterpretResult run()
 			int symbol = symbol_table_find(&FUNC->module->variable_names, name->chars, name->length);
 			if (symbol == -1) {
 				runtime_error("Undefined variable '%s'.", name->chars);
-				return VESSEL_INTERPRET_RUNTIME_ERROR;
+				return VES_INTERPRET_RUNTIME_ERROR;
 			}
 			FUNC->module->variables.values[symbol] = peek(0);
 			break;
@@ -826,7 +826,7 @@ static VesselInterpretResult run()
 					break;
 				}
 				if (!bind_method(instance->klass, name)) {
-					return VESSEL_INTERPRET_RUNTIME_ERROR;
+					return VES_INTERPRET_RUNTIME_ERROR;
 				}
 			}
 			else
@@ -834,7 +834,7 @@ static VesselInterpretResult run()
 				ObjClass* class_obj = get_class(receiver);
 				if (class_obj == NULL) {
 					runtime_error("Unknown type, no class_obj.");
-					return VESSEL_INTERPRET_RUNTIME_ERROR;
+					return VES_INTERPRET_RUNTIME_ERROR;
 				}
 
 				ObjString* name = READ_STRING();
@@ -853,7 +853,7 @@ static VesselInterpretResult run()
 								vm.stack_top += 1;
 							} else {
 								runtime_error("Run primitive fail.");
-								return VESSEL_INTERPRET_RUNTIME_ERROR;
+								return VES_INTERPRET_RUNTIME_ERROR;
 							}
 							break;
 						//case METHOD_FUNCTION_CALL:
@@ -881,7 +881,7 @@ static VesselInterpretResult run()
 		case OP_SET_PROPERTY: {
 			if (!IS_INSTANCE(peek(1))) {
 				runtime_error("Only instances have fields.");
-				return VESSEL_INTERPRET_RUNTIME_ERROR;
+				return VES_INTERPRET_RUNTIME_ERROR;
 			}
 
 			ObjInstance* instance = AS_INSTANCE(peek(1));
@@ -897,7 +897,7 @@ static VesselInterpretResult run()
 			ObjString* name = READ_STRING();
 			ObjClass* superclass = AS_CLASS(pop());
 			if (!bind_method(superclass, name)) {
-				return VESSEL_INTERPRET_RUNTIME_ERROR;
+				return VES_INTERPRET_RUNTIME_ERROR;
 			}
 			break;
 		}
@@ -921,7 +921,7 @@ static VesselInterpretResult run()
 				push(NUMBER_VAL(a + b));
 			} else {
 				runtime_error("Operands must be two numbers or two strings.");
-				return VESSEL_INTERPRET_RUNTIME_ERROR;
+				return VES_INTERPRET_RUNTIME_ERROR;
 			}
 			break;
 		}
@@ -934,7 +934,7 @@ static VesselInterpretResult run()
 		case OP_NEGATE:
 			if (!IS_NUMBER(peek(0))) {
 				runtime_error("Operand must be a number.");
-				return VESSEL_INTERPRET_RUNTIME_ERROR;
+				return VES_INTERPRET_RUNTIME_ERROR;
 			}
 
 			push(NUMBER_VAL(-AS_NUMBER(pop())));
@@ -967,7 +967,7 @@ static VesselInterpretResult run()
 		case OP_CALL: {
 			int arg_count = READ_BYTE();
 			if (!call_value(peek(arg_count), arg_count)) {
-				return VESSEL_INTERPRET_RUNTIME_ERROR;
+				return VES_INTERPRET_RUNTIME_ERROR;
 			}
 			frame = &vm.frames[vm.frame_count - 1];
 			break;
@@ -1006,7 +1006,7 @@ static VesselInterpretResult run()
 			Value v_method;
 			if (!table_get(&class_obj->methods, symbol, &v_method)) {
 				runtime_error("Method does not implement.");
-				return VESSEL_INTERPRET_RUNTIME_ERROR;
+				return VES_INTERPRET_RUNTIME_ERROR;
 			}
 
 			ObjMethod* method = AS_METHOD(v_method);
@@ -1018,7 +1018,7 @@ static VesselInterpretResult run()
 					vm.stack_top -= arg_count - 1;
 				} else {
 					runtime_error("Run primitive fail.");
-					return VESSEL_INTERPRET_RUNTIME_ERROR;
+					return VES_INTERPRET_RUNTIME_ERROR;
 				}
 				break;
 			//case METHOD_FUNCTION_CALL:
@@ -1058,7 +1058,7 @@ static VesselInterpretResult run()
 			ObjString* method = READ_STRING();
 			int arg_count = READ_BYTE();
 			if (!invoke(method, arg_count)) {
-				return VESSEL_INTERPRET_RUNTIME_ERROR;
+				return VES_INTERPRET_RUNTIME_ERROR;
 			}
 			frame = &vm.frames[vm.frame_count - 1];
 			break;
@@ -1069,7 +1069,7 @@ static VesselInterpretResult run()
 			int arg_count = READ_BYTE();
 			ObjClass* superclass = AS_CLASS(pop());
 			if (!invoke_from_class(superclass, method, arg_count)) {
-				return VESSEL_INTERPRET_RUNTIME_ERROR;
+				return VES_INTERPRET_RUNTIME_ERROR;
 			}
 			frame = &vm.frames[vm.frame_count - 1];
 			break;
@@ -1104,7 +1104,7 @@ static VesselInterpretResult run()
 			vm.frame_count--;
 			if (vm.frame_count == 0) {
 				pop();
-				return VESSEL_INTERPRET_OK;
+				return VES_INTERPRET_OK;
 			}
 
 			vm.stack_top = frame->slots;
@@ -1130,7 +1130,7 @@ static VesselInterpretResult run()
 			Value superclass = peek(1);
 			if (!IS_CLASS(superclass)) {
 				runtime_error("Superclass must be a class.");
-				return VESSEL_INTERPRET_RUNTIME_ERROR;
+				return VES_INTERPRET_RUNTIME_ERROR;
 			}
 
 			ObjClass* subclass = AS_CLASS(peek(0));
@@ -1237,194 +1237,6 @@ static VesselInterpretResult run()
 #undef BINARY_OP
 }
 
-void FinalizeForeign(ObjForeign* foreign)
-{
-	ObjClass* class_obj = foreign->obj.class_obj;
-
-	Value value;
-	if (!table_get(&class_obj->methods, copy_string("<finalize>", 10), &value)) {
-		return;
-	}
-
-	ObjMethod* method = AS_METHOD(value);
-	if (method->type == METHOD_NONE) {
-		return;
-	}
-
-	ASSERT(method->type == METHOD_FOREIGN, "Finalizer should be foreign.");
-
-	VesselFinalizerFn finalizer = (VesselFinalizerFn)method->as.foreign;
-	finalizer(foreign->data);
-}
-
-VesselInterpretResult vessel_interpret(const char* module, const char* source)
-{
-	return vessel_run(vessel_compile(module, source));
-}
-
-void* vessel_compile(const char* module, const char* source)
-{
-	return compile(module, source);
-}
-
-VesselInterpretResult vessel_run(void* closure)
-{
-	if (closure == NULL) {
-		return VESSEL_INTERPRET_COMPILE_ERROR;
-	}
-
-	push(OBJ_VAL(closure));
-	call_value(OBJ_VAL(closure), 0);
-
-	VesselInterpretResult ret = run();
-
-	if (vm.stack_top - &vm.stack[0] != 0) {
-		runtime_error("Stack not empty.");
-	}
-
-	return ret;
-}
-
-static void validate_api_slot(int slot)
-{
-	ASSERT(slot >= 0, "Slot cannot be negative.");
-	ASSERT(slot < vessel_get_slot_count(vm), "Not that many slots.");
-}
-
-int vessel_get_slot_count()
-{
-	if (vm.api_stack == NULL) {
-		return 0;
-	}
-
-	return (int)(vm.stack_top - vm.api_stack);
-}
-
-VesselType vessel_get_slot_type(int slot)
-{
-	validate_api_slot(slot);
-	if (IS_BOOL(vm.api_stack[slot])) return VESSEL_TYPE_BOOL;
-	if (IS_NUMBER(vm.api_stack[slot])) return VESSEL_TYPE_NUM;
-	if (IS_FOREIGN(vm.api_stack[slot])) return VESSEL_TYPE_FOREIGN;
-	if (IS_LIST(vm.api_stack[slot])) return VESSEL_TYPE_LIST;
-	if (IS_MAP(vm.api_stack[slot])) return VESSEL_TYPE_MAP;
-	if (IS_NIL(vm.api_stack[slot])) return VESSEL_TYPE_NULL;
-	if (IS_STRING(vm.api_stack[slot])) return VESSEL_TYPE_STRING;
-
-	return VESSEL_TYPE_UNKNOWN;
-}
-
-bool vessel_get_slot_bool(int slot)
-{
-	validate_api_slot(slot);
-	ASSERT(IS_BOOL(vm.api_stack[slot]), "Slot must hold a bool.");
-
-	return AS_BOOL(vm.api_stack[slot]);
-}
-
-double vessel_get_slot_double(int slot)
-{
-	validate_api_slot(slot);
-	ASSERT(IS_NUMBER(vm.api_stack[slot]), "Slot must hold a number.");
-
-	return AS_NUMBER(vm.api_stack[slot]);
-}
-
-const char* vessel_get_slot_string(int slot)
-{
-	validate_api_slot(slot);
-	ASSERT(IS_STRING(vm.api_stack[slot]), "Slot must hold a string.");
-
-	return AS_STRING(vm.api_stack[slot])->chars;
-}
-
-int vessel_get_list_count(int slot)
-{
-	validate_api_slot(slot);
-	ASSERT(IS_LIST(vm.api_stack[slot]), "Slot must hold a list.");
-
-	return AS_LIST(vm.api_stack[slot])->elements.count;
-}
-
-void vessel_get_list_element(int listSlot, int index, int elementSlot)
-{
-	validate_api_slot(listSlot);
-	validate_api_slot(elementSlot);
-	ASSERT(IS_LIST(vm.api_stack[listSlot]), "Slot must hold a list.");
-
-	ValueArray* elements = &AS_LIST(vm.api_stack[listSlot])->elements;
-
-	uint32_t used_index = validate_index_value(elements->count, (double)index, "Index");
-	ASSERT(used_index != UINT32_MAX, "Index out of bounds.");
-
-	vm.api_stack[elementSlot] = elements->values[used_index];
-}
-
-bool vessel_get_map_contains_key(int mapSlot, int keySlot)
-{
-	validate_api_slot(mapSlot);
-	validate_api_slot(keySlot);
-	ASSERT(IS_MAP(vm.api_stack[mapSlot]), "Slot must hold a map.");
-	ASSERT(IS_STRING(vm.api_stack[keySlot]), "Key must be a string.");
-
-	Value key = vm.api_stack[keySlot];
-	if (!validate_key(key)) {
-		return false;
-	}
-
-	ObjMap* map = AS_MAP(vm.api_stack[mapSlot]);
-	Value value = NIL_VAL;
-	return table_get(&map->entries, AS_STRING(vm.api_stack[keySlot]), &value);
-}
-
-void vessel_get_map_value(int mapSlot, const char* key, int valueSlot)
-{
-	validate_api_slot(mapSlot);
-	validate_api_slot(valueSlot);
-	ASSERT(IS_MAP(vm.api_stack[mapSlot]), "Slot must hold a map.");
-
-	ObjMap* map = AS_MAP(vm.api_stack[mapSlot]);
-	Value value = NIL_VAL;
-	table_get(&map->entries, copy_string(key, strlen(key)), &value);
-	vm.api_stack[valueSlot] = value;
-}
-
-void* vessel_get_slot_foreign(int slot)
-{
-	validate_api_slot(slot);
-	ASSERT(IS_FOREIGN(vm.api_stack[slot]), "Slot must hold a foreign instance.");
-
-	return AS_FOREIGN(vm.api_stack[slot])->data;
-}
-
-// Stores [value] in [slot] in the foreign call stack.
-static void set_slot(int slot, Value value)
-{
-	validate_api_slot(slot);
-	vm.api_stack[slot] = value;
-}
-
-void vessel_set_slot_double(int slot, double value)
-{
-	set_slot(slot, NUMBER_VAL(value));
-}
-
-void* vessel_set_slot_new_foreign(int slot, int classSlot, size_t size)
-{
-	validate_api_slot(slot);
-	validate_api_slot(classSlot);
-	ASSERT(IS_CLASS(vm.api_stack[classSlot]), "Slot must hold a class.");
-
-	ObjClass* class_obj = AS_CLASS(vm.api_stack[classSlot]);
-	ASSERT(class_obj->num_fields == -1, "Class must be a foreign class.");
-
-	ObjForeign* foreign = new_foreign(size, class_obj);
-	foreign->obj.class_obj = class_obj;
-	vm.api_stack[slot] = OBJ_VAL(foreign);
-
-	return (void*)foreign->data;
-}
-
 int DefineVariable(ObjModule* module, const char* name, size_t length, Value value, int* line)
 {
 	if (module->variables.count == MAX_MODULE_VARS) {
@@ -1451,4 +1263,200 @@ int DefineVariable(ObjModule* module, const char* name, size_t length, Value val
 	}
 
 	return symbol;
+}
+
+void FinalizeForeign(ObjForeign* foreign)
+{
+	ObjClass* class_obj = foreign->obj.class_obj;
+
+	Value value;
+	if (!table_get(&class_obj->methods, copy_string("<finalize>", 10), &value)) {
+		return;
+	}
+
+	ObjMethod* method = AS_METHOD(value);
+	if (method->type == METHOD_NONE) {
+		return;
+	}
+
+	ASSERT(method->type == METHOD_FOREIGN, "Finalizer should be foreign.");
+
+	VesselFinalizerFn finalizer = (VesselFinalizerFn)method->as.foreign;
+	finalizer(foreign->data);
+}
+
+VesselInterpretResult ves_interpret(const char* module, const char* source)
+{
+	return ves_run(ves_compile(module, source));
+}
+
+void* ves_compile(const char* module, const char* source)
+{
+	return compile(module, source);
+}
+
+VesselInterpretResult ves_run(void* closure)
+{
+	if (closure == NULL) {
+		return VES_INTERPRET_COMPILE_ERROR;
+	}
+
+	push(OBJ_VAL(closure));
+	call_value(OBJ_VAL(closure), 0);
+
+	VesselInterpretResult ret = run();
+
+	if (ves_gettop() != 0) {
+		runtime_error("Stack not empty.");
+	}
+
+	return ret;
+}
+
+static Value get_stack_value(int index)
+{
+	if (index >= 0)
+	{
+		int num = 0;
+		if (vm.api_stack != NULL) {
+			num = (int)(vm.stack_top - vm.api_stack);
+		}
+		ASSERT(index < num, "Not that many slots.");
+		return vm.api_stack[index];
+	}
+	else
+	{
+		const int num = ves_gettop();
+		ASSERT(-index < num, "Not that many slots.");
+		return vm.stack_top[index];
+	}
+}
+
+int ves_gettop()
+{
+	return vm.stack_top - &vm.stack[0];
+}
+
+VesselType ves_type(int index)
+{
+	Value val = get_stack_value(index);
+
+	if (IS_BOOL(val)) return VES_TYPE_BOOL;
+	if (IS_NUMBER(val)) return VES_TYPE_NUM;
+	if (IS_FOREIGN(val)) return VES_TYPE_FOREIGN;
+	if (IS_LIST(val)) return VES_TYPE_LIST;
+	if (IS_MAP(val)) return VES_TYPE_MAP;
+	if (IS_NIL(val)) return VES_TYPE_NULL;
+	if (IS_STRING(val)) return VES_TYPE_STRING;
+
+	return VES_TYPE_UNKNOWN;
+}
+
+int ves_len(int index)
+{
+	Value val = get_stack_value(index);
+	if (IS_LIST(val)) {
+		return AS_LIST(val)->elements.count;
+	} else if (IS_MAP(val)) {
+		return AS_MAP(val)->entries.count;
+	} else {
+		runtime_error("Unsupported type.");
+		return 0;
+	}
+}
+
+void ves_geti(int index, int i)
+{
+	Value val = get_stack_value(index);
+	ASSERT(IS_LIST(val), "Slot must hold a list.");
+
+	ValueArray* elements = &AS_LIST(val)->elements;
+
+	uint32_t used_index = validate_index_value(elements->count, (double)i, "Index");
+	ASSERT(used_index != UINT32_MAX, "Index out of bounds.");
+
+	push(elements->values[used_index]);
+}
+
+double ves_tonumber(int index)
+{
+	Value val = get_stack_value(index);
+	ASSERT(IS_NUMBER(val), "Slot must hold a number.");
+
+	return AS_NUMBER(val);
+
+}
+
+bool ves_toboolean(int index)
+{
+	Value val = get_stack_value(index);
+	ASSERT(IS_BOOL(val), "Slot must hold a bool.");
+
+	return AS_BOOL(val);
+}
+
+const char* ves_tostring(int index)
+{
+	Value val = get_stack_value(index);
+	ASSERT(IS_STRING(val), "Slot must hold a string.");
+
+	return AS_STRING(val)->chars;
+}
+
+void* ves_toforeign(int index)
+{
+	Value val = get_stack_value(index);
+	ASSERT(IS_FOREIGN(val), "Slot must hold a foreign instance.");
+
+	return AS_FOREIGN(val)->data;
+}
+
+void ves_pop(int n)
+{
+	for (int i = 0; i < n; ++i) {
+		pop();
+	}
+}
+
+int ves_getfield(int index, const char* k)
+{
+	Value val = get_stack_value(index);
+	ASSERT(IS_MAP(val), "Slot must hold a map.");
+
+	ObjMap* map = AS_MAP(val);
+	Value value = NIL_VAL;
+	table_get(&map->entries, copy_string(k, strlen(k)), &value);
+	push(value);
+
+	return ves_type(-1);
+}
+
+static void set_slot(int slot, Value value)
+{
+	int num = 0;
+	if (vm.api_stack != NULL) {
+		num = (int)(vm.stack_top - vm.api_stack);
+	}
+	ASSERT(slot < num, "Not that many slots.");
+
+	vm.api_stack[slot] = value;
+}
+
+void ves_set_number(int slot, double value)
+{
+	set_slot(slot, NUMBER_VAL(value));
+}
+
+void* ves_set_newforeign(int slot, int class_slot, size_t size)
+{
+	ASSERT(IS_CLASS(vm.api_stack[class_slot]), "Slot must hold a class.");
+
+	ObjClass* class_obj = AS_CLASS(vm.api_stack[class_slot]);
+	ASSERT(class_obj->num_fields == -1, "Class must be a foreign class.");
+
+	ObjForeign* foreign = new_foreign(size, class_obj);
+	foreign->obj.class_obj = class_obj;
+	vm.api_stack[slot] = OBJ_VAL(foreign);
+
+	return (void*)foreign->data;
 }
