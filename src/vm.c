@@ -1327,7 +1327,7 @@ static Value get_stack_value(int index)
 	else
 	{
 		const int num = ves_gettop();
-		ASSERT(-index < num, "Not that many slots.");
+		ASSERT(-index <= num, "Not that many slots.");
 		return vm.stack_top[index];
 	}
 }
@@ -1348,6 +1348,7 @@ VesselType ves_type(int index)
 	if (IS_MAP(val)) return VES_TYPE_MAP;
 	if (IS_NIL(val)) return VES_TYPE_NULL;
 	if (IS_STRING(val)) return VES_TYPE_STRING;
+	if (IS_INSTANCE(val)) return VES_TYPE_INSTANCE;
 
 	return VES_TYPE_UNKNOWN;
 }
@@ -1411,6 +1412,26 @@ void* ves_toforeign(int index)
 	return AS_FOREIGN(val)->data;
 }
 
+void ves_pushnumber(double n)
+{
+	push(NUMBER_VAL(n));
+}
+
+void ves_pushboolean(int b)
+{
+	push(BOOL_VAL(b != 0));
+}
+
+void ves_pushstring(const char* s)
+{
+	push(OBJ_VAL(copy_string(s, strlen(s))));
+}
+
+void ves_pushlstring(const char* s, size_t len)
+{
+	push(OBJ_VAL(copy_string(s, len)));
+}
+
 void ves_pop(int n)
 {
 	for (int i = 0; i < n; ++i) {
@@ -1429,6 +1450,59 @@ int ves_getfield(int index, const char* k)
 	push(value);
 
 	return ves_type(-1);
+}
+
+int ves_getglobal(const char* name)
+{
+	int ret = VES_TYPE_NULL;
+
+	int symbol = symbol_table_find(&vm.last_module->variable_names, name, strlen(name));
+	if (symbol != -1) {
+		Value val = vm.last_module->variables.values[symbol];
+		push(val);
+		ret = ves_type(-1);
+	} else {
+		push(NIL_VAL);
+	}
+
+	return ret;
+}
+
+VesselInterpretResult ves_call(int nargs, int nresults)
+{
+	ASSERT(IS_STRING(peek(0)), "Method name should be string.");
+	ObjString* s_method = AS_STRING(peek(0));
+	pop();
+
+	Value* args = vm.stack_top - nargs - 1;
+	ObjClass* class_obj = get_class(args[0]);
+	ASSERT(class_obj, "Should have class_obj.");
+
+	Value v_method;
+	if (!table_get(&class_obj->methods, s_method, &v_method)) {
+		runtime_error("Method does not implement.");
+		return VES_INTERPRET_RUNTIME_ERROR;
+	}
+
+	ObjMethod* method = AS_METHOD(v_method);
+	switch (method->type)
+	{
+	case METHOD_BLOCK:
+		if (call(method->as.closure, nargs)) {
+			vm.stack_top -= nargs;
+		} else {
+			runtime_error("Run block fail.");
+		}
+		break;
+	default:
+		runtime_error("Unknown method type.");
+	}
+
+	Value* stack_top = vm.stack_top;
+	VesselInterpretResult ret = run();
+	vm.stack_top = stack_top;
+
+	return ret;
 }
 
 static void set_slot(int slot, Value value)

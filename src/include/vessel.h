@@ -116,6 +116,7 @@ typedef enum
 	VES_TYPE_MAP,
 	VES_TYPE_NULL,
 	VES_TYPE_STRING,
+	VES_TYPE_INSTANCE,
 
 	// The object is of a type that isn't accessible by the C API.
 	VES_TYPE_UNKNOWN
@@ -132,9 +133,17 @@ bool ves_toboolean(int index);
 const char* ves_tostring(int index);
 void* ves_toforeign(int index);
 
+void ves_pushnumber(double n);
+void ves_pushboolean(int b);
+void ves_pushstring(const char* s);
+void ves_pushlstring(const char* s, size_t len);
+
 void ves_pop(int n);
 
 int ves_getfield(int index, const char* k);
+int ves_getglobal(const char* name);
+
+VesselInterpretResult ves_call(int nargs, int nresults);
 
 void ves_set_number(int slot, double value);
 void* ves_set_newforeign(int slot, int class_slot, size_t size);
