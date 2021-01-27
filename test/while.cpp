@@ -4,9 +4,9 @@
 
 TEST_CASE("while_closure_in_body")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 var f1
 var f2
 var f3
@@ -27,7 +27,7 @@ f1() // expect: 1
 f2() // expect: 2
 f3() // expect: 3
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 1
 2
 3
@@ -36,9 +36,9 @@ f3() // expect: 3
 
 TEST_CASE("while_return_closure")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 fun f() {
   while (true) {
     var i = "i"
@@ -50,16 +50,16 @@ fun f() {
 var h = f()
 h() // expect: i
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 i
 )" + 1);
 }
 
 TEST_CASE("while_return_inside")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 fun f() {
   while (true) {
     var i = "i"
@@ -70,16 +70,16 @@ fun f() {
 print f()
 // expect: i
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 i
 )" + 1);
 }
 
 TEST_CASE("while_syntax")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 // Single-expression body.
 var c = 0
 while (c < 3) print c = c + 1
@@ -102,7 +102,7 @@ while (false) if (true) 1 else 2
 while (false) while (true) 1
 while (false) for (;;) 1
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 1
 2
 3

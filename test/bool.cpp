@@ -4,9 +4,9 @@
 
 TEST_CASE("equality")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 print true == true    // expect: true
 print true == false   // expect: false
 print false == true   // expect: false
@@ -31,7 +31,7 @@ print true != "true"   // expect: true
 print false != "false" // expect: true
 print false != ""      // expect: true
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 true
 false
 false
@@ -55,14 +55,14 @@ true
 
 TEST_CASE("bool_equality")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 print !true    // expect: false
 print !false   // expect: true
 print !!true   // expect: true
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 false
 true
 true
@@ -71,15 +71,15 @@ true
 
 TEST_CASE("bool_type")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 print(true is Bool)      // expect: true
 print(true is Object)    // expect: true
 print(true is Num)       // expect: false
 print(true.type == Bool) // expect: true
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 true
 true
 false

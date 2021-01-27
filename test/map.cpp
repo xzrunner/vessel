@@ -4,9 +4,9 @@
 
 //TEST_CASE("map_reuse")
 //{
-//    vessel_str_buf_clear();
+//    ves_str_buf_clear();
 //
-//    vessel_interpret("test", R"(
+//    ves_interpret("test", R"(
 //var map = {}
 //map[2] = "two"
 //map[0] = "zero"
@@ -16,16 +16,16 @@
 //
 //print(map.containsKey(0)) // expect: false
 //)");
-//    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+//    REQUIRE(std::string(ves_get_str_buf()) == R"(
 //false
 //)" + 1);
 //}
 
 //TEST_CASE("map_remove")
 //{
-//    vessel_str_buf_clear();
+//    ves_str_buf_clear();
 //
-//    vessel_interpret("test", R"(
+//    ves_interpret("test", R"(
 //var map = {
 //  "one": 1,
 //  "two": 2,
@@ -45,7 +45,7 @@
 //print(map.remove("one")) // expect: 1
 //print(map.count) // expect: 0
 //)");
-//    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+//    REQUIRE(std::string(ves_get_str_buf()) == R"(
 //3
 //2
 //2
@@ -60,9 +60,9 @@
 
 TEST_CASE("contains_key")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 var map = {
   "one": 1,
   "two": 2,
@@ -75,7 +75,7 @@ print(map.containsKey("three")) // expect: true
 print(map.containsKey("four")) // expect: false
 print(map.containsKey("five")) // expect: false
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 true
 true
 true

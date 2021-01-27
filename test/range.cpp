@@ -4,21 +4,21 @@
 
 TEST_CASE("range")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 print(11..22)
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 range(11, 22)
 )" + 1);
 }
 
 TEST_CASE("range_from")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 // Ordered range.
 print((2..5).from) // expect: 2
 print((3..3).from) // expect: 3
@@ -32,7 +32,7 @@ print((3..0).from) // expect: 3
 print((3..-5).from) // expect: 3
 print((-2..-5).from) // expect: -2
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 2
 3
 0
@@ -47,9 +47,9 @@ print((-2..-5).from) // expect: -2
 
 TEST_CASE("range_to")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 // Ordered range.
 print((2..5).to) // expect: 5
 print((3..3).to) // expect: 3
@@ -63,7 +63,7 @@ print((3..0).to) // expect: 0
 print((3..-5).to) // expect: -5
 print((-2..-5).to) // expect: -5
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 5
 3
 3
@@ -78,9 +78,9 @@ print((-2..-5).to) // expect: -5
 
 TEST_CASE("range_contain")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 // Ordered range.
 print((2..=5).contains(1)) // expect: false
 print((2..=5).contains(2)) // expect: true
@@ -105,7 +105,7 @@ print((5..2).contains(2)) // expect: false
 print((5..2).contains(5)) // expect: true
 print((5..2).contains(6)) // expect: false
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 false
 true
 true

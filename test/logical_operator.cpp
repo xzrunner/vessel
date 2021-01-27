@@ -4,9 +4,9 @@
 
 TEST_CASE("and")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 // Note: These tests implicitly depend on ints being truthy.
 
 // Return the first non-true argument.
@@ -27,7 +27,7 @@ var b = "before"
 print a // expect: true
 print b // expect: false
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 false
 1
 false
@@ -40,9 +40,9 @@ false
 
 TEST_CASE("and_truth")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 // False and nil are false.
 print false and "bad" // expect: false
 print nil and "bad" // expect: nil
@@ -52,7 +52,7 @@ print true and "ok" // expect: ok
 print 0 and "ok" // expect: ok
 print "" and "ok" // expect: ok
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 false
 nil
 ok
@@ -63,9 +63,9 @@ ok
 
 TEST_CASE("or")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 // Note: These tests implicitly depend on ints being truthy.
 
 // Return the first true argument.
@@ -86,7 +86,7 @@ var b = "before"
 print a // expect: false
 print b // expect: true
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 1
 1
 true
@@ -99,9 +99,9 @@ true
 
 TEST_CASE("or_truth")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 // False and nil are false.
 print false or "ok" // expect: ok
 print nil or "ok" // expect: ok
@@ -111,7 +111,7 @@ print true or "ok" // expect: true
 print 0 or "ok" // expect: 0
 print "s" or "ok" // expect: s
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 ok
 ok
 true

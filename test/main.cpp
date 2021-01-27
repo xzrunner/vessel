@@ -5,7 +5,7 @@
 
 int main(int argc, char* argv[])
 {
-    vessel_init_vm();
+    ves_init_vm();
 
     int result = Catch::Session().run(argc, argv);
 

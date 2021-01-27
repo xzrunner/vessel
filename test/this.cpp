@@ -4,9 +4,9 @@
 
 TEST_CASE("this-closure")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 class Foo {
   getClosure() {
     fun closure() {
@@ -21,16 +21,16 @@ class Foo {
 var closure = Foo().getClosure()
 print closure() // expect: Foo
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 Foo
 )" + 1);
 }
 
 TEST_CASE("nested_class")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 class Outer {
   method() {
     print this // expect: Outer instance
@@ -52,7 +52,7 @@ class Outer {
 
 Outer().method()
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 Outer instance
 Outer instance
 Inner instance
@@ -61,9 +61,9 @@ Inner instance
 
 TEST_CASE("this_nested_closure")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 class Foo {
   getClosure() {
     fun f() {
@@ -84,16 +84,16 @@ class Foo {
 var closure = Foo().getClosure()
 print closure()()() // expect: Foo
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 Foo
 )" + 1);
 }
 
 TEST_CASE("this_in_method")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 class Foo {
   bar() { return this }
   baz() { return "baz" }
@@ -101,7 +101,7 @@ class Foo {
 
 print Foo().bar().baz() // expect: baz
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 baz
 )" + 1);
 }

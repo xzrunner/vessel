@@ -4,9 +4,9 @@
 
 TEST_CASE("closure_in_body")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 var f1
 var f2
 var f3
@@ -30,7 +30,7 @@ f2() // expect: 4
 f3() // expect: 4
      // expect: 3
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 4
 1
 4
@@ -42,9 +42,9 @@ f3() // expect: 4
 
 TEST_CASE("return_closure")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 fun f() {
   for (;;) {
     var i = "i"
@@ -56,16 +56,16 @@ fun f() {
 var h = f()
 h() // expect: i
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 i
 )" + 1);
 }
 
 TEST_CASE("return_inside")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 fun f() {
   for (;;) {
     var i = "i"
@@ -76,16 +76,16 @@ fun f() {
 print f()
 // expect: i
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 i
 )" + 1);
 }
 
 TEST_CASE("for-scope")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 {
   var i = "before"
 
@@ -113,7 +113,7 @@ TEST_CASE("for-scope")
   }
 }
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 0
 -1
 after
@@ -123,9 +123,9 @@ after
 
 TEST_CASE("syntax")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 // Single-expression body.
 for (var c = 0; c < 3;) print c = c + 1
 // expect: 1
@@ -177,7 +177,7 @@ for (; false;) if (true) 1 else 2
 for (; false;) while (true) 1
 for (; false;) for (;;) 1
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 1
 2
 3
@@ -197,14 +197,14 @@ done
 
 TEST_CASE("in_range")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 for (var i in 0..3) {
     print(i)
 }
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 0
 1
 2
@@ -213,14 +213,14 @@ for (var i in 0..3) {
 
 TEST_CASE("in_range_equal")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 for (var i in 0..=3) {
     print(i)
 }
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 0
 1
 2
@@ -230,15 +230,15 @@ for (var i in 0..=3) {
 
 TEST_CASE("in_list")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 var list = [0,2,3]
 for (var i in list) {
     print(i)
 }
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 0
 2
 3
@@ -247,9 +247,9 @@ for (var i in list) {
 
 TEST_CASE("in_map")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 var map = {
   "one": 1,
   "two": 2,
@@ -259,7 +259,7 @@ for (var i in map) {
     print(i)
 }
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 two
 three
 one

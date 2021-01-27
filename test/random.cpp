@@ -4,9 +4,9 @@
 
 TEST_CASE("float")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 import "random" for Random
 
 var random = Random.init(12345)
@@ -21,7 +21,7 @@ for (var i in 1..=1000) {
 print(below > 450) // expect: true
 print(below < 550) // expect: true
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 true
 true
 )" + 1);
@@ -29,9 +29,9 @@ true
 
 TEST_CASE("float_max")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 import "random" for Random
 
 var random = Random.init(12345)
@@ -43,15 +43,15 @@ for (var i in 1..=100) {
   if (n >= 5) print("too high")
 }
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 )" + 1);
 }
 
 TEST_CASE("float_min_max")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 import "random" for Random
 
 var random = Random.init(12345)
@@ -63,15 +63,15 @@ for (var i in 1..=100) {
   if (n >= 5) print("too high")
 }
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 )" + 1);
 }
 
 TEST_CASE("int")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 import "random" for Random
 
 var random = Random.init(12345)
@@ -86,7 +86,7 @@ for (var i in 1..=1000) {
 print(below > 450) // expect: true
 print(below < 550) // expect: true
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 true
 true
 )" + 1);
@@ -94,9 +94,9 @@ true
 
 TEST_CASE("int_max")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 import "random" for Random
 
 var random = Random.init(12345)
@@ -112,15 +112,15 @@ for (var count in counts) {
   if (count > 2100) print("too many")
 }
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 )" + 1);
 }
 
 TEST_CASE("int_min_max")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 import "random" for Random
 
 var random = Random.init(12345)
@@ -140,15 +140,15 @@ for (var i in 3..=7) {
   if (counts[i] > 2100) print("too many")
 }
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 )" + 1);
 }
 
 TEST_CASE("random_new")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 import "random" for Random
 
 var random = Random.init()
@@ -162,16 +162,16 @@ for (var i in 1..=100) {
 
 print(correct) // expect: 200
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 200
 )" + 1);
 }
 
 TEST_CASE("new_number")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 import "random" for Random
 
 var random1 = Random.init(123)
@@ -185,16 +185,16 @@ for (var i in 1..=100) {
 
 print(correct) // expect: 100
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 100
 )" + 1);
 }
 
 TEST_CASE("new_sequence")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 import "random" for Random
 
 var random1 = Random.init([1, 2, 3])
@@ -208,16 +208,16 @@ for (var i in 1..=100) {
 
 print(correct) // expect: 100
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 100
 )" + 1);
 }
 
 //TEST_CASE("sample_count_multiple")
 //{
-//    vessel_str_buf_clear();
+//    ves_str_buf_clear();
 //
-//    vessel_interpret("test", R"foo(
+//    ves_interpret("test", R"foo(
 //import "random" for Random
 //
 //var random = Random.new(12345)
@@ -246,16 +246,16 @@ print(correct) // expect: 100
 //  }
 //}
 //)foo");
-//    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+//    REQUIRE(std::string(ves_get_str_buf()) == R"(
 //100
 //)" + 1);
 //}
 
 //TEST_CASE("sample_count_one")
 //{
-//    vessel_str_buf_clear();
+//    ves_str_buf_clear();
 //
-//    vessel_interpret("test", R"foo(
+//    ves_interpret("test", R"foo(
 //import "random" for Random
 //
 //var random = Random.init(12345)
@@ -281,7 +281,7 @@ print(correct) // expect: 100
 //  if (error > 0.1) print("!!! %(error)")
 //}
 //)foo");
-//    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+//    REQUIRE(std::string(ves_get_str_buf()) == R"(
 //[single]
 //5
 //)" + 1);
@@ -289,9 +289,9 @@ print(correct) // expect: 100
 
 TEST_CASE("sample_count_zero")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 import "random" for Random
 
 var random = Random.init(12345)
@@ -299,7 +299,7 @@ var random = Random.init(12345)
 print(random.sample([], 0)) // expect: []
 print(random.sample([1, 2, 3], 0)) // expect: []
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 []
 []
 )" + 1);
@@ -307,9 +307,9 @@ print(random.sample([1, 2, 3], 0)) // expect: []
 
 TEST_CASE("sample_one")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"foo(
+    ves_interpret("test", R"foo(
 import "random" for Random
 
 var random = Random.init(12345)
@@ -332,7 +332,7 @@ for (var key in histogram) {
   if (error > 0.2) print("!!! %(error)")
 }
 )foo");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 single
 5
 )" + 1);
@@ -340,9 +340,9 @@ single
 
 //TEST_CASE("shuffle")
 //{
-//    vessel_str_buf_clear();
+//    ves_str_buf_clear();
 //
-//    vessel_interpret("test", R"foo(
+//    ves_interpret("test", R"foo(
 //import "random" for Random
 //
 //var random = Random.init(12345)
@@ -376,7 +376,7 @@ single
 //  if (error > 0.21) print("!!! %(error)")
 //}
 //)foo");
-//    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+//    REQUIRE(std::string(ves_get_str_buf()) == R"(
 //[]
 //[1]
 //24

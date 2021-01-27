@@ -4,9 +4,9 @@
 
 TEST_CASE("list_add")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 var a = [1]
 a.add(2)
 print(a) // expect: [1, 2]
@@ -16,7 +16,7 @@ print(a) // expect: [1, 2, 3]
 // Returns added element.
 print(a.add(4)) // expect: 4
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 [1, 2]
 [1, 2, 3]
 4
@@ -25,9 +25,9 @@ print(a.add(4)) // expect: 4
 
 TEST_CASE("list_clear")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 var a = [1, 2, 3]
 a.clear()
 print(a)       // expect: []
@@ -36,7 +36,7 @@ print(a.count) // expect: 0
 // Returns null.
 print([1, 2].clear()) // expect: nil
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 []
 0
 nil
@@ -45,9 +45,9 @@ nil
 
 TEST_CASE("list_remove_at")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 var a = [1, 2, 3]
 a.removeAt(0)
 print(a) // expect: [2, 3]
@@ -76,7 +76,7 @@ print(f) // expect: [1, 2]
 // Return the removed value.
 print([3, 4, 5].removeAt(1)) // expect: 4
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 [2, 3]
 [1, 3]
 [1, 2]
@@ -89,9 +89,9 @@ print([3, 4, 5].removeAt(1)) // expect: 4
 
 TEST_CASE("list_subscript")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 // Returns elements.
 var list = ["a", "b", "c", "d"]
 print(list[0]) // expect: a
@@ -105,7 +105,7 @@ print(list[-3]) // expect: b
 print(list[-2]) // expect: c
 print(list[-1]) // expect: d
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 a
 b
 c
@@ -120,9 +120,9 @@ d
 
 TEST_CASE("list_subscript_setter")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 // Basic assignment.
 {
   var list = [1, 2, 3]
@@ -147,7 +147,7 @@ TEST_CASE("list_subscript_setter")
   print(list) // expect: [7, 6, 5]
 }
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 [5, 6, 7]
 5
 [7, 6, 5]

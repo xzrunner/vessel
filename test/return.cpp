@@ -4,57 +4,57 @@
 
 TEST_CASE("after_else")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 fun f() {
   if (false) "no" else return "ok"
 }
 
 print f() // expect: ok
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 ok
 )" + 1);
 }
 
 TEST_CASE("after_if")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 fun f() {
   if (true) return "ok"
 }
 
 print f() // expect: ok
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 ok
 )" + 1);
 }
 
 TEST_CASE("after_while")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 fun f() {
   while (true) return "ok"
 }
 
 print f() // expect: ok
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 ok
 )" + 1);
 }
 
 TEST_CASE("in_function")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 fun f() {
   return "ok"
   print "bad"
@@ -62,16 +62,16 @@ fun f() {
 
 print f() // expect: ok
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 ok
 )" + 1);
 }
 
 TEST_CASE("in_method")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 class Foo {
   method() {
     return "ok"
@@ -81,16 +81,16 @@ class Foo {
 
 print Foo().method() // expect: ok
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 ok
 )" + 1);
 }
 
 TEST_CASE("return_nil_if_no_value")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 fun f() {
   return
   print "bad"
@@ -98,7 +98,7 @@ fun f() {
 
 print f() // expect: nil
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 nil
 )" + 1);
 }

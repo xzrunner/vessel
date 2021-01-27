@@ -4,9 +4,9 @@
 
 TEST_CASE("call_function_field")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 class Foo {}
 
 fun bar(a, b) {
@@ -23,7 +23,7 @@ foo.bar(1, 2)
 // expect: 1
 // expect: 2
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 bar
 1
 2
@@ -32,9 +32,9 @@ bar
 
 TEST_CASE("get_and_set_method")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 // Bound methods have identity equality.
 class Foo {
   method(a) {
@@ -61,7 +61,7 @@ method(2)
 // expect: method
 // expect: 2
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 other
 1
 method
@@ -71,9 +71,9 @@ method
 
 TEST_CASE("method")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 class Foo {
   bar(arg) {
     print arg
@@ -84,7 +84,7 @@ var bar = Foo().bar
 print "got method" // expect: got method
 bar("arg")          // expect: arg
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 got method
 arg
 )" + 1);
@@ -92,9 +92,9 @@ arg
 
 TEST_CASE("method_binds_this")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 class Foo {
   sayName(a) {
     print this.name
@@ -115,7 +115,7 @@ foo2.fn(1)
 // expect: foo1
 // expect: 1
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 foo1
 1
 )" + 1);
@@ -123,9 +123,9 @@ foo1
 
 TEST_CASE("on_instance")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 class Foo {}
 
 var foo = Foo()
@@ -136,7 +136,7 @@ print foo.baz = "baz value" // expect: baz value
 print foo.bar // expect: bar value
 print foo.baz // expect: baz value
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 bar value
 baz value
 bar value

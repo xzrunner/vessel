@@ -4,9 +4,9 @@
 
 TEST_CASE("precedence")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 // * has higher precedence than +.
 print 2 + 3 * 4 // expect: 14
 
@@ -40,7 +40,7 @@ print 1-1   // expect: 0
 // Using () for grouping.
 print (2 * (6 - (2 + 2))) // expect: 4
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 14
 8
 4

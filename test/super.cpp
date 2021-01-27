@@ -4,9 +4,9 @@
 
 TEST_CASE("bound_method")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"foo(
+    ves_interpret("test", R"foo(
 class A {
   method(arg) {
     print "A.method(" + arg + ")"
@@ -27,16 +27,16 @@ class B is A {
 var closure = B().getClosure()
 closure("arg") // expect: A.method(arg)
 )foo");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 A.method(arg)
 )" + 1);
 }
 
 TEST_CASE("call_other_method")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"foo(
+    ves_interpret("test", R"foo(
 class Base {
   foo() {
     print "Base.foo()"
@@ -54,7 +54,7 @@ Derived().bar()
 // expect: Derived.bar()
 // expect: Base.foo()
 )foo");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 Derived.bar()
 Base.foo()
 )" + 1);
@@ -62,9 +62,9 @@ Base.foo()
 
 TEST_CASE("call_same_method")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"foo(
+    ves_interpret("test", R"foo(
 class Base {
   foo() {
     print "Base.foo()"
@@ -82,7 +82,7 @@ Derived().foo()
 // expect: Derived.foo()
 // expect: Base.foo()
 )foo");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 Derived.foo()
 Base.foo()
 )" + 1);
@@ -90,9 +90,9 @@ Base.foo()
 
 TEST_CASE("closure")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"(
+    ves_interpret("test", R"(
 class Base {
   toString() { return "Base" }
 }
@@ -111,16 +111,16 @@ class Derived is Base {
 var closure = Derived().getClosure()
 print closure() // expect: Base
 )");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 Base
 )" + 1);
 }
 
 TEST_CASE("constructor")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"foo(
+    ves_interpret("test", R"foo(
 class Base {
   init(a, b) {
     print "Base.init(" + a + ", " + b + ")"
@@ -138,7 +138,7 @@ Derived()
 // expect: Derived.init()
 // expect: Base.init(a, b)
 )foo");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 Derived.init()
 Base.init(a, b)
 )" + 1);
@@ -146,9 +146,9 @@ Base.init(a, b)
 
 TEST_CASE("indirectly_inherited")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"foo(
+    ves_interpret("test", R"foo(
 class A {
   foo() {
     print "A.foo()"
@@ -168,7 +168,7 @@ C().foo()
 // expect: C.foo()
 // expect: A.foo()
 )foo");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 C.foo()
 A.foo()
 )" + 1);
@@ -176,9 +176,9 @@ A.foo()
 
 TEST_CASE("reassign_superclass")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"foo(
+    ves_interpret("test", R"foo(
 class Base {
   method() {
     print "Base.method()"
@@ -202,7 +202,7 @@ derived.method() // expect: Base.method()
 Base = OtherBase
 derived.method() // expect: Base.method()
 )foo");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 Base.method()
 Base.method()
 )" + 1);
@@ -210,9 +210,9 @@ Base.method()
 
 TEST_CASE("super_in_closure_in_inherited_method")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"foo(
+    ves_interpret("test", R"foo(
 class A {
   say() {
     print "A"
@@ -240,16 +240,16 @@ class C is B {
 
 C().getClosure()() // expect: A
 )foo");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 A
 )" + 1);
 }
 
 TEST_CASE("super_in_inherited_method")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"foo(
+    ves_interpret("test", R"foo(
 class A {
   say() {
     print "A"
@@ -274,16 +274,16 @@ class C is B {
 
 C().test() // expect: A
 )foo");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 A
 )" + 1);
 }
 
 TEST_CASE("this_in_superclass_method")
 {
-    vessel_str_buf_clear();
+    ves_str_buf_clear();
 
-    vessel_interpret("test", R"foo(
+    ves_interpret("test", R"foo(
 class Base {
   init(a) {
     this.a = a
@@ -301,7 +301,7 @@ var derived = Derived("a", "b")
 print derived.a // expect: a
 print derived.b // expect: b
 )foo");
-    REQUIRE(std::string(vessel_get_str_buf()) == R"(
+    REQUIRE(std::string(ves_get_str_buf()) == R"(
 a
 b
 )" + 1);
