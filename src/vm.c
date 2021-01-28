@@ -1483,9 +1483,7 @@ VesselInterpretResult ves_call(int nargs, int nresults)
 	switch (method->type)
 	{
 	case METHOD_BLOCK:
-		if (call(method->as.closure, nargs)) {
-			vm.stack_top -= nargs;
-		} else {
+		if (!call(method->as.closure, nargs)) {
 			runtime_error("Run block fail.");
 		}
 		break;
@@ -1493,7 +1491,7 @@ VesselInterpretResult ves_call(int nargs, int nresults)
 		runtime_error("Unknown method type.");
 	}
 
-	Value* stack_top = vm.stack_top;
+	Value* stack_top = vm.stack_top - nargs;
 	VesselInterpretResult ret = run();
 	vm.stack_top = stack_top;
 
