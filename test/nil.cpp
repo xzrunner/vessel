@@ -1,16 +1,17 @@
+#include "utility.h"
+
 #include <catch/catch.hpp>
 
 #include <vessel.h>
 
 TEST_CASE("literal")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
-print nil // expect: nil
+System.print(nil) // expect: nil
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(get_output_buf()) == R"(
 nil
 )" + 1);
 }
-

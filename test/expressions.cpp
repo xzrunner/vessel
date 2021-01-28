@@ -1,10 +1,12 @@
+#include "utility.h"
+
 #include <catch/catch.hpp>
 
 #include <vessel.h>
 
 TEST_CASE("evaluate")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
 // Note: This is just for the expression evaluating chapter which evaluates an
@@ -12,14 +14,14 @@ TEST_CASE("evaluate")
 (5 - (3 - 1)) + -1
 // expect: 2
 )");
-//    REQUIRE(std::string(ves_get_str_buf()) == R"(
+//    REQUIRE(std::string(get_output_buf()) == R"(
 //2
 //)" + 1);
 }
 
 TEST_CASE("parse")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
 // Note: This is just for the expression parsing chapter which prints the AST.

@@ -1,18 +1,20 @@
+#include "utility.h"
+
 #include <catch/catch.hpp>
 
 #include <vessel.h>
 
 TEST_CASE("call_function_field")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
 class Foo {}
 
 fun bar(a, b) {
-  print "bar"
-  print a
-  print b
+  System.print("bar")
+  System.print(a)
+  System.print(b)
 }
 
 var foo = Foo()
@@ -23,7 +25,7 @@ foo.bar(1, 2)
 // expect: 1
 // expect: 2
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(get_output_buf()) == R"(
 bar
 1
 2
@@ -32,18 +34,18 @@ bar
 
 TEST_CASE("get_and_set_method")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
 // Bound methods have identity equality.
 class Foo {
   method(a) {
-    print "method"
-    print a
+    System.print("method")
+    System.print(a)
   }
   other(a) {
-    print "other"
-    print a
+    System.print("other")
+    System.print(a)
   }
 }
 
@@ -61,7 +63,7 @@ method(2)
 // expect: method
 // expect: 2
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(get_output_buf()) == R"(
 other
 1
 method
@@ -71,20 +73,20 @@ method
 
 TEST_CASE("method")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
 class Foo {
   bar(arg) {
-    print arg
+    System.print(arg)
   }
 }
 
 var bar = Foo().bar
-print "got method" // expect: got method
+System.print("got method") // expect: got method
 bar("arg")          // expect: arg
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(get_output_buf()) == R"(
 got method
 arg
 )" + 1);
@@ -92,13 +94,13 @@ arg
 
 TEST_CASE("method_binds_this")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
 class Foo {
   sayName(a) {
-    print this.name
-    print a
+    System.print(this.name)
+    System.print(a)
   }
 }
 
@@ -115,7 +117,7 @@ foo2.fn(1)
 // expect: foo1
 // expect: 1
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(get_output_buf()) == R"(
 foo1
 1
 )" + 1);
@@ -123,20 +125,20 @@ foo1
 
 TEST_CASE("on_instance")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
 class Foo {}
 
 var foo = Foo()
 
-print foo.bar = "bar value" // expect: bar value
-print foo.baz = "baz value" // expect: baz value
+System.print(foo.bar = "bar value") // expect: bar value
+System.print(foo.baz = "baz value") // expect: baz value
 
-print foo.bar // expect: bar value
-print foo.baz // expect: baz value
+System.print(foo.bar) // expect: bar value
+System.print(foo.baz) // expect: baz value
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(get_output_buf()) == R"(
 bar value
 baz value
 bar value

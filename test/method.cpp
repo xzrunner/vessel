@@ -1,10 +1,12 @@
+#include "utility.h"
+
 #include <catch/catch.hpp>
 
 #include <vessel.h>
 
 TEST_CASE("arity")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
 class Foo {
@@ -20,17 +22,17 @@ class Foo {
 }
 
 var foo = Foo()
-print foo.method0() // expect: no args
-print foo.method1(1) // expect: 1
-print foo.method2(1, 2) // expect: 3
-print foo.method3(1, 2, 3) // expect: 6
-print foo.method4(1, 2, 3, 4) // expect: 10
-print foo.method5(1, 2, 3, 4, 5) // expect: 15
-print foo.method6(1, 2, 3, 4, 5, 6) // expect: 21
-print foo.method7(1, 2, 3, 4, 5, 6, 7) // expect: 28
-print foo.method8(1, 2, 3, 4, 5, 6, 7, 8) // expect: 36
+System.print(foo.method0()) // expect: no args
+System.print(foo.method1(1)) // expect: 1
+System.print(foo.method2(1, 2)) // expect: 3
+System.print(foo.method3(1, 2, 3)) // expect: 6
+System.print(foo.method4(1, 2, 3, 4)) // expect: 10
+System.print(foo.method5(1, 2, 3, 4, 5)) // expect: 15
+System.print(foo.method6(1, 2, 3, 4, 5, 6)) // expect: 21
+System.print(foo.method7(1, 2, 3, 4, 5, 6, 7)) // expect: 28
+System.print(foo.method8(1, 2, 3, 4, 5, 6, 7, 8)) // expect: 36
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(get_output_buf()) == R"(
 no args
 1
 3
@@ -45,32 +47,32 @@ no args
 
 TEST_CASE("empty_block")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
 class Foo {
   bar() {}
 }
 
-print Foo().bar() // expect: nil
+System.print(Foo().bar()) // expect: nil
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(get_output_buf()) == R"(
 nil
 )" + 1);
 }
 
 TEST_CASE("print_bound_method")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
 class Foo {
   method() { }
 }
 var foo = Foo()
-print foo.method // expect: <fn method>
+System.print(foo.method) // expect: <fn method>
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(get_output_buf()) == R"(
 <fn method>
 )" + 1);
 }

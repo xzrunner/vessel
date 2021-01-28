@@ -3,8 +3,6 @@
 
 #include "value.h"
 
-void ves_dump_value(Value value, bool to_buf);
-
-void ves_str_buf_newline();
+void dump_value(Value value, bool to_console);
 
 #endif // vessel_debug_h

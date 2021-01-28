@@ -1,10 +1,12 @@
+#include "utility.h"
+
 #include <catch/catch.hpp>
 
 #include <vessel.h>
 
 TEST_CASE("empty")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
 {} // By itself.
@@ -13,28 +15,28 @@ TEST_CASE("empty")
 if (true) {}
 if (false) {} else {}
 
-print "ok" // expect: ok
+System.print("ok") // expect: ok
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(get_output_buf()) == R"(
 ok
 )" + 1);
 }
 
 TEST_CASE("block-scope")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
 var a = "outer"
 
 {
   var a = "inner"
-  print a // expect: inner
+  System.print(a) // expect: inner
 }
 
-print a // expect: outer
+System.print(a) // expect: outer
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(get_output_buf()) == R"(
 inner
 outer
 )" + 1);

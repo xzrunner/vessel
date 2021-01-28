@@ -1,10 +1,12 @@
+#include "utility.h"
+
 #include <catch/catch.hpp>
 
 #include <vessel.h>
 
 TEST_CASE("this-closure")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
 class Foo {
@@ -19,28 +21,28 @@ class Foo {
 }
 
 var closure = Foo().getClosure()
-print closure() // expect: Foo
+System.print(closure()) // expect: Foo
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(get_output_buf()) == R"(
 Foo
 )" + 1);
 }
 
 TEST_CASE("nested_class")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
 class Outer {
   method() {
-    print this // expect: Outer instance
+    System.print(this) // expect: Outer instance
 
     fun f() {
-      print this // expect: Outer instance
+      System.print(this) // expect: Outer instance
 
       class Inner {
         method() {
-          print this // expect: Inner instance
+          System.print(this) // expect: Inner instance
         }
       }
 
@@ -52,7 +54,7 @@ class Outer {
 
 Outer().method()
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(get_output_buf()) == R"(
 Outer instance
 Outer instance
 Inner instance
@@ -61,7 +63,7 @@ Inner instance
 
 TEST_CASE("this_nested_closure")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
 class Foo {
@@ -82,16 +84,16 @@ class Foo {
 }
 
 var closure = Foo().getClosure()
-print closure()()() // expect: Foo
+System.print(closure()()()) // expect: Foo
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(get_output_buf()) == R"(
 Foo
 )" + 1);
 }
 
 TEST_CASE("this_in_method")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
 class Foo {
@@ -99,9 +101,9 @@ class Foo {
   baz() { return "baz" }
 }
 
-print Foo().bar().baz() // expect: baz
+System.print(Foo().bar().baz()) // expect: baz
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(get_output_buf()) == R"(
 baz
 )" + 1);
 }

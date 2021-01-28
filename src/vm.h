@@ -32,6 +32,7 @@ typedef struct
 	ObjClass* range_class;
 	ObjClass* num_class;
 	ObjClass* object_class;
+	ObjClass* system_class;
 
 	ObjModule* last_module;
 

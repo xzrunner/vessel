@@ -17,4 +17,14 @@ class List is Sequence {}
 class Map is Sequence {}
 class Range is Sequence {}
 
+class String is Sequence {}
+
+class System
+{
+    static print(obj) {
+        this.writeString(obj)
+        this.writeString("\n")
+	}
+}
+
 );

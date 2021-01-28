@@ -78,6 +78,7 @@ void init_configuration(VesselConfiguration* config)
 	config->load_module_fn = NULL;
 	config->bind_foreign_method_fn = NULL;
 	config->bind_foreign_class_fn = NULL;
+	config->write_fn = NULL;
 }
 
 void ves_set_config(VesselConfiguration* cfg)
@@ -711,7 +712,7 @@ static VesselInterpretResult run()
 		printf("          ");
 		for (Value* slot = vm.stack; slot < vm.stack_top; slot++) {
 			printf("[ ");
-			ves_dump_value(*slot, false);
+			dump_value(*slot, true);
 			printf(" ]");
 		}
 		printf("\n");
@@ -939,12 +940,6 @@ static VesselInterpretResult run()
 
 			push(NUMBER_VAL(-AS_NUMBER(pop())));
 			break;
-
-		case OP_PRINT: {
-			ves_dump_value(pop(), true);
-			ves_str_buf_newline();
-			break;
-		}
 
 		case OP_JUMP: {
 			uint16_t offset = READ_SHORT();

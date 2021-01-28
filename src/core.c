@@ -4,6 +4,7 @@
 #include "primitive.h"
 #include "utils.h"
 #include "core.ves.inc"
+#include "debug.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -480,6 +481,12 @@ DEF_PRIMITIVE(range_iteratorValue)
 	RETURN_VAL(args[1]);
 }
 
+DEF_PRIMITIVE(system_writeString)
+{
+	dump_value(args[1], false);
+	return true;
+}
+
 static ObjClass* define_class(ObjModule* module, const char* name)
 {
 	ObjString* name_string = copy_string(name, strlen(name));
@@ -565,4 +572,8 @@ void initialize_core()
 	PRIMITIVE(vm.range_class, "setInclusive(_)", range_setInclusive);
 	PRIMITIVE(vm.range_class, "iterate(_)", range_iterate);
 	PRIMITIVE(vm.range_class, "iteratorValue(_)", range_iteratorValue);
+
+	vm.system_class = AS_CLASS(find_variable(core_module, "System"));
+	DefineVariable(core_module, "System", 6, OBJ_VAL(vm.system_class), NULL);
+	PRIMITIVE(vm.system_class->obj.class_obj, "writeString(_)", system_writeString);
 }

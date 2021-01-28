@@ -44,9 +44,13 @@
     <ClCompile Include="..\..\..\test\string.cpp" />
     <ClCompile Include="..\..\..\test\super.cpp" />
     <ClCompile Include="..\..\..\test\this.cpp" />
+    <ClCompile Include="..\..\..\test\utility.cpp" />
     <ClCompile Include="..\..\..\test\variable.cpp" />
     <ClCompile Include="..\..\..\test\while.cpp" />
     <ClCompile Include="..\..\..\test\z_test.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\test\utility.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectName>1.vessel-test</ProjectName>

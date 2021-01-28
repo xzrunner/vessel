@@ -999,7 +999,6 @@ ParseRule rules[] =
     [TOKEN_IF]            = {NULL,     NULL,   PREC_NONE},
     [TOKEN_NIL]           = {literal,  NULL,   PREC_NONE},
     [TOKEN_OR]            = {NULL,     or_,    PREC_OR},
-    [TOKEN_PRINT]         = {NULL,     NULL,   PREC_NONE},
     [TOKEN_RETURN]        = {NULL,     NULL,   PREC_NONE},
     [TOKEN_SUPER]         = {super_,   NULL,   PREC_NONE},
     [TOKEN_THIS]          = {this_,    NULL,   PREC_NONE},
@@ -1393,12 +1392,6 @@ static void if_statement()
     patch_jump(else_jump);
 }
 
-static void print_statement()
-{
-    expression();
-    emit_op(OP_PRINT);
-}
-
 static void return_statement()
 {
     if (current->type == TYPE_SCRIPT) {
@@ -1454,7 +1447,6 @@ static void synchronize()
             case TOKEN_FOR:
             case TOKEN_IF:
             case TOKEN_WHILE:
-            case TOKEN_PRINT:
             case TOKEN_RETURN:
             return;
 
@@ -1556,9 +1548,7 @@ static void statement()
 {
     ignore_new_lines();
 
-    if (match(TOKEN_PRINT)) {
-        print_statement();
-    } else if (match(TOKEN_FOR)) {
+    if (match(TOKEN_FOR)) {
         for_statement();
     } else if (match(TOKEN_IF)) {
         if_statement();

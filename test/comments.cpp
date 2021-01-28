@@ -1,23 +1,25 @@
+#include "utility.h"
+
 #include <catch/catch.hpp>
 
 #include <vessel.h>
 
 TEST_CASE("line_at_eof")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
-print "ok" // expect: ok
+System.print("ok") // expect: ok
 // comment
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(get_output_buf()) == R"(
 ok
 )" + 1);
 }
 
 TEST_CASE("only_line_comment")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
 // comment
@@ -26,7 +28,7 @@ TEST_CASE("only_line_comment")
 
 TEST_CASE("only_line_comment_and_line")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
 // comment

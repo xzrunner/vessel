@@ -92,10 +92,14 @@
     <ClCompile Include="..\..\..\test\range.cpp">
       <Filter>tests</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\test\utility.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="tests">
       <UniqueIdentifier>{e3e6536e-66fd-4992-b715-c378a3e4dd75}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\test\utility.h" />
   </ItemGroup>
 </Project>

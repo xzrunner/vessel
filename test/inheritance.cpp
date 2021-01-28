@@ -1,10 +1,12 @@
+#include "utility.h"
+
 #include <catch/catch.hpp>
 
 #include <vessel.h>
 
 TEST_CASE("inheritance_constructor")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
 class A {
@@ -13,7 +15,7 @@ class A {
   }
 
   test() {
-    print this.field
+    System.print(this.field)
   }
 }
 
@@ -22,24 +24,24 @@ class B is A {}
 var b = B("value")
 b.test() // expect: value
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(get_output_buf()) == R"(
 value
 )" + 1);
 }
 
 TEST_CASE("inherit_methods")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
 class Foo {
-  methodOnFoo() { print "foo" }
-  override() { print "foo" }
+  methodOnFoo() { System.print("foo") }
+  override() { System.print("foo") }
 }
 
 class Bar is Foo {
-  methodOnBar() { print "bar" }
-  override() { print "bar" }
+  methodOnBar() { System.print("bar") }
+  override() { System.print("bar") }
 }
 
 var bar = Bar()
@@ -47,7 +49,7 @@ bar.methodOnFoo() // expect: foo
 bar.methodOnBar() // expect: bar
 bar.override() // expect: bar
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(get_output_buf()) == R"(
 foo
 bar
 bar
@@ -56,7 +58,7 @@ bar
 
 TEST_CASE("set_fields_from_base_class")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
 class Foo {
@@ -66,8 +68,8 @@ class Foo {
   }
 
   fooPrint() {
-    print this.field1
-    print this.field2
+    System.print(this.field1)
+    System.print(this.field2)
   }
 }
 
@@ -78,8 +80,8 @@ class Bar is Foo {
   }
 
   barPrint() {
-    print this.field1
-    print this.field2
+    System.print(this.field1)
+    System.print(this.field2)
   }
 }
 
@@ -98,7 +100,7 @@ bar.fooPrint()
 // expect: bar 1
 // expect: bar 2
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(get_output_buf()) == R"(
 foo 1
 foo 2
 bar 1

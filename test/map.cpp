@@ -1,10 +1,12 @@
+#include "utility.h"
+
 #include <catch/catch.hpp>
 
 #include <vessel.h>
 
 //TEST_CASE("map_reuse")
 //{
-//    ves_str_buf_clear();
+//    init_output_buf();
 //
 //    ves_interpret("test", R"(
 //var map = {}
@@ -14,16 +16,16 @@
 //map[0] = "zero again"
 //map.remove(0)
 //
-//print(map.containsKey(0)) // expect: false
+//System.print(map.containsKey(0)) // expect: false
 //)");
-//    REQUIRE(std::string(ves_get_str_buf()) == R"(
+//    REQUIRE(std::string(get_output_buf()) == R"(
 //false
 //)" + 1);
 //}
 
 //TEST_CASE("map_remove")
 //{
-//    ves_str_buf_clear();
+//    init_output_buf();
 //
 //    ves_interpret("test", R"(
 //var map = {
@@ -32,20 +34,20 @@
 //  "three": 3
 //}
 //
-//print(map.count) // expect: 3
-//print(map.remove("two")) // expect: 2
-//print(map.count) // expect: 2
-//print(map.remove("three")) // expect: 3
-//print(map.count) // expect: 1
+//System.print(map.count) // expect: 3
+//System.print(map.remove("two")) // expect: 2
+//System.print(map.count) // expect: 2
+//System.print(map.remove("three")) // expect: 3
+//System.print(map.count) // expect: 1
 //
 //// Remove an already removed entry.
-//print(map.remove("two")) // expect: null
-//print(map.count) // expect: 1
+//System.print(map.remove("two")) // expect: null
+//System.print(map.count) // expect: 1
 //
-//print(map.remove("one")) // expect: 1
-//print(map.count) // expect: 0
+//System.print(map.remove("one")) // expect: 1
+//System.print(map.count) // expect: 0
 //)");
-//    REQUIRE(std::string(ves_get_str_buf()) == R"(
+//    REQUIRE(std::string(get_output_buf()) == R"(
 //3
 //2
 //2
@@ -60,7 +62,7 @@
 
 TEST_CASE("contains_key")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
 var map = {
@@ -69,13 +71,13 @@ var map = {
   "three": 3
 }
 
-print(map.containsKey("one")) // expect: true
-print(map.containsKey("two")) // expect: true
-print(map.containsKey("three")) // expect: true
-print(map.containsKey("four")) // expect: false
-print(map.containsKey("five")) // expect: false
+System.print(map.containsKey("one")) // expect: true
+System.print(map.containsKey("two")) // expect: true
+System.print(map.containsKey("three")) // expect: true
+System.print(map.containsKey("four")) // expect: false
+System.print(map.containsKey("five")) // expect: false
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(get_output_buf()) == R"(
 true
 true
 true

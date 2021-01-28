@@ -172,7 +172,6 @@ static TokenType identifier_type()
             break;
         case 'n': return check_keyword(1, 2, "il", TOKEN_NIL);
         case 'o': return check_keyword(1, 1, "r", TOKEN_OR);
-        case 'p': return check_keyword(1, 4, "rint", TOKEN_PRINT);
         case 'r': return check_keyword(1, 5, "eturn", TOKEN_RETURN);
         case 's':
             if (scanner.current - scanner.start > 1)

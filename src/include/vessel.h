@@ -46,6 +46,9 @@ typedef struct
 typedef VesselForeignClassMethods(*VesselBindForeignClassFn)(
 	const char* module, const char* className);
 
+// Displays a string of text to the user.
+typedef void (*VesselWriteFn)(const char* text);
+
 typedef struct
 {
   // The callback Vessel uses to load a module.
@@ -83,6 +86,9 @@ typedef struct
   // foreign functions uses to allocate and (optionally) finalize the bytes
   // stored in the foreign object when an instance is created.
   VesselBindForeignClassFn bind_foreign_class_fn;
+
+  VesselWriteFn write_fn;
+
 } VesselConfiguration;
 
 typedef enum
@@ -96,9 +102,6 @@ VesselInterpretResult ves_interpret(const char* module, const char* source);
 
 void* ves_compile(const char* module, const char* source);
 VesselInterpretResult ves_run(void* closure);
-
-void ves_str_buf_clear();
-const char* ves_get_str_buf();
 
 void ves_set_config(VesselConfiguration* cfg);
 

@@ -1,10 +1,12 @@
+#include "utility.h"
+
 #include <catch/catch.hpp>
 
 #include <vessel.h>
 
 TEST_CASE("assign_to_closure")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
 var f
@@ -13,16 +15,16 @@ var g
 {
   var local = "local"
   fun f_() {
-    print local
+    System.print(local)
     local = "after f"
-    print local
+    System.print(local)
   }
   f = f_
 
   fun g_() {
-    print local
+    System.print(local)
     local = "after g"
-    print local
+    System.print(local)
   }
   g = g_
 }
@@ -35,7 +37,7 @@ g()
 // expect: after f
 // expect: after g
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(get_output_buf()) == R"(
 local
 after f
 after f
@@ -45,7 +47,7 @@ after g
 
 TEST_CASE("assign_to_shadowed_later")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
 var a = "global"
@@ -57,12 +59,12 @@ var a = "global"
 
   var a = "inner"
   assign()
-  print a // expect: inner
+  System.print(a) // expect: inner
 }
 
-print a // expect: assigned
+System.print(a) // expect: assigned
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(get_output_buf()) == R"(
 inner
 assigned
 )" + 1);
@@ -70,14 +72,14 @@ assigned
 
 TEST_CASE("close_over_function_parameter")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
 var f
 
 fun foo(param) {
   fun f_() {
-    print param
+    System.print(param)
   }
   f = f_
 }
@@ -85,14 +87,14 @@ foo("param")
 
 f() // expect: param
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(get_output_buf()) == R"(
 param
 )" + 1);
 }
 
 TEST_CASE("close_over_later_variable")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
 // This is a regression test. There was a bug where if an upvalue for an
@@ -104,14 +106,14 @@ fun f() {
   var a = "a"
   var b = "b"
   fun g() {
-    print b // expect: b
-    print a // expect: a
+    System.print(b) // expect: b
+    System.print(a) // expect: a
   }
   g()
 }
 f()
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(get_output_buf()) == R"(
 b
 a
 )" + 1);
@@ -119,7 +121,7 @@ a
 
 TEST_CASE("close_over_method_parameter")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
 var f
@@ -127,7 +129,7 @@ var f
 class Foo {
   method(param) {
     fun f_() {
-      print param
+      System.print(param)
     }
     f = f_
   }
@@ -136,14 +138,14 @@ class Foo {
 Foo().method("param")
 f() // expect: param
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(get_output_buf()) == R"(
 param
 )" + 1);
 }
 
 TEST_CASE("closed_closure_in_function")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
 var f
@@ -151,21 +153,21 @@ var f
 {
   var local = "local"
   fun f_() {
-    print local
+    System.print(local)
   }
   f = f_
 }
 
 f() // expect: local
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(get_output_buf()) == R"(
 local
 )" + 1);
 }
 
 TEST_CASE("nested_closure")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
 var f
@@ -177,9 +179,9 @@ fun f1() {
     fun f3() {
       var c = "c"
       fun f4() {
-        print a
-        print b
-        print c
+        System.print(a)
+        System.print(b)
+        System.print(c)
       }
       f = f4
     }
@@ -194,7 +196,7 @@ f()
 // expect: b
 // expect: c
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(get_output_buf()) == R"(
 a
 b
 c
@@ -203,25 +205,25 @@ c
 
 TEST_CASE("open_closure_in_function")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
 {
   var local = "local"
   fun f() {
-    print local // expect: local
+    System.print(local) // expect: local
   }
   f()
 }
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(get_output_buf()) == R"(
 local
 )" + 1);
 }
 
 TEST_CASE("reference_closure_multiple_times")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
 var f
@@ -229,8 +231,8 @@ var f
 {
   var a = "a"
   fun f_() {
-    print a
-    print a
+    System.print(a)
+    System.print(a)
   }
   f = f_
 }
@@ -239,7 +241,7 @@ f()
 // expect: a
 // expect: a
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(get_output_buf()) == R"(
 a
 a
 )" + 1);
@@ -247,7 +249,7 @@ a
 
 TEST_CASE("reuse_closure_slot")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
 {
@@ -255,7 +257,7 @@ TEST_CASE("reuse_closure_slot")
 
   {
     var a = "a"
-    fun f_() { print a }
+    fun f_() { System.print(a) }
     f = f_
   }
 
@@ -267,30 +269,30 @@ TEST_CASE("reuse_closure_slot")
   }
 }
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(get_output_buf()) == R"(
 a
 )" + 1);
 }
 
 TEST_CASE("shadow_closure_with_local")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
 {
   var foo = "closure"
   fun f() {
     {
-      print foo // expect: closure
+      System.print(foo) // expect: closure
       var foo = "shadow"
-      print foo // expect: shadow
+      System.print(foo) // expect: shadow
     }
-    print foo // expect: closure
+    System.print(foo) // expect: closure
   }
   f()
 }
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(get_output_buf()) == R"(
 closure
 shadow
 closure
@@ -299,7 +301,7 @@ closure
 
 TEST_CASE("unused_closure")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
 // This is a regression test. There was a bug where the VM would try to close
@@ -314,16 +316,16 @@ TEST_CASE("unused_closure")
 }
 
 // If we get here, we didn't segfault when a went out of scope.
-print "ok" // expect: ok
+System.print("ok") // expect: ok
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(get_output_buf()) == R"(
 ok
 )" + 1);
 }
 
 TEST_CASE("unused_later_closure")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
 // This is a regression test. When closing upvalues for discarded locals, it
@@ -352,10 +354,10 @@ var closure
     }
   }
 
-  print closure() // expect: a
+  System.print(closure()) // expect: a
 }
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(get_output_buf()) == R"(
 a
 )" + 1);
 }

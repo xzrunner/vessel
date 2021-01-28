@@ -50,7 +50,7 @@ void mark_object(Obj* object)
 
 #ifdef DEBUG_LOG_GC
 	printf("%p mark ", (void*)object);
-	ves_dump_value(OBJ_VAL(object), false);
+	dump_value(OBJ_VAL(object), true);
 	printf("\n");
 #endif
 
@@ -88,7 +88,7 @@ static void blacken_object(Obj* object)
 {
 #ifdef DEBUG_LOG_GC
 	printf("%p blacken ", (void*)object);
-	ves_dump_value(OBJ_VAL(object), false);
+	dump_value(OBJ_VAL(object), true);
 	printf("\n");
 #endif
 

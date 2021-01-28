@@ -1,37 +1,39 @@
+#include "utility.h"
+
 #include <catch/catch.hpp>
 
 #include <vessel.h>
 
 TEST_CASE("equality")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
-print true == true    // expect: true
-print true == false   // expect: false
-print false == true   // expect: false
-print false == false  // expect: true
+System.print(true == true)    // expect: true
+System.print(true == false)   // expect: false
+System.print(false == true)   // expect: false
+System.print(false == false)  // expect: true
 
 // Not equal to other types.
-print true == 1        // expect: false
-print false == 0       // expect: false
-print true == "true"   // expect: false
-print false == "false" // expect: false
-print false == ""      // expect: false
+System.print(true == 1)        // expect: false
+System.print(false == 0)       // expect: false
+System.print(true == "true")   // expect: false
+System.print(false == "false") // expect: false
+System.print(false == "")      // expect: false
 
-print true != true    // expect: false
-print true != false   // expect: true
-print false != true   // expect: true
-print false != false  // expect: false
+System.print(true != true)    // expect: false
+System.print(true != false)   // expect: true
+System.print(false != true)   // expect: true
+System.print(false != false)  // expect: false
 
 // Not equal to other types.
-print true != 1        // expect: true
-print false != 0       // expect: true
-print true != "true"   // expect: true
-print false != "false" // expect: true
-print false != ""      // expect: true
+System.print(true != 1)        // expect: true
+System.print(false != 0)       // expect: true
+System.print(true != "true")   // expect: true
+System.print(false != "false") // expect: true
+System.print(false != "")      // expect: true
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(get_output_buf()) == R"(
 true
 false
 false
@@ -55,14 +57,14 @@ true
 
 TEST_CASE("bool_equality")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
-print !true    // expect: false
-print !false   // expect: true
-print !!true   // expect: true
+System.print(!true)    // expect: false
+System.print(!false)   // expect: true
+System.print(!!true)   // expect: true
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(get_output_buf()) == R"(
 false
 true
 true
@@ -71,15 +73,15 @@ true
 
 TEST_CASE("bool_type")
 {
-    ves_str_buf_clear();
+    init_output_buf();
 
     ves_interpret("test", R"(
-print(true is Bool)      // expect: true
-print(true is Object)    // expect: true
-print(true is Num)       // expect: false
-print(true.type == Bool) // expect: true
+System.print(true is Bool)      // expect: true
+System.print(true is Object)    // expect: true
+System.print(true is Num)       // expect: false
+System.print(true.type == Bool) // expect: true
 )");
-    REQUIRE(std::string(ves_get_str_buf()) == R"(
+    REQUIRE(std::string(get_output_buf()) == R"(
 true
 true
 false
