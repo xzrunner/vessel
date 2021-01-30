@@ -169,6 +169,7 @@ ObjMap* new_map()
 ObjString* allocate_string(char* chars, int length, uint32_t hash)
 {
 	ObjString* string = ALLOCATE_OBJ(ObjString, OBJ_STRING);
+	string->obj.class_obj = vm.string_class;
 	string->length = length;
 	string->chars = chars;
 	string->hash = hash;
@@ -262,6 +263,8 @@ ObjClass* get_class(Value value)
 		return vm.bool_class;
 	} else if (IS_NUMBER(value)) {
 		return vm.num_class;
-	} else
+	} else if (IS_STRING(value)) {
+		return vm.string_class;
+	}
 	return NULL;
 }

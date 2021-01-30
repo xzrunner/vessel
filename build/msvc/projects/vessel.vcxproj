@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\src\buffer.c" />
     <ClCompile Include="..\..\..\src\chunk.c" />
     <ClCompile Include="..\..\..\src\compiler.c" />
     <ClCompile Include="..\..\..\src\core.c" />
@@ -35,6 +36,7 @@
     <ClCompile Include="..\..\..\src\vm.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\src\buffer.h" />
     <ClInclude Include="..\..\..\src\chunk.h" />
     <ClInclude Include="..\..\..\src\common.h" />
     <ClInclude Include="..\..\..\src\compiler.h" />

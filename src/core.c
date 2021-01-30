@@ -87,6 +87,11 @@ DEF_PRIMITIVE(num_toString)
 	RETURN_VAL(num_to_string(AS_NUMBER(args[0])));
 }
 
+DEF_PRIMITIVE(string_toString)
+{
+	RETURN_VAL(args[0]);
+}
+
 DEF_PRIMITIVE(list_new)
 {
 	RETURN_OBJ(new_list(0));
@@ -535,6 +540,14 @@ void initialize_core()
 
 	vm.num_class = AS_CLASS(find_variable(core_module, "Num"));
 	PRIMITIVE(vm.num_class, "toString", num_toString);
+
+	vm.string_class = AS_CLASS(find_variable(core_module, "String"));
+	PRIMITIVE(vm.string_class, "toString", string_toString);
+	for (int i = 0; i < vm.strings.capacity; ++i) {
+		if (vm.strings.entries[i].key) {
+			vm.strings.entries[i].key->obj.class_obj = vm.string_class;
+		}
+	}
 
 	vm.list_class = AS_CLASS(find_variable(core_module, "List"));
 	PRIMITIVE(vm.list_class->obj.class_obj, "new()", list_new);

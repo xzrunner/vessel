@@ -19,6 +19,7 @@
     <ClCompile Include="..\..\..\src\optional\opt_math.c">
       <Filter>optional</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\buffer.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\chunk.h" />
@@ -44,6 +45,7 @@
     <ClInclude Include="..\..\..\src\optional\opt_math.h">
       <Filter>optional</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\src\buffer.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="include">

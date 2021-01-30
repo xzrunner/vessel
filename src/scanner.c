@@ -1,13 +1,21 @@
 #include "scanner.h"
+#include "object.h"
+#include "buffer.h"
 
 #include <stdbool.h>
 #include <string.h>
+
+#define MAX_INTERPOLATION_NESTING 8
 
 typedef struct
 {
 	const char* start;
 	const char* current;
 	int line;
+
+    int parens[MAX_INTERPOLATION_NESTING];
+    int num_parens;
+
 } Scanner;
 
 Scanner scanner;
@@ -17,6 +25,7 @@ void init_scanner(const char* source)
 	scanner.start = source;
 	scanner.current = source;
 	scanner.line = 1;
+    scanner.num_parens = 0;
 }
 
 static bool is_alpha(char c)
@@ -227,19 +236,76 @@ static Token number()
 
 static Token string()
 {
-    while (peek() != '"' && !is_at_end()) {
-        if (peek() == '\n') {
-            scanner.line++;
+    TokenType type = TOKEN_STRING;
+
+    ByteBuffer string;
+    ByteBufferInit(&string);
+
+    ByteBufferWrite(&string, '"');
+    for (;;)
+    {
+        char c = advance();
+        if (c == '"') {
+            break;
         }
-        advance();
-    }
 
-    if (is_at_end()) {
-        return error_token("Unterminated string.");
-    }
+        if (is_at_end()) {
+            return error_token("Unterminated string.");
+        }
 
-    advance();  // The closing quote.
-    return make_token(TOKEN_STRING);
+        if (c == '%')
+        {
+            if (scanner.num_parens < MAX_INTERPOLATION_NESTING)
+            {
+                if (advance() != '(') {
+                    error_token("Expect '(' after '%%'.");
+                }
+
+                scanner.parens[scanner.num_parens++] = 1;
+                type = TOKEN_INTERPOLATION;
+                break;
+            }
+
+            error_token("Interpolation too many levels.");
+        }
+
+        if (c == '\\')
+        {
+            switch (advance())
+            {
+                case '"':  ByteBufferWrite(&string, '"'); break;
+                case '\\': ByteBufferWrite(&string, '\\'); break;
+                case '%':  ByteBufferWrite(&string, '%'); break;
+                case '0':  ByteBufferWrite(&string, '\0'); break;
+                case 'a':  ByteBufferWrite(&string, '\a'); break;
+                case 'b':  ByteBufferWrite(&string, '\b'); break;
+                case 'f':  ByteBufferWrite(&string, '\f'); break;
+                case 'n':  ByteBufferWrite(&string, '\n'); break;
+                case 'r':  ByteBufferWrite(&string, '\r'); break;
+                case 't':  ByteBufferWrite(&string, '\t'); break;
+                case 'v':  ByteBufferWrite(&string, '\v'); break;
+
+                default:
+                    error_token("Invalid escape character.");
+                    break;
+            }
+        }
+        else
+        {
+            ByteBufferWrite(&string, c);
+        }
+    }
+    ByteBufferWrite(&string, '"');
+
+    ObjString* obj_str = copy_string(string.data, string.count);
+
+    Token token;
+    token.type = type;
+    token.start = obj_str->chars;
+    token.length = obj_str->length;
+    token.line = scanner.line;
+
+    return token;
 }
 
 Token scan_token()
@@ -262,36 +328,47 @@ Token scan_token()
 
     switch (c)
     {
-        case '(': return make_token(TOKEN_LEFT_PAREN);
-        case ')': return make_token(TOKEN_RIGHT_PAREN);
-        case '[': return make_token(TOKEN_LEFT_BRACKET);
-        case ']': return make_token(TOKEN_RIGHT_BRACKET);
-        case '{': return make_token(TOKEN_LEFT_BRACE);
-        case '}': return make_token(TOKEN_RIGHT_BRACE);
-        case ':': return make_token(TOKEN_COLON);
-        case ';': return make_token(TOKEN_SEMICOLON);
-        case ',': return make_token(TOKEN_COMMA);
-        case '.':
-        {
-            if (match('.')) {
-                return make_token(match('=') ? TOKEN_DOTDOT_EQUAL : TOKEN_DOTDOT);
-            } else {
-                return make_token(TOKEN_DOT);
-            }
+    case '(':
+        if (scanner.num_parens > 0) {
+            scanner.parens[scanner.num_parens - 1]++;
         }
-        case '-': return make_token(TOKEN_MINUS);
-        case '+': return make_token(TOKEN_PLUS);
-        case '/': return make_token(TOKEN_SLASH);
-        case '*': return make_token(TOKEN_STAR);
+        return make_token(TOKEN_LEFT_PAREN);
+    case ')':
+        if (scanner.num_parens > 0 && --scanner.parens[scanner.num_parens - 1] == 0)
+        {
+            scanner.num_parens--;
+            string();
+            return;
+        }
+        return make_token(TOKEN_RIGHT_PAREN);
+    case '[': return make_token(TOKEN_LEFT_BRACKET);
+    case ']': return make_token(TOKEN_RIGHT_BRACKET);
+    case '{': return make_token(TOKEN_LEFT_BRACE);
+    case '}': return make_token(TOKEN_RIGHT_BRACE);
+    case ':': return make_token(TOKEN_COLON);
+    case ';': return make_token(TOKEN_SEMICOLON);
+    case ',': return make_token(TOKEN_COMMA);
+    case '.':
+    {
+        if (match('.')) {
+            return make_token(match('=') ? TOKEN_DOTDOT_EQUAL : TOKEN_DOTDOT);
+        } else {
+            return make_token(TOKEN_DOT);
+        }
+    }
+    case '-': return make_token(TOKEN_MINUS);
+    case '+': return make_token(TOKEN_PLUS);
+    case '/': return make_token(TOKEN_SLASH);
+    case '*': return make_token(TOKEN_STAR);
 
-        case '\n': return make_token(TOKEN_LINE);
+    case '\n': return make_token(TOKEN_LINE);
 
-        case '!': return make_token(match('=') ? TOKEN_BANG_EQUAL : TOKEN_BANG);
-        case '=': return make_token(match('=') ? TOKEN_EQUAL_EQUAL : TOKEN_EQUAL);
-        case '<': return make_token(match('=') ? TOKEN_LESS_EQUAL : TOKEN_LESS);
-        case '>': return make_token(match('=') ? TOKEN_GREATER_EQUAL : TOKEN_GREATER);
+    case '!': return make_token(match('=') ? TOKEN_BANG_EQUAL : TOKEN_BANG);
+    case '=': return make_token(match('=') ? TOKEN_EQUAL_EQUAL : TOKEN_EQUAL);
+    case '<': return make_token(match('=') ? TOKEN_LESS_EQUAL : TOKEN_LESS);
+    case '>': return make_token(match('=') ? TOKEN_GREATER_EQUAL : TOKEN_GREATER);
 
-        case '"': return string();
+    case '"': return string();
     }
 
     return error_token("Unexpected character.");

@@ -729,6 +729,30 @@ static void string(bool can_assign)
     emit_constant(OBJ_VAL(copy_string(parser.previous.start + 1, parser.previous.length - 2)));
 }
 
+static void string_interpolation(bool can_assign)
+{
+    load_core_variable("List");
+    call_method(0, "new()", 5);
+
+    do
+    {
+        string(false);
+        call_method(1, "addCore_(_)", 11);
+
+        ignore_new_lines();
+        expression();
+        call_method(1, "addCore_(_)", 11);
+
+        ignore_new_lines();
+    } while (match(TOKEN_INTERPOLATION));
+
+    consume(TOKEN_STRING, "Expect end of string interpolation.");
+    string(false);
+    call_method(1, "addCore_(_)", 11);
+
+    call_method(0, "join()", 6);
+}
+
 static Token synthetic_token(const char* text)
 {
     Token token;
@@ -989,6 +1013,7 @@ ParseRule rules[] =
     [TOKEN_LESS_EQUAL]    = {NULL,     binary, PREC_COMPARISON},
     [TOKEN_IDENTIFIER]    = {variable, NULL,   PREC_NONE},
     [TOKEN_STRING]        = {string,   NULL,   PREC_NONE},
+    [TOKEN_INTERPOLATION] = {string_interpolation,   NULL,   PREC_NONE},
     [TOKEN_NUMBER]        = {number,   NULL,   PREC_NONE},
     [TOKEN_AND]           = {NULL,     and_,   PREC_AND},
     [TOKEN_CLASS]         = {NULL,     NULL,   PREC_NONE},
