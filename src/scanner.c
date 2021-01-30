@@ -150,7 +150,7 @@ static TokenType identifier_type()
             {
                 switch (scanner.start[1])
                 {
-                case 'n': return check_keyword(2, 1, "d", TOKEN_FALSE);
+                case 'n': return check_keyword(2, 1, "d", TOKEN_AND);
                 case 's': return check_keyword(2, 0, "", TOKEN_AS);
                 }
             }

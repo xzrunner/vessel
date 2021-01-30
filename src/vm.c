@@ -130,12 +130,13 @@ void ves_init_vm()
 void ves_free_vm()
 {
 	free_table(&vm.strings);
-	vm.init_str = NULL;
-	vm.allocate_str = NULL;
-	vm.finalize_str = NULL;
 	free_table(&vm.modules);
 	free_value_array(&vm.method_names);
 	free_objects();
+
+	vm.init_str = NULL;
+	vm.allocate_str = NULL;
+	vm.finalize_str = NULL;
 }
 
 void push(Value value)
