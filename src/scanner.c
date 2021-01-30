@@ -145,7 +145,16 @@ static TokenType identifier_type()
 {
     switch (scanner.start[0])
     {
-        case 'a': return check_keyword(1, 2, "nd", TOKEN_AND);
+        case 'a':
+            if (scanner.current - scanner.start > 1)
+            {
+                switch (scanner.start[1])
+                {
+                case 'n': return check_keyword(2, 1, "d", TOKEN_FALSE);
+                case 's': return check_keyword(2, 0, "", TOKEN_AS);
+                }
+            }
+            break;
         case 'c': return check_keyword(1, 4, "lass", TOKEN_CLASS);
         case 'e': return check_keyword(1, 3, "lse", TOKEN_ELSE);
         case 'f':
@@ -153,17 +162,17 @@ static TokenType identifier_type()
             {
                 switch (scanner.start[1])
                 {
-                    case 'a': return check_keyword(2, 3, "lse", TOKEN_FALSE);
-                    case 'u': return check_keyword(2, 1, "n", TOKEN_FUN);
-                    case 'o':
-                    {
-                        if (scanner.current - scanner.start > 3) {
-                            return check_keyword(2, 5, "reign", TOKEN_FOREIGN);
-                        } else {
-                            return check_keyword(2, 1, "r", TOKEN_FOR);
-                        }
+                case 'a': return check_keyword(2, 3, "lse", TOKEN_FALSE);
+                case 'u': return check_keyword(2, 1, "n", TOKEN_FUN);
+                case 'o':
+                {
+                    if (scanner.current - scanner.start > 3) {
+                        return check_keyword(2, 5, "reign", TOKEN_FOREIGN);
+                    } else {
+                        return check_keyword(2, 1, "r", TOKEN_FOR);
                     }
-                        break;
+                }
+                    break;
                 }
             }
             break;
@@ -196,8 +205,8 @@ static TokenType identifier_type()
             {
                 switch (scanner.start[1])
                 {
-                    case 'h': return check_keyword(2, 2, "is", TOKEN_THIS);
-                    case 'r': return check_keyword(2, 2, "ue", TOKEN_TRUE);
+                case 'h': return check_keyword(2, 2, "is", TOKEN_THIS);
+                case 'r': return check_keyword(2, 2, "ue", TOKEN_TRUE);
                 }
             }
             break;
@@ -334,11 +343,9 @@ Token scan_token()
         }
         return make_token(TOKEN_LEFT_PAREN);
     case ')':
-        if (scanner.num_parens > 0 && --scanner.parens[scanner.num_parens - 1] == 0)
-        {
+        if (scanner.num_parens > 0 && --scanner.parens[scanner.num_parens - 1] == 0) {
             scanner.num_parens--;
-            string();
-            return;
+            return string();
         }
         return make_token(TOKEN_RIGHT_PAREN);
     case '[': return make_token(TOKEN_LEFT_BRACKET);

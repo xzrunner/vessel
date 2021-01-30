@@ -1032,6 +1032,7 @@ ParseRule rules[] =
     [TOKEN_WHILE]         = {NULL,     NULL,   PREC_NONE},
     [TOKEN_IMPORT]        = {NULL,     NULL,   PREC_NONE},
     [TOKEN_IS]            = {NULL,     binary, PREC_IS},
+    [TOKEN_AS]            = {NULL,     NULL,   PREC_NONE},
     [TOKEN_FOREIGN]       = {NULL,     NULL,   PREC_NONE},
     [TOKEN_STATIC]        = {NULL,     NULL,   PREC_NONE},
     [TOKEN_IN]            = {NULL,     NULL,   PREC_NONE},
@@ -1509,34 +1510,26 @@ static void import()
 
         consume(TOKEN_IDENTIFIER, "Expect variable name.");
 
-        // We need to hold onto the source variable,
-        // in order to reference it in the import later
-        Token source_variable_token = parser.previous;
-
-        // Define a string constant for the original variable name.
-        int source_variable_constant = make_constant(OBJ_VAL(copy_string(source_variable_token.start, source_variable_token.length)));
+        int source_variable_constant = make_constant(OBJ_VAL(copy_string(parser.previous.start, parser.previous.length)));
 
         // Store the symbol we care about for the variable
         int slot = -1;
-        //if(match(TOKEN_AS))
-        //{
-        //    //import "module" for Source as Dest
-        //    //Use 'Dest' as the name by declaring a new variable for it.
-        //    //This parses a name after the 'as' and defines it.
-        //    slot = declareNamedVariable(compiler);
-        //}
-        //else
+        if (match(TOKEN_AS))
         {
-            //import "module" for Source
-            //Uses 'Source' as the name directly
-            declare_variable(&source_variable_token);
+            consume(TOKEN_IDENTIFIER, "Expect variable name.");
+            slot = make_constant(OBJ_VAL(copy_string(parser.previous.start, parser.previous.length)));
         }
+        else
+        {
+            slot = source_variable_constant;
+        }
+        declare_variable();
 
         // Load the variable from the other module.
         emit_byte_arg(OP_IMPORT_VARIABLE, source_variable_constant);
 
         // Store the result in the variable here.
-        define_variable(source_variable_constant);
+        define_variable(slot);
     } while (match(TOKEN_COMMA));
 }
 
