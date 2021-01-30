@@ -1157,8 +1157,8 @@ static void method(bool is_class_foreign, Token class_name)
     //uint8_t constant = identifier_constant(&parser.previous);
 
     FunctionType type = TYPE_METHOD;
-    if (parser.previous.length == vm.init_string->length &&
-        memcmp(parser.previous.start, vm.init_string->chars, vm.init_string->length) == 0) {
+    if (parser.previous.length == vm.init_str->length &&
+        memcmp(parser.previous.start, vm.init_str->chars, vm.init_str->length) == 0) {
         type = TYPE_INITIALIZER;
     }
 

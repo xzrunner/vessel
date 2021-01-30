@@ -285,7 +285,9 @@ static void mark_roots()
 
 	mark_table(&vm.modules);
 	mark_compiler_roots();
-	mark_object((Obj*)vm.init_string);
+	mark_object((Obj*)vm.init_str);
+	mark_object((Obj*)vm.allocate_str);
+	mark_object((Obj*)vm.finalize_str);
 	mark_array(&vm.method_names);
 }
 

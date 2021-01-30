@@ -108,8 +108,9 @@ void ves_init_vm()
 
 	init_table(&vm.strings);
 
-	vm.init_string = NULL;
-	vm.init_string = copy_string("init", 4);
+	vm.init_str = copy_string("init", 4);
+	vm.allocate_str = copy_string("<allocate>", 10);
+	vm.finalize_str = copy_string("<finalize>", 10);
 
 	init_table(&vm.modules);
 
@@ -129,7 +130,9 @@ void ves_init_vm()
 void ves_free_vm()
 {
 	free_table(&vm.strings);
-	vm.init_string = NULL;
+	vm.init_str = NULL;
+	vm.allocate_str = NULL;
+	vm.finalize_str = NULL;
 	free_table(&vm.modules);
 	free_value_array(&vm.method_names);
 	free_objects();
@@ -240,7 +243,7 @@ static bool call_value(Value callee, int arg_count)
 
 			Value initializer;
 
-			Signature signature = { vm.init_string->chars, vm.init_string->length, SIG_METHOD, arg_count };
+			Signature signature = { vm.init_str->chars, vm.init_str->length, SIG_METHOD, arg_count };
 			char name[MAX_METHOD_SIGNATURE];
 			int length;
 			signature_to_string(&signature, name, &length);
@@ -670,7 +673,7 @@ static void bind_foreign_class(ObjClass* class_obj, ObjModule* module)
 		ObjMethod* method = new_method();
 		method->type = METHOD_FOREIGN;
 		method->as.foreign = methods.allocate;
-		table_set(&class_obj->methods, copy_string("<allocate>", 10), OBJ_VAL(method));
+		table_set(&class_obj->methods, vm.allocate_str, OBJ_VAL(method));
 	}
 
 	if (methods.finalize != NULL)
@@ -678,7 +681,7 @@ static void bind_foreign_class(ObjClass* class_obj, ObjModule* module)
 		ObjMethod* method = new_method();
 		method->type = METHOD_FOREIGN;
 		method->as.foreign = (VesselForeignMethodFn)methods.finalize;
-		table_set(&class_obj->methods, copy_string("<finalize>", 10), OBJ_VAL(method));
+		table_set(&class_obj->methods, vm.finalize_str, OBJ_VAL(method));
 	}
 }
 
@@ -1203,7 +1206,7 @@ static VesselInterpretResult run()
 			ASSERT(class_obj->num_fields == -1, "Class must be a foreign class.");
 
 			Value value;
-			bool find = table_get(&class_obj->methods, copy_string("<allocate>", 10), &value);
+			bool find = table_get(&class_obj->methods, vm.allocate_str, &value);
 			ASSERT(find, "Not find allocator.");
 
 			ObjMethod* method = AS_METHOD(value);
@@ -1265,7 +1268,7 @@ void FinalizeForeign(ObjForeign* foreign)
 	ObjClass* class_obj = foreign->obj.class_obj;
 
 	Value value;
-	if (!table_get(&class_obj->methods, copy_string("<finalize>", 10), &value)) {
+	if (!table_get(&class_obj->methods, vm.finalize_str, &value)) {
 		return;
 	}
 

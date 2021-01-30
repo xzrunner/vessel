@@ -45,7 +45,9 @@ typedef struct
 
 	Table strings;
 
-	ObjString* init_string;
+	ObjString* init_str;
+	ObjString* allocate_str;
+	ObjString* finalize_str;
 	ObjUpvalue* open_upvalues;
 
 	size_t bytes_allocated;
