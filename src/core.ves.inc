@@ -3,6 +3,7 @@ static const char* coreModuleSource = QUOTE(
 class Bool {}
 class Null {}
 class Num {}
+class Null {}
 
 class Sequence 
 {

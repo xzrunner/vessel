@@ -87,6 +87,16 @@ DEF_PRIMITIVE(num_toString)
 	RETURN_VAL(num_to_string(AS_NUMBER(args[0])));
 }
 
+DEF_PRIMITIVE(null_not)
+{
+	RETURN_VAL(TRUE_VAL);
+}
+
+DEF_PRIMITIVE(null_toString)
+{
+	RETURN_VAL(OBJ_VAL(copy_string("null", 4)));
+}
+
 DEF_PRIMITIVE(string_toString)
 {
 	RETURN_VAL(args[0]);
@@ -260,7 +270,7 @@ DEF_PRIMITIVE(map_subscript)
 
 	ObjString* str = AS_STRING(args[1]);
 
-	Value value;
+	Value value = NIL_VAL;
 	table_get(&AS_MAP(args[0])->entries, AS_STRING(args[1]), &value);
 
 	RETURN_VAL(value);
@@ -540,6 +550,10 @@ void initialize_core()
 
 	vm.num_class = AS_CLASS(find_variable(core_module, "Num"));
 	PRIMITIVE(vm.num_class, "toString", num_toString);
+
+	vm.null_class = AS_CLASS(find_variable(core_module, "Null"));
+	PRIMITIVE(vm.null_class, "!", null_not);
+	PRIMITIVE(vm.null_class, "toString", null_toString);
 
 	vm.string_class = AS_CLASS(find_variable(core_module, "String"));
 	PRIMITIVE(vm.string_class, "toString", string_toString);

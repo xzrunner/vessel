@@ -31,6 +31,7 @@ typedef struct
 	ObjClass* map_class;
 	ObjClass* range_class;
 	ObjClass* num_class;
+	ObjClass* null_class;
 	ObjClass* string_class;
 	ObjClass* object_class;
 	ObjClass* system_class;

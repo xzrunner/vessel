@@ -263,6 +263,8 @@ ObjClass* get_class(Value value)
 		return vm.bool_class;
 	} else if (IS_NUMBER(value)) {
 		return vm.num_class;
+	} else if (IS_NIL(value)) {
+		return vm.null_class;
 	} else if (IS_STRING(value)) {
 		return vm.string_class;
 	}
