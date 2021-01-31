@@ -11,7 +11,7 @@
 static void math_##name()                 \
 {                                         \
 	double num = ves_tonumber(1);         \
-	ves_set_number(0, fn(num));      \
+	ves_set_number(0, fn(num));           \
 }
 
 #define PPCAT_NX(A, B) A ## B
@@ -42,6 +42,18 @@ static void math_pi()
 	ves_set_number(0, 3.14159265358979323846264338327950288);
 }
 
+static void math_min()
+{
+	double num = min(ves_tonumber(1), ves_tonumber(2));
+	ves_set_number(0, num);
+}
+
+static void math_max()
+{
+	double num = max(ves_tonumber(1), ves_tonumber(2));
+	ves_set_number(0, num);
+}
+
 const char* MathSource()
 {
 	return mathModuleSource;
@@ -68,6 +80,8 @@ VesselForeignMethodFn MathBindMethod(const char* class_name, bool is_static, con
 	CALL_MATH_FUNC(exp)
 
 	if (strcmp(signature, "pi()") == 0) return math_pi;
+	if (strcmp(signature, "min(_,_)") == 0) return math_min;
+	if (strcmp(signature, "max(_,_)") == 0) return math_max;
 
     ASSERT(false, "Unknown method.");
     return NULL;
