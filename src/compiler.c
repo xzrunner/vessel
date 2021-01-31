@@ -1233,7 +1233,7 @@ static void class_declaration(bool is_foreign)
 
     named_variable(class_name, false);
 
-    if (current->scope_depth == 0)
+    if (current->scope_depth == 0 || (class_compiler.has_superclass && current->scope_depth == 1))
     {
         int symbol = symbol_table_find(&parser.module->variable_names, class_name.start, class_name.length);
         if (symbol < 0) {
