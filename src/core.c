@@ -388,16 +388,26 @@ DEF_PRIMITIVE(map_iterate)
 	RETURN_FALSE;
 }
 
-DEF_PRIMITIVE(map_iteratorValue)
+DEF_PRIMITIVE(map_keyIteratorValue)
 {
-  ObjMap* map = AS_MAP(args[0]);
-  uint32_t index = validate_index(args[1], map->entries.capacity + 1, "Iterator");
-  if (index == UINT32_MAX) {
-	  return false;
-  }
+	ObjMap* map = AS_MAP(args[0]);
+	uint32_t index = validate_index(args[1], map->entries.capacity + 1, "Iterator");
+	if (index == UINT32_MAX) {
+		return false;
+	}
 
-  //RETURN_VAL(map->entries.entries[index].value);
-  RETURN_VAL(OBJ_VAL(map->entries.entries[index].key));
+	RETURN_VAL(OBJ_VAL(map->entries.entries[index].key));
+}
+
+DEF_PRIMITIVE(map_valueIteratorValue)
+{
+	ObjMap* map = AS_MAP(args[0]);
+	uint32_t index = validate_index(args[1], map->entries.capacity + 1, "Iterator");
+	if (index == UINT32_MAX) {
+		return false;
+	}
+
+	RETURN_VAL(map->entries.entries[index].value);
 }
 
 DEF_PRIMITIVE(range_new)
@@ -588,7 +598,8 @@ void initialize_core()
 	PRIMITIVE(vm.map_class, "count", map_count);
 	PRIMITIVE(vm.map_class, "remove(_)", map_remove);
 	PRIMITIVE(vm.map_class, "iterate(_)", map_iterate);
-	PRIMITIVE(vm.map_class, "iteratorValue(_)", map_iteratorValue);
+	PRIMITIVE(vm.map_class, "keyIteratorValue_(_)", map_keyIteratorValue);
+	PRIMITIVE(vm.map_class, "valueIteratorValue_(_)", map_valueIteratorValue);
 
 	vm.range_class = AS_CLASS(find_variable(core_module, "Range"));
 	DefineVariable(core_module, "Range", 5, OBJ_VAL(vm.range_class), NULL);

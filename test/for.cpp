@@ -257,13 +257,17 @@ var map = {
   "two": 2,
   "three": 3
 }
-for (var i in map) {
-    System.print(i)
+for (var entry in map) {
+    System.print(entry.key)
+    System.print(entry.value)
 }
 )");
     REQUIRE(std::string(get_output_buf()) == R"(
 two
+2
 three
+3
 one
+1
 )" + 1);
 }

@@ -36,9 +36,27 @@ class Sequence
 }
 
 class List is Sequence {}
-class Map is Sequence {}
 class Range is Sequence {}
 class String is Sequence {}
+
+class Map is Sequence 
+{
+    iteratorValue(iterator) 
+    {
+        return MapEntry(
+            this.keyIteratorValue_(iterator),
+            this.valueIteratorValue_(iterator)
+        )
+    }
+}
+
+class MapEntry 
+{
+    init(key, value) {
+        this.key = key
+        this.value = value
+    }
+}
 
 class System
 {

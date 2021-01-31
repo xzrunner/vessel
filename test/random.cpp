@@ -328,9 +328,9 @@ for (var i in 1..1000) {
 }
 
 System.print(histogram.count) // expect: 5
-for (var key in histogram) {
+for (var entry in histogram) {
   import "math" for Math
-  var error = Math.abs(histogram[key] / (1000 / list.count) - 1)
+  var error = Math.abs(entry.value / (1000 / list.count) - 1)
   if (error > 0.2) System.print("!!! %(error)")
 }
 )foo");
