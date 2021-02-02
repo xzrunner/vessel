@@ -24,7 +24,7 @@ typedef struct VesselLoadModuleResult
 } VesselLoadModuleResult;
 
 typedef void (*VesselForeignMethodFn)();
-typedef void (*VesselFinalizerFn)(void* data);
+typedef int (*VesselFinalizerFn)(void* data);
 
 // Loads and returns the source code for the module [name].
 typedef VesselLoadModuleResult(*VesselLoadModuleFn)(const char* name);

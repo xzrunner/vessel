@@ -1264,24 +1264,24 @@ int DefineVariable(ObjModule* module, const char* name, size_t length, Value val
 	return symbol;
 }
 
-void FinalizeForeign(ObjForeign* foreign)
+int FinalizeForeign(ObjForeign* foreign)
 {
 	ObjClass* class_obj = foreign->obj.class_obj;
 
 	Value value;
 	if (!table_get(&class_obj->methods, vm.finalize_str, &value)) {
-		return;
+		return 0;
 	}
 
 	ObjMethod* method = AS_METHOD(value);
 	if (method->type == METHOD_NONE) {
-		return;
+		return 0;
 	}
 
 	ASSERT(method->type == METHOD_FOREIGN, "Finalizer should be foreign.");
 
 	VesselFinalizerFn finalizer = (VesselFinalizerFn)method->as.foreign;
-	finalizer(foreign->data);
+	return finalizer(foreign->data);
 }
 
 VesselInterpretResult ves_interpret(const char* module, const char* source)

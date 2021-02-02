@@ -213,7 +213,10 @@ static void free_object(Obj* object)
 		break;
 	}
 	case OBJ_FOREIGN:
-		FinalizeForeign((ObjForeign*)object);
+	{
+		int size = FinalizeForeign((ObjForeign*)object);
+		reallocate(object, sizeof(ObjForeign) + size, 0);
+	}
 		break;
 	case OBJ_INSTANCE:
 	{

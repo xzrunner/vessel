@@ -82,7 +82,7 @@ extern VM vm;
 // used before being defined.
 int DefineVariable(ObjModule* module, const char* name, size_t length, Value value, int* line);
 
-void FinalizeForeign(ObjForeign* foreign);
+int FinalizeForeign(ObjForeign* foreign);
 
 void push(Value value);
 Value pop();

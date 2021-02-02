@@ -44,6 +44,11 @@ static void random_allocate()
     well->index = 0;
 }
 
+static int random_finalize(void* data)
+{
+    return sizeof(Well512);
+}
+
 static void random_seed0()
 {
     Well512* well = (Well512*)ves_toforeign(0);
@@ -110,7 +115,7 @@ VesselForeignClassMethods RandomBindForeignClass(const char* module, const char*
     ASSERT(strcmp(class_name, "Random") == 0, "Should be in Random class.");
     VesselForeignClassMethods methods;
     methods.allocate = random_allocate;
-    methods.finalize = NULL;
+    methods.finalize = random_finalize;
     return methods;
 }
 
