@@ -1518,6 +1518,11 @@ void ves_set_number(int slot, double value)
 	set_slot(slot, NUMBER_VAL(value));
 }
 
+void ves_set_boolean(int slot, bool value)
+{
+	set_slot(slot, BOOL_VAL(value));
+}
+
 void* ves_set_newforeign(int slot, int class_slot, size_t size)
 {
 	ASSERT(IS_CLASS(vm.api_stack[class_slot]), "Slot must hold a class.");
