@@ -1444,12 +1444,21 @@ void ves_pop(int n)
 int ves_getfield(int index, const char* k)
 {
 	Value val = get_stack_value(index);
-	ASSERT(IS_MAP(val), "Slot must hold a map.");
 
-	ObjMap* map = AS_MAP(val);
-	Value value = NIL_VAL;
-	table_get(&map->entries, copy_string(k, strlen(k)), &value);
-	push(value);
+	if (IS_MAP(val))
+	{
+		ObjMap* map = AS_MAP(val);
+		Value value = NIL_VAL;
+		table_get(&map->entries, copy_string(k, strlen(k)), &value);
+		push(value);
+	}
+	else if (IS_INSTANCE(val))
+	{
+		ObjInstance* inst = AS_INSTANCE(val);
+		Value value = NIL_VAL;
+		table_get(&inst->fields, copy_string(k, strlen(k)), &value);
+		push(value);
+	}
 
 	return ves_type(-1);
 }
