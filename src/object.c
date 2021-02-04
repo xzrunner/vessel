@@ -166,6 +166,14 @@ ObjMap* new_map()
 	return map;
 }
 
+ObjSet* new_set()
+{
+	ObjSet* set = ALLOCATE_OBJ(ObjSet, OBJ_SET);
+	set->obj.class_obj = vm.set_class;
+	init_value_array(&set->elements);
+	return set;
+}
+
 ObjString* allocate_string(char* chars, int length, uint32_t hash)
 {
 	ObjString* string = ALLOCATE_OBJ(ObjString, OBJ_STRING);

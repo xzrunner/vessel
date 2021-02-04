@@ -1345,6 +1345,7 @@ VesselType ves_type(int index)
 	if (IS_FOREIGN(val)) return VES_TYPE_FOREIGN;
 	if (IS_LIST(val)) return VES_TYPE_LIST;
 	if (IS_MAP(val)) return VES_TYPE_MAP;
+	if (IS_SET(val)) return VES_TYPE_SET;
 	if (IS_NIL(val)) return VES_TYPE_NULL;
 	if (IS_STRING(val)) return VES_TYPE_STRING;
 	if (IS_INSTANCE(val)) return VES_TYPE_INSTANCE;

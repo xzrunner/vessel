@@ -163,11 +163,17 @@ static void blacken_object(Obj* object)
 		ObjList* list = (ObjList*)object;
 		mark_array(&list->elements);
 	}
-	break;
+		break;
 	case OBJ_MAP:
 	{
 		ObjMap* map = (ObjMap*)object;
 		mark_table(&map->entries);
+	}
+		break;
+	case OBJ_SET:
+	{
+		ObjSet* set = (ObjSet*)object;
+		mark_array(&set->elements);
 	}
 		break;
 	case OBJ_RANGE:
@@ -258,6 +264,13 @@ static void free_object(Obj* object)
 		ObjMap* map = (ObjMap*)object;
 		free_table(&map->entries);
 		FREE(ObjMap, map);
+		break;
+	}
+	case OBJ_SET:
+	{
+		ObjSet* set = (ObjSet*)object;
+		free_value_array(&set->elements);
+		FREE(ObjSet, set);
 		break;
 	}
 	case OBJ_RANGE:

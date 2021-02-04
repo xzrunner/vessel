@@ -410,6 +410,88 @@ DEF_PRIMITIVE(map_valueIteratorValue)
 	RETURN_VAL(map->entries.entries[index].value);
 }
 
+
+DEF_PRIMITIVE(set_new)
+{
+	RETURN_OBJ(new_set());
+}
+
+DEF_PRIMITIVE(set_add)
+{
+	ObjSet* set = AS_SET(args[0]);
+	for (int i = 0; i < set->elements.count; ++i) {
+		if (values_equal(args[1], set->elements.values[i])) {
+			RETURN_FALSE;
+		}
+	}
+
+	write_value_array(&set->elements, args[1]);
+	RETURN_VAL(args[1]);
+}
+
+DEF_PRIMITIVE(set_clear)
+{
+	free_value_array(&AS_SET(args[0])->elements);
+	RETURN_NULL;
+}
+
+DEF_PRIMITIVE(set_count)
+{
+	RETURN_NUM(AS_SET(args[0])->elements.count);
+}
+
+DEF_PRIMITIVE(set_remove)
+{
+	ObjSet* set = AS_SET(args[0]);
+
+	for (int i = 0; i < set->elements.count; ++i) {
+		if (values_equal(args[1], set->elements.values[i])) {
+			RETURN_VAL(array_remove_at(&set->elements, i));
+		}
+	}
+	RETURN_NULL;
+}
+
+DEF_PRIMITIVE(set_isEmpty)
+{
+	RETURN_BOOL(AS_SET(args[0])->elements.count == 0);
+}
+
+DEF_PRIMITIVE(set_iterate)
+{
+	ObjSet* set = AS_SET(args[0]);
+
+	if (IS_NIL(args[1]))
+	{
+		if (set->elements.count == 0) {
+			RETURN_FALSE;
+		}
+		RETURN_NUM(0);
+	}
+
+	if (!validate_int(args[1], "Iterator")) {
+		return false;
+	}
+
+	double index = AS_NUMBER(args[1]);
+	if (index < 0 || index >= set->elements.count - 1) {
+		RETURN_FALSE;
+	}
+
+	RETURN_NUM(index + 1);
+}
+
+DEF_PRIMITIVE(set_iteratorValue)
+{
+	ObjSet* set = AS_SET(args[0]);
+	uint32_t index = validate_index(args[1], set->elements.count, "Iterator");
+	if (index == UINT32_MAX) {
+		return false;
+	}
+
+	RETURN_VAL(set->elements.values[index]);
+}
+
 DEF_PRIMITIVE(range_new)
 {
 	if (!IS_NUMBER(args[-1])) {
@@ -600,6 +682,16 @@ void initialize_core()
 	PRIMITIVE(vm.map_class, "iterate(_)", map_iterate);
 	PRIMITIVE(vm.map_class, "keyIteratorValue_(_)", map_keyIteratorValue);
 	PRIMITIVE(vm.map_class, "valueIteratorValue_(_)", map_valueIteratorValue);
+
+	vm.set_class = AS_CLASS(find_variable(core_module, "Set"));
+	PRIMITIVE(vm.set_class->obj.class_obj, "new()", set_new);
+	PRIMITIVE(vm.set_class, "add(_)", set_add);
+	PRIMITIVE(vm.set_class, "clear()", set_clear);
+	PRIMITIVE(vm.set_class, "count", set_count);
+	PRIMITIVE(vm.set_class, "remove(_)", set_remove);
+	PRIMITIVE(vm.set_class, "isEmpty", set_isEmpty);
+	PRIMITIVE(vm.set_class, "iterate(_)", set_iterate);
+	PRIMITIVE(vm.set_class, "iteratorValue(_)", set_iteratorValue);
 
 	vm.range_class = AS_CLASS(find_variable(core_module, "Range"));
 	DefineVariable(core_module, "Range", 5, OBJ_VAL(vm.range_class), NULL);

@@ -92,6 +92,9 @@ static void dump_object(Value value, bool to_console)
 	case OBJ_MAP:
 		print(to_console, "map");
 		break;
+	case OBJ_SET:
+		print(to_console, "set");
+		break;
 	case OBJ_RANGE:
 	{
 		ObjRange* range = AS_RANGE(value);

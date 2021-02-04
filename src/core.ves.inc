@@ -50,6 +50,8 @@ class Map is Sequence
     }
 }
 
+class Set is Sequence {}
+
 class MapEntry 
 {
     init(key, value) {

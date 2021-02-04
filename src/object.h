@@ -22,6 +22,7 @@
 #define IS_MODULE(value)       is_obj_type(value, OBJ_MODULE)
 #define IS_LIST(value)         is_obj_type(value, OBJ_LIST)
 #define IS_MAP(value)          is_obj_type(value, OBJ_MAP)
+#define IS_SET(value)          is_obj_type(value, OBJ_SET)
 #define IS_RANGE(value)        is_obj_type(value, OBJ_RANGE)
 
 #define AS_METHOD(value)       ((ObjMethod*)AS_OBJ(value))
@@ -37,6 +38,7 @@
 #define AS_MODULE(value)       ((ObjModule*)AS_OBJ(value))
 #define AS_LIST(value)         ((ObjList*)AS_OBJ(value))
 #define AS_MAP(value)          ((ObjMap*)AS_OBJ(value))
+#define AS_SET(value)          ((ObjSet*)AS_OBJ(value))
 #define AS_RANGE(value)        ((ObjRange*)AS_OBJ(value))
 
 typedef enum
@@ -54,6 +56,7 @@ typedef enum
 	OBJ_MODULE,
 	OBJ_LIST,
 	OBJ_MAP,
+	OBJ_SET,
 	OBJ_RANGE,
 } ObjType;
 
@@ -190,6 +193,12 @@ typedef struct
 typedef struct
 {
 	Obj obj;
+	ValueArray elements;
+} ObjSet;
+
+typedef struct
+{
+	Obj obj;
 	double from;
 	double to;
 	bool is_inclusive;
@@ -207,6 +216,7 @@ ObjNative* new_native(NativeFn function);
 ObjModule* new_module(ObjString* name);
 ObjList* new_list(uint32_t num_elements);
 ObjMap* new_map();
+ObjSet* new_set();
 uint32_t hash_string(const char* key, int length);
 ObjString* allocate_string(char* chars, int length, uint32_t hash);
 ObjString* take_string(char* chars, int length);
