@@ -49,11 +49,13 @@ static void runtime_error(const char* format, ...)
 		ObjFunction* function = frame->closure->function;
 		size_t instruction = frame->ip - function->chunk.code - 1;
 		fprintf(stderr, "[line %d] in ", function->chunk.lines[instruction]);
-		if (function->name == NULL) {
-			fprintf(stderr, "script\n");
-		} else {
-			fprintf(stderr, "%s()\n", function->name->chars);
+		if (function->name != NULL) {
+			fprintf(stderr, "%s() ", function->name->chars);
 		}
+		if (function->module && function->module->name) {
+			fprintf(stderr, "%s ", function->module->name->chars);
+		}
+		fprintf(stderr, "\n");
 	}
 
 	reset_stack();
