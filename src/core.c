@@ -457,6 +457,16 @@ DEF_PRIMITIVE(set_isEmpty)
 	RETURN_BOOL(AS_SET(args[0])->elements.count == 0);
 }
 
+DEF_PRIMITIVE(set_front)
+{
+	ObjSet* set = AS_SET(args[0]);
+	if (set->elements.count > 0) {
+		RETURN_VAL(array_remove_at(&set->elements, 0));
+	} else {
+		RETURN_NULL;
+	}
+}
+
 DEF_PRIMITIVE(set_iterate)
 {
 	ObjSet* set = AS_SET(args[0]);
@@ -690,6 +700,7 @@ void initialize_core()
 	PRIMITIVE(vm.set_class, "count", set_count);
 	PRIMITIVE(vm.set_class, "remove(_)", set_remove);
 	PRIMITIVE(vm.set_class, "isEmpty", set_isEmpty);
+	PRIMITIVE(vm.set_class, "front()", set_front);
 	PRIMITIVE(vm.set_class, "iterate(_)", set_iterate);
 	PRIMITIVE(vm.set_class, "iteratorValue(_)", set_iteratorValue);
 
