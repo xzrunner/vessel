@@ -1006,7 +1006,7 @@ static VesselInterpretResult run()
 
 			Value v_method;
 			if (!table_get(&class_obj->methods, symbol, &v_method)) {
-				runtime_error("Method does not implement.");
+				runtime_error("Method %s does not implement.", symbol->chars);
 				return VES_INTERPRET_RUNTIME_ERROR;
 			}
 
@@ -1491,7 +1491,7 @@ VesselInterpretResult ves_call(int nargs, int nresults)
 
 	Value v_method;
 	if (!table_get(&class_obj->methods, s_method, &v_method)) {
-		runtime_error("Method does not implement.");
+		runtime_error("Method %s does not implement.", s_method->chars);
 		return VES_INTERPRET_RUNTIME_ERROR;
 	}
 
