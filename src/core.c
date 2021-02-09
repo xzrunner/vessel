@@ -43,6 +43,16 @@ DEF_PRIMITIVE(class_name)
 	RETURN_OBJ(AS_CLASS(args[0])->name);
 }
 
+DEF_PRIMITIVE(bool_toString)
+{
+	bool b = AS_BOOL(args[0]);
+	if (b) {
+		RETURN_VAL(OBJ_VAL(copy_string("true", 4)));
+	} else {
+		RETURN_VAL(OBJ_VAL(copy_string("false", 5)));
+	}
+}
+
 static Value num_to_string(double value)
 {
   // Edge case: If the value is NaN or infinity, different versions of libc
@@ -647,8 +657,8 @@ void initialize_core()
 	ves_interpret("Core", coreModuleSource);
 
 	vm.bool_class = AS_CLASS(find_variable(core_module, "Bool"));
-	//PRIMITIVE(vm->boolClass, "toString", bool_toString);
-	//PRIMITIVE(vm->boolClass, "!", bool_not);
+	PRIMITIVE(vm.bool_class, "toString", bool_toString);
+	//PRIMITIVE(vm.bool_class, "!", bool_not);
 
 	vm.num_class = AS_CLASS(find_variable(core_module, "Num"));
 	PRIMITIVE(vm.num_class, "toString", num_toString);
