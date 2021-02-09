@@ -131,6 +131,7 @@ VesselType ves_type(int index);
 int ves_len(int index);
 
 void ves_geti(int index, int i);
+void ves_seti(int index, int i);
 
 double ves_tonumber(int index);
 bool ves_toboolean(int index);
@@ -152,6 +153,8 @@ VesselInterpretResult ves_call(int nargs, int nresults);
 void ves_set_number(int slot, double value);
 void ves_set_boolean(int slot, bool value);
 void* ves_set_newforeign(int slot, int class_slot, size_t size);
+
+void ves_newlist(int num_elements);
 
 #endif // vessel_h
 

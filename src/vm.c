@@ -1381,6 +1381,19 @@ void ves_geti(int index, int i)
 	push(elements->values[used_index]);
 }
 
+void ves_seti(int index, int i)
+{
+	Value val = get_stack_value(index);
+	ASSERT(IS_LIST(val), "Slot must hold a list.");
+
+	ValueArray* elements = &AS_LIST(val)->elements;
+
+	uint32_t used_index = validate_index_value(elements->count, (double)i, "Index");
+	ASSERT(used_index != UINT32_MAX, "Index out of bounds.");
+
+	elements->values[used_index] = peek(0);
+}
+
 double ves_tonumber(int index)
 {
 	Value val = get_stack_value(index);
@@ -1547,4 +1560,10 @@ void* ves_set_newforeign(int slot, int class_slot, size_t size)
 	vm.api_stack[slot] = OBJ_VAL(foreign);
 
 	return (void*)foreign->data;
+}
+
+void ves_newlist(int num_elements)
+{
+	ObjList* list = new_list(num_elements);
+	push(OBJ_VAL(list));
 }
