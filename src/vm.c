@@ -540,8 +540,8 @@ static void define_method(ObjString* name, int method_type, ObjModule* module)
 
 		if (method->as.foreign == NULL)
 		{
-			runtime_error("Could not find foreign method '@' for class $ in module '$'.",
-				method_val, klass->name->chars, module->name->chars);
+			runtime_error("Could not find foreign method %s for class %s in module %s.",
+				name, klass->name->chars, module->name->chars);
 			return;
 		}
 	}
