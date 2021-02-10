@@ -626,7 +626,7 @@ static Value import_module(Value name)
 
 	if (result.source == NULL)
 	{
-		runtime_error("Could not load module.");
+		runtime_error("Could not load module %s.", name_str->chars);
 		pop(); // name.
 		return NIL_VAL;
 	}
@@ -640,7 +640,7 @@ static Value import_module(Value name)
 
 	if (module_closure == NULL)
 	{
-		runtime_error("Could not load module.");
+		runtime_error("Could not load module %s.", name_str->chars);
 		pop(); // name.
 		return NIL_VAL;
 	}
