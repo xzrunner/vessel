@@ -471,7 +471,7 @@ DEF_PRIMITIVE(set_front)
 {
 	ObjSet* set = AS_SET(args[0]);
 	if (set->elements.count > 0) {
-		RETURN_VAL(array_remove_at(&set->elements, 0));
+		RETURN_VAL(set->elements.values[0]);
 	} else {
 		RETURN_NULL;
 	}
