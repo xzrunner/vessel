@@ -26,6 +26,7 @@
     <ClCompile Include="..\..\..\src\debug.c" />
     <ClCompile Include="..\..\..\src\memory.c" />
     <ClCompile Include="..\..\..\src\object.c" />
+    <ClCompile Include="..\..\..\src\optional\opt_io.c" />
     <ClCompile Include="..\..\..\src\optional\opt_math.c" />
     <ClCompile Include="..\..\..\src\optional\opt_random.c" />
     <ClCompile Include="..\..\..\src\primitive.c" />
@@ -46,6 +47,7 @@
     <ClInclude Include="..\..\..\src\memory.h" />
     <ClInclude Include="..\..\..\src\object.h" />
     <ClInclude Include="..\..\..\src\opcodes.h" />
+    <ClInclude Include="..\..\..\src\optional\opt_io.h" />
     <ClInclude Include="..\..\..\src\optional\opt_math.h" />
     <ClInclude Include="..\..\..\src\optional\opt_random.h" />
     <ClInclude Include="..\..\..\src\primitive.h" />
@@ -57,6 +59,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\src\core.ves.inc" />
+    <None Include="..\..\..\src\optional\opt_io.ves.inc" />
     <None Include="..\..\..\src\optional\opt_math.ves.inc" />
     <None Include="..\..\..\src\optional\opt_random.ves.inc" />
   </ItemGroup>

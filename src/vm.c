@@ -13,6 +13,9 @@
 #if OPT_MATH
 #include "opt_math.h"
 #endif // OPT_MATH
+#if OPT_IO
+#include "opt_io.h"
+#endif // OPT_IO
 
 #include <time.h>
 #include <stdarg.h>
@@ -493,7 +496,7 @@ static void close_upvalues(Value* last)
 }
 
 static VesselForeignMethodFn find_foreign_method(const char* moduleName, const char* class_name,
-	                                       bool is_static, const char* signature)
+	                                             bool is_static, const char* signature)
 {
 	VesselForeignMethodFn method = NULL;
 
@@ -515,6 +518,12 @@ static VesselForeignMethodFn find_foreign_method(const char* moduleName, const c
 		if (strcmp(moduleName, "math") == 0)
 		{
 			method = MathBindMethod(class_name, is_static, signature);
+		}
+#endif
+#if OPT_IO
+		if (strcmp(moduleName, "io") == 0)
+		{
+			method = IOBindForeignMethod(class_name, is_static, signature);
 		}
 #endif
 	}
@@ -622,6 +631,11 @@ static Value import_module(Value name)
 			result.source = MathSource();
 		}
 #endif
+#if OPT_IO
+		if (strncmp(name_str->chars, "io", name_str->length) == 0) {
+			result.source = IOSource();
+		}
+#endif
 	}
 
 	if (result.source == NULL)
@@ -667,6 +681,11 @@ static void bind_foreign_class(ObjClass* class_obj, ObjModule* module)
 #if OPT_RANDOM
 		if (strncmp("random", module->name->chars, module->name->length) == 0) {
 			methods = RandomBindForeignClass(module->name->chars, class_obj->name->chars);
+		}
+#endif
+#if OPT_IO
+		if (strncmp("io", module->name->chars, module->name->length) == 0) {
+			methods = IOBindForeignClass(module->name->chars, class_obj->name->chars);
 		}
 #endif
 	}
@@ -1546,6 +1565,11 @@ void ves_set_number(int slot, double value)
 void ves_set_boolean(int slot, bool value)
 {
 	set_slot(slot, BOOL_VAL(value));
+}
+
+void ves_set_lstring(int slot, const char* s, size_t len)
+{
+	set_slot(slot, OBJ_VAL(copy_string(s, len)));
 }
 
 void* ves_set_newforeign(int slot, int class_slot, size_t size)

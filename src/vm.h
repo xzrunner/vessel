@@ -36,6 +36,7 @@ typedef struct
 	ObjClass* string_class;
 	ObjClass* object_class;
 	ObjClass* system_class;
+	ObjClass* basic_class;
 
 	ObjModule* last_module;
 

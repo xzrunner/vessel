@@ -7,6 +7,9 @@
 #ifndef OPT_MATH
     #define OPT_MATH 1
 #endif
+#ifndef OPT_IO
+    #define OPT_IO 1
+#endif
 
 //#define NAN_BOXING
 #define DEBUG_PRINT_CODE

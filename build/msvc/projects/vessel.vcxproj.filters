@@ -20,6 +20,9 @@
       <Filter>optional</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\buffer.c" />
+    <ClCompile Include="..\..\..\src\optional\opt_io.c">
+      <Filter>optional</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\chunk.h" />
@@ -46,6 +49,9 @@
       <Filter>optional</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\src\buffer.h" />
+    <ClInclude Include="..\..\..\src\optional\opt_io.h">
+      <Filter>optional</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="include">
@@ -61,6 +67,9 @@
     </None>
     <None Include="..\..\..\src\core.ves.inc" />
     <None Include="..\..\..\src\optional\opt_math.ves.inc">
+      <Filter>optional</Filter>
+    </None>
+    <None Include="..\..\..\src\optional\opt_io.ves.inc">
       <Filter>optional</Filter>
     </None>
   </ItemGroup>

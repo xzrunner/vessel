@@ -68,4 +68,9 @@ class System
 	}
 }
 
+class Basic
+{
+    static loadstring(str) {}
+}
+
 );

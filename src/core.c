@@ -614,6 +614,15 @@ DEF_PRIMITIVE(system_writeString)
 	return true;
 }
 
+DEF_PRIMITIVE(basic_loadstring)
+{
+	ObjString* str = AS_STRING(args[1]);
+	if (str->length > 0) {
+		ves_interpret("temp", str->chars);
+	}
+	return true;
+}
+
 static ObjClass* define_class(ObjModule* module, const char* name)
 {
 	ObjString* name_string = copy_string(name, strlen(name));
@@ -727,4 +736,8 @@ void initialize_core()
 	vm.system_class = AS_CLASS(find_variable(core_module, "System"));
 	DefineVariable(core_module, "System", 6, OBJ_VAL(vm.system_class), NULL);
 	PRIMITIVE(vm.system_class->obj.class_obj, "writeString(_)", system_writeString);
+
+	vm.basic_class = AS_CLASS(find_variable(core_module, "Basic"));
+	DefineVariable(core_module, "Basic", 5, OBJ_VAL(vm.basic_class), NULL);
+	PRIMITIVE(vm.basic_class->obj.class_obj, "loadstring(_)", basic_loadstring);
 }
