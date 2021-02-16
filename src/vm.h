@@ -42,6 +42,7 @@ typedef struct
 
 	CallFrame frames[FRAMES_MAX];
 	int frame_count;
+	int frame_count_begin;
 
 	Value stack[STACK_MAX];
 	Value* stack_top;

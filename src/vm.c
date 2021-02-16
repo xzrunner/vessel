@@ -34,6 +34,7 @@ static void reset_stack()
 {
 	vm.stack_top = vm.stack;
 	vm.frame_count = 0;
+	vm.frame_count_begin = 0;
 	vm.open_upvalues = NULL;
 }
 
@@ -1122,7 +1123,7 @@ static VesselInterpretResult run()
 			close_upvalues(frame->slots);
 
 			vm.frame_count--;
-			if (vm.frame_count == 0) {
+			if (vm.frame_count == vm.frame_count_begin) {
 				pop();
 				return VES_INTERPRET_OK;
 			}
@@ -1307,7 +1308,11 @@ int FinalizeForeign(ObjForeign* foreign)
 
 VesselInterpretResult ves_interpret(const char* module, const char* source)
 {
-	return ves_run(ves_compile(module, source));
+	int prev_begin = vm.frame_count_begin;
+	vm.frame_count_begin = vm.frame_count;
+	VesselInterpretResult ret = ves_run(ves_compile(module, source));
+	vm.frame_count_begin = prev_begin;
+	return ret;
 }
 
 void* ves_compile(const char* module, const char* source)
