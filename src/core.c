@@ -5,6 +5,7 @@
 #include "utils.h"
 #include "core.ves.inc"
 #include "debug.h"
+#include "memory.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -110,6 +111,23 @@ DEF_PRIMITIVE(null_toString)
 DEF_PRIMITIVE(string_toString)
 {
 	RETURN_VAL(args[0]);
+}
+
+DEF_PRIMITIVE(string_add)
+{
+	if (!IS_STRING(args[1]) || !IS_STRING(args[2])) {
+		return false;
+	}
+
+	ObjString* a = AS_STRING(args[1]);
+	ObjString* b = AS_STRING(args[2]);
+
+	int str_len = a->length + b->length;
+	char* chars = ALLOCATE(char, str_len);
+	memcpy(chars, a->chars, a->length);
+	memcpy(chars + a->length, b->chars, b->length);
+	ObjString* str = copy_string(chars, str_len);
+	RETURN_OBJ(str);
 }
 
 DEF_PRIMITIVE(list_new)
@@ -677,6 +695,7 @@ void initialize_core()
 	PRIMITIVE(vm.null_class, "toString", null_toString);
 
 	vm.string_class = AS_CLASS(find_variable(core_module, "String"));
+	PRIMITIVE(vm.string_class->obj.class_obj, "add(_,_)", string_add);
 	PRIMITIVE(vm.string_class, "toString", string_toString);
 	for (int i = 0; i < vm.strings.capacity; ++i) {
 		if (vm.strings.entries[i].key) {

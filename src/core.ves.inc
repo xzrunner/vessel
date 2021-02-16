@@ -37,7 +37,10 @@ class Sequence
 
 class List is Sequence {}
 class Range is Sequence {}
-class String is Sequence {}
+class String is Sequence 
+{
+    static add(a,b) {}
+}
 
 class Map is Sequence 
 {
