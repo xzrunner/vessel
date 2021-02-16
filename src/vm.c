@@ -1574,9 +1574,12 @@ void ves_set_lstring(int slot, const char* s, size_t len)
 
 void* ves_set_newforeign(int slot, int class_slot, size_t size)
 {
-	ASSERT(IS_CLASS(vm.api_stack[class_slot]), "Slot must hold a class.");
-
-	ObjClass* class_obj = AS_CLASS(vm.api_stack[class_slot]);
+	ObjClass* class_obj = NULL;
+	if (IS_CLASS(vm.api_stack[class_slot])) {
+		class_obj = AS_CLASS(vm.api_stack[class_slot]);
+	} else if (IS_FOREIGN(vm.api_stack[class_slot])) {
+		class_obj = AS_FOREIGN(vm.api_stack[class_slot])->obj.class_obj;
+	}
 	ASSERT(class_obj->num_fields == -1, "Class must be a foreign class.");
 
 	ObjForeign* foreign = new_foreign(size, class_obj);
