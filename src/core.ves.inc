@@ -28,15 +28,39 @@ class Sequence
         {
             if (!first) result = result + sep
             first = false
-            result = result + element.toString
+            result = result + element.toString()
         }
 
         return result
     }
 }
 
-class List is Sequence {}
+class List is Sequence 
+{
+    toString()
+    {
+        var first = true
+        var result = "[ "
+
+        for (var element in this) 
+        {
+            if (!first) result = result + ", "
+            first = false
+            if (element is String) {
+                result = result + "\"" + element.toString() + "\""
+            } else {
+                result = result + element.toString()
+            }
+        }
+
+        result = result + " ]"
+
+        return result
+    }
+}
+
 class Range is Sequence {}
+
 class String is Sequence {}
 
 class Map is Sequence 
@@ -47,6 +71,33 @@ class Map is Sequence
             this.keyIteratorValue_(iterator),
             this.valueIteratorValue_(iterator)
         )
+    }
+
+    toString()
+    {
+        var first = true
+        var result = "{ "
+
+        for (var element in this) 
+        {
+            if (!first) result = result + ", "
+            first = false
+            if (element.key is String) {
+                result = result + "\"" + element.key.toString() + "\""
+            } else {
+                result = result + element.key.toString()
+            }
+            result = result + " : "
+            if (element.value is String) {
+                result = result + "\"" + element.value.toString() + "\""
+            } else {
+                result = result + element.value.toString()
+            }
+        }
+
+        result = result + " }"
+
+        return result
     }
 }
 

@@ -258,12 +258,6 @@ DEF_PRIMITIVE(list_iteratorValue)
 	RETURN_VAL(list->elements.values[index]);
 }
 
-DEF_PRIMITIVE(list_toString)
-{
-	ObjList* list = AS_LIST(args[0]);
-	RETURN_VAL(OBJ_VAL(copy_string("List", 4)));
-}
-
 DEF_PRIMITIVE(map_new)
 {
   RETURN_OBJ(new_map());
@@ -666,18 +660,18 @@ void initialize_core()
 	ves_interpret("Core", coreModuleSource);
 
 	vm.bool_class = AS_CLASS(find_variable(core_module, "Bool"));
-	PRIMITIVE(vm.bool_class, "toString", bool_toString);
+	PRIMITIVE(vm.bool_class, "toString()", bool_toString);
 	//PRIMITIVE(vm.bool_class, "!", bool_not);
 
 	vm.num_class = AS_CLASS(find_variable(core_module, "Num"));
-	PRIMITIVE(vm.num_class, "toString", num_toString);
+	PRIMITIVE(vm.num_class, "toString()", num_toString);
 
 	vm.null_class = AS_CLASS(find_variable(core_module, "Null"));
 	PRIMITIVE(vm.null_class, "!", null_not);
-	PRIMITIVE(vm.null_class, "toString", null_toString);
+	PRIMITIVE(vm.null_class, "toString()", null_toString);
 
 	vm.string_class = AS_CLASS(find_variable(core_module, "String"));
-	PRIMITIVE(vm.string_class, "toString", string_toString);
+	PRIMITIVE(vm.string_class, "toString()", string_toString);
 	for (int i = 0; i < vm.strings.capacity; ++i) {
 		if (vm.strings.entries[i].key) {
 			vm.strings.entries[i].key->obj.class_obj = vm.string_class;
@@ -697,7 +691,6 @@ void initialize_core()
 	PRIMITIVE(vm.list_class, "isEmpty", list_isEmpty);
 	PRIMITIVE(vm.list_class, "iterate(_)", list_iterate);
 	PRIMITIVE(vm.list_class, "iteratorValue(_)", list_iteratorValue);
-	PRIMITIVE(vm.list_class, "toString", list_toString);
 
 	vm.map_class = AS_CLASS(find_variable(core_module, "Map"));
 	PRIMITIVE(vm.map_class->obj.class_obj, "new()", map_new);

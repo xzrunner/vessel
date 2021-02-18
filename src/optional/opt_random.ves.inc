@@ -74,15 +74,15 @@ foreign class Random {
       var picked = {}
       for (var i = list.count - count; i < list.count; i = i + 1) {
         var index = this.int(i + 1)
-        if (picked.containsKey(index.toString)) index = i
-        picked[index.toString] = true
+        if (picked.containsKey(index.toString())) index = i
+        picked[index.toString()] = true
         result.add(list[index])
       }
     } else {
       var picked = List.filled(list.count, false)
       for (var i = list.count - count; i < list.count; i = i + 1) {
         var index = this.int(i + 1)
-        if (picked[index.toString]) index = i
+        if (picked[index.toString()]) index = i
         picked[index] = true
         result.add(list[index])
       }
