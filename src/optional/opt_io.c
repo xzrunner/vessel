@@ -1,9 +1,11 @@
 #include "opt_io.h"
-#include "object.h"
 
 #if OPT_IO
 
 #include "opt_io.ves.inc"
+#include "object.h"
+
+#include <stdio.h>
 
 typedef struct 
 {
