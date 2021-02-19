@@ -45,14 +45,14 @@ static void math_pi()
 static void math_min()
 {
 	const double a = ves_tonumber(1);
-	const double b = ves_tonumber(1);
+	const double b = ves_tonumber(2);
 	ves_set_number(0, a < b ? a : b);
 }
 
 static void math_max()
 {
 	const double a = ves_tonumber(1);
-	const double b = ves_tonumber(1);
+	const double b = ves_tonumber(2);
 	ves_set_number(0, a > b ? a : b);
 }
 
