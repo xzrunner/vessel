@@ -138,6 +138,10 @@ bool ves_toboolean(int index);
 const char* ves_tostring(int index);
 void* ves_toforeign(int index);
 
+double ves_optnumber(int index, double d);
+bool ves_optboolean(int index, bool d);
+const char* ves_optstring(int index, const char* d);
+
 void ves_pushnumber(double n);
 void ves_pushboolean(int b);
 void ves_pushstring(const char* s);

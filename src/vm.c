@@ -1453,6 +1453,56 @@ void* ves_toforeign(int index)
 	return AS_FOREIGN(val)->data;
 }
 
+static bool is_stack_index_valid(int index)
+{
+	if (index >= 0)
+	{
+		int num = 0;
+		if (vm.api_stack != NULL) {
+			num = (int)(vm.stack_top - vm.api_stack);
+		}
+		return index < num;
+	 }
+	else
+	{
+		const int num = ves_gettop();
+		return -index <= num;
+	}
+}
+
+double ves_optnumber(int index, double d)
+{
+	if (is_stack_index_valid(index)) {
+		Value val = get_stack_value(index);
+		if (IS_NUMBER(val)) {
+			return AS_NUMBER(val);
+		}
+	}
+	return d;
+}
+
+bool ves_optboolean(int index, bool d)
+{
+	if (is_stack_index_valid(index)) {
+		Value val = get_stack_value(index);
+		if (IS_BOOL(val)) {
+			return AS_BOOL(val);
+		}
+	}
+	return d;
+}
+
+const char* ves_optstring(int index, const char* d)
+{
+	if (is_stack_index_valid(index)) {
+		Value val = get_stack_value(index);
+		if (IS_STRING(val)) {
+			return AS_STRING(val);
+		}
+	}
+	return d;
+}
+
 void ves_pushnumber(double n)
 {
 	push(NUMBER_VAL(n));
