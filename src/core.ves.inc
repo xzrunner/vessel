@@ -57,6 +57,17 @@ class List is Sequence
 
         return result
     }
+
+    remove(element)
+    {
+        var break = false
+        for (var i = 0; i < this.count and !break; i = i + 1) {
+            if (this[i] == element) {
+                this.removeAt(i)
+                break = true
+            }
+        }
+    }
 }
 
 class Range is Sequence {}
