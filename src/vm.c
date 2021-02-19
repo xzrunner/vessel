@@ -1326,12 +1326,14 @@ VesselInterpretResult ves_run(void* closure)
 		return VES_INTERPRET_COMPILE_ERROR;
 	}
 
+	const int prev_top = ves_gettop();
+
 	push(OBJ_VAL(closure));
 	call_value(OBJ_VAL(closure), 0);
 
 	VesselInterpretResult ret = run();
 
-	if (ves_gettop() != 0) {
+	if (ves_gettop() != prev_top) {
 		runtime_error("Stack not empty.");
 	}
 
