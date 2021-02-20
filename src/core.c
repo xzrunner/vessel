@@ -38,7 +38,17 @@ DEF_PRIMITIVE(object_type)
 	RETURN_OBJ(get_class(args[0]));
 }
 
+DEF_PRIMITIVE(object_toString)
+{
+	RETURN_VAL(string_format("instance of @", OBJ_VAL(get_class(args[0])->name)));
+}
+
 DEF_PRIMITIVE(class_name)
+{
+	RETURN_OBJ(AS_CLASS(args[0])->name);
+}
+
+DEF_PRIMITIVE(class_toString)
 {
 	RETURN_OBJ(AS_CLASS(args[0])->name);
 }
@@ -652,9 +662,11 @@ void initialize_core()
 	vm.object_class = define_class(core_module, "Object");
 	PRIMITIVE(vm.object_class, "is(_)", object_is);
 	PRIMITIVE(vm.object_class, "type", object_type);
+	PRIMITIVE(vm.object_class, "toString()", object_toString);
 
 	vm.class_class = define_class(core_module, "Class");
 	PRIMITIVE(vm.class_class, "name", class_name);
+	PRIMITIVE(vm.class_class, "toString()", class_toString);
 	bind_superclass(vm.class_class, vm.object_class);
 
 	ves_interpret("Core", coreModuleSource);

@@ -361,6 +361,15 @@ static bool invoke_from_class(ObjClass* klass, ObjString* name, int arg_count)
 	bool ret = false;
 	switch (obj_method->type)
 	{
+	case METHOD_PRIMITIVE:
+		if (obj_method->as.primitive(vm.stack_top - arg_count - 1)) {
+			vm.stack_top -= arg_count;
+			ret = true;
+		} else {
+			runtime_error("Run primitive fail.");
+			return VES_INTERPRET_RUNTIME_ERROR;
+		}
+		break;
 	case METHOD_BLOCK:
 		ret = call(obj_method->as.closure, arg_count);
 		break;
