@@ -1497,7 +1497,7 @@ const char* ves_optstring(int index, const char* d)
 	if (is_stack_index_valid(index)) {
 		Value val = get_stack_value(index);
 		if (IS_STRING(val)) {
-			return AS_STRING(val);
+			return AS_STRING(val)->chars;
 		}
 	}
 	return d;
