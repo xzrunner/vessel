@@ -8,6 +8,7 @@
 
 #include <math.h>
 #include <stdio.h>
+#include <time.h>
 
 DEF_PRIMITIVE(object_is)
 {
@@ -618,6 +619,11 @@ DEF_PRIMITIVE(system_writeString)
 	return true;
 }
 
+DEF_PRIMITIVE(system_clock)
+{
+	RETURN_NUM((double)clock() / CLOCKS_PER_SEC);
+}
+
 DEF_PRIMITIVE(basic_loadstring)
 {
 	ObjString* str = AS_STRING(args[1]);
@@ -741,6 +747,7 @@ void initialize_core()
 	vm.system_class = AS_CLASS(find_variable(core_module, "System"));
 	DefineVariable(core_module, "System", 6, OBJ_VAL(vm.system_class), NULL);
 	PRIMITIVE(vm.system_class->obj.class_obj, "writeString(_)", system_writeString);
+	PRIMITIVE(vm.system_class->obj.class_obj, "clock()", system_clock);
 
 	vm.basic_class = AS_CLASS(find_variable(core_module, "Basic"));
 	DefineVariable(core_module, "Basic", 5, OBJ_VAL(vm.basic_class), NULL);
