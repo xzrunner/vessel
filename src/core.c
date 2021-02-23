@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <time.h>
 
-DEF_PRIMITIVE(object_is)
+DEF_PRIMITIVE(w_Object_is)
 {
 	if (!IS_CLASS(args[1]))
 	{
@@ -34,27 +34,27 @@ DEF_PRIMITIVE(object_is)
 	RETURN_BOOL(false);
 }
 
-DEF_PRIMITIVE(object_type)
+DEF_PRIMITIVE(w_Object_type)
 {
 	RETURN_OBJ(get_class(args[0]));
 }
 
-DEF_PRIMITIVE(object_toString)
+DEF_PRIMITIVE(w_Object_toString)
 {
 	RETURN_VAL(string_format("instance of @", OBJ_VAL(get_class(args[0])->name)));
 }
 
-DEF_PRIMITIVE(class_name)
+DEF_PRIMITIVE(w_Class_name)
 {
 	RETURN_OBJ(AS_CLASS(args[0])->name);
 }
 
-DEF_PRIMITIVE(class_toString)
+DEF_PRIMITIVE(w_Class_toString)
 {
 	RETURN_OBJ(AS_CLASS(args[0])->name);
 }
 
-DEF_PRIMITIVE(bool_toString)
+DEF_PRIMITIVE(w_Bool_toString)
 {
 	bool b = AS_BOOL(args[0]);
 	if (b) {
@@ -103,32 +103,32 @@ static Value num_to_string(double value)
   return OBJ_VAL(copy_string(buffer, length));
 }
 
-DEF_PRIMITIVE(num_toString)
+DEF_PRIMITIVE(w_Num_toString)
 {
 	RETURN_VAL(num_to_string(AS_NUMBER(args[0])));
 }
 
-DEF_PRIMITIVE(null_not)
+DEF_PRIMITIVE(w_Null_not)
 {
 	RETURN_VAL(TRUE_VAL);
 }
 
-DEF_PRIMITIVE(null_toString)
+DEF_PRIMITIVE(w_Null_toString)
 {
 	RETURN_VAL(OBJ_VAL(copy_string("null", 4)));
 }
 
-DEF_PRIMITIVE(string_toString)
+DEF_PRIMITIVE(w_String_toString)
 {
 	RETURN_VAL(args[0]);
 }
 
-DEF_PRIMITIVE(list_new)
+DEF_PRIMITIVE(w_List_new)
 {
 	RETURN_OBJ(new_list(0));
 }
 
-DEF_PRIMITIVE(list_filled)
+DEF_PRIMITIVE(w_List_filled)
 {
 	if (!validate_int(args[1], "Size")) {
 		return false;
@@ -147,7 +147,7 @@ DEF_PRIMITIVE(list_filled)
 	RETURN_OBJ(list);
 }
 
-DEF_PRIMITIVE(list_subscript)
+DEF_PRIMITIVE(w_List_subscript)
 {
 	ObjList* list = AS_LIST(args[0]);
 
@@ -180,7 +180,7 @@ DEF_PRIMITIVE(list_subscript)
 	RETURN_OBJ(result);
 }
 
-DEF_PRIMITIVE(list_subscriptSetter)
+DEF_PRIMITIVE(w_List_subscriptSetter)
 {
 	ObjList* list = AS_LIST(args[0]);
 
@@ -193,13 +193,13 @@ DEF_PRIMITIVE(list_subscriptSetter)
 	RETURN_VAL(args[2]);
 }
 
-DEF_PRIMITIVE(list_add)
+DEF_PRIMITIVE(w_List_add)
 {
 	write_value_array(&AS_LIST(args[0])->elements, args[1]);
 	RETURN_VAL(args[1]);
 }
 
-DEF_PRIMITIVE(list_addCore)
+DEF_PRIMITIVE(w_List_addCore)
 {
 	write_value_array(&AS_LIST(args[0])->elements, args[1]);
 
@@ -207,18 +207,18 @@ DEF_PRIMITIVE(list_addCore)
 	RETURN_VAL(args[0]);
 }
 
-DEF_PRIMITIVE(list_clear)
+DEF_PRIMITIVE(w_List_clear)
 {
 	free_value_array(&AS_LIST(args[0])->elements);
 	RETURN_NULL;
 }
 
-DEF_PRIMITIVE(list_count)
+DEF_PRIMITIVE(w_List_count)
 {
 	RETURN_NUM(AS_LIST(args[0])->elements.count);
 }
 
-DEF_PRIMITIVE(list_removeAt)
+DEF_PRIMITIVE(w_List_removeAt)
 {
 	ObjList* list = AS_LIST(args[0]);
 	uint32_t index = validate_index(args[1], list->elements.count, "Index");
@@ -229,12 +229,12 @@ DEF_PRIMITIVE(list_removeAt)
 	RETURN_VAL(array_remove_at(&list->elements, index));
 }
 
-DEF_PRIMITIVE(list_isEmpty)
+DEF_PRIMITIVE(w_List_isEmpty)
 {
 	RETURN_BOOL(AS_LIST(args[0])->elements.count == 0);
 }
 
-DEF_PRIMITIVE(list_iterate)
+DEF_PRIMITIVE(w_List_iterate)
 {
 	ObjList* list = AS_LIST(args[0]);
 
@@ -258,7 +258,7 @@ DEF_PRIMITIVE(list_iterate)
 	RETURN_NUM(index + 1);
 }
 
-DEF_PRIMITIVE(list_iteratorValue)
+DEF_PRIMITIVE(w_List_iteratorValue)
 {
 	ObjList* list = AS_LIST(args[0]);
 	uint32_t index = validate_index(args[1], list->elements.count, "Iterator");
@@ -269,12 +269,12 @@ DEF_PRIMITIVE(list_iteratorValue)
 	RETURN_VAL(list->elements.values[index]);
 }
 
-DEF_PRIMITIVE(map_new)
+DEF_PRIMITIVE(w_Map_new)
 {
   RETURN_OBJ(new_map());
 }
 
-DEF_PRIMITIVE(map_subscript)
+DEF_PRIMITIVE(w_Map_subscript)
 {
 	//if (!validate_key(args[1])) {
 	//	return false;
@@ -291,7 +291,7 @@ DEF_PRIMITIVE(map_subscript)
 	RETURN_VAL(value);
 }
 
-DEF_PRIMITIVE(map_subscriptSetter)
+DEF_PRIMITIVE(w_Map_subscriptSetter)
 {
 	//if (!validate_key(args[1])) {
 	//	return false;
@@ -307,7 +307,7 @@ DEF_PRIMITIVE(map_subscriptSetter)
 // Adds an entry to the map and then returns the map itself. This is called by
 // the compiler when compiling map literals instead of using [_]=(_) to
 // minimize stack churn.
-DEF_PRIMITIVE(map_addCore)
+DEF_PRIMITIVE(w_Map_addCore)
 {
 	//if (!validate_key(args[1])) {
 	//	return false;
@@ -322,13 +322,13 @@ DEF_PRIMITIVE(map_addCore)
 	RETURN_VAL(args[0]);
 }
 
-DEF_PRIMITIVE(map_clear)
+DEF_PRIMITIVE(w_Map_clear)
 {
 	free_table(&AS_MAP(args[0])->entries);
 	RETURN_NULL;
 }
 
-DEF_PRIMITIVE(map_containsKey)
+DEF_PRIMITIVE(w_Map_containsKey)
 {
 	//if (!validate_key(args[1])) {
 	//	return false;
@@ -341,12 +341,12 @@ DEF_PRIMITIVE(map_containsKey)
 	RETURN_BOOL(table_get(&AS_MAP(args[0])->entries, AS_STRING(args[1]), &value));
 }
 
-DEF_PRIMITIVE(map_count)
+DEF_PRIMITIVE(w_Map_count)
 {
 	RETURN_NUM(AS_MAP(args[0])->entries.count);
 }
 
-DEF_PRIMITIVE(map_remove)
+DEF_PRIMITIVE(w_Map_remove)
 {
 	//if (!validate_key(args[1])) {
 	//	return false;
@@ -360,7 +360,7 @@ DEF_PRIMITIVE(map_remove)
 	RETURN_NULL;
 }
 
-DEF_PRIMITIVE(map_iterate)
+DEF_PRIMITIVE(w_Map_iterate)
 {
 	ObjMap* map = AS_MAP(args[0]);
 
@@ -403,7 +403,7 @@ DEF_PRIMITIVE(map_iterate)
 	RETURN_FALSE;
 }
 
-DEF_PRIMITIVE(map_keyIteratorValue)
+DEF_PRIMITIVE(w_Map_keyIteratorValue)
 {
 	ObjMap* map = AS_MAP(args[0]);
 	uint32_t index = validate_index(args[1], map->entries.capacity + 1, "Iterator");
@@ -414,7 +414,7 @@ DEF_PRIMITIVE(map_keyIteratorValue)
 	RETURN_VAL(OBJ_VAL(map->entries.entries[index].key));
 }
 
-DEF_PRIMITIVE(map_valueIteratorValue)
+DEF_PRIMITIVE(w_Map_valueIteratorValue)
 {
 	ObjMap* map = AS_MAP(args[0]);
 	uint32_t index = validate_index(args[1], map->entries.capacity + 1, "Iterator");
@@ -426,12 +426,12 @@ DEF_PRIMITIVE(map_valueIteratorValue)
 }
 
 
-DEF_PRIMITIVE(set_new)
+DEF_PRIMITIVE(w_Set_new)
 {
 	RETURN_OBJ(new_set());
 }
 
-DEF_PRIMITIVE(set_add)
+DEF_PRIMITIVE(w_Set_add)
 {
 	ObjSet* set = AS_SET(args[0]);
 	for (int i = 0; i < set->elements.count; ++i) {
@@ -444,18 +444,18 @@ DEF_PRIMITIVE(set_add)
 	RETURN_VAL(args[1]);
 }
 
-DEF_PRIMITIVE(set_clear)
+DEF_PRIMITIVE(w_Set_clear)
 {
 	free_value_array(&AS_SET(args[0])->elements);
 	RETURN_NULL;
 }
 
-DEF_PRIMITIVE(set_count)
+DEF_PRIMITIVE(w_Set_count)
 {
 	RETURN_NUM(AS_SET(args[0])->elements.count);
 }
 
-DEF_PRIMITIVE(set_remove)
+DEF_PRIMITIVE(w_Set_remove)
 {
 	ObjSet* set = AS_SET(args[0]);
 
@@ -467,12 +467,12 @@ DEF_PRIMITIVE(set_remove)
 	RETURN_NULL;
 }
 
-DEF_PRIMITIVE(set_isEmpty)
+DEF_PRIMITIVE(w_Set_isEmpty)
 {
 	RETURN_BOOL(AS_SET(args[0])->elements.count == 0);
 }
 
-DEF_PRIMITIVE(set_front)
+DEF_PRIMITIVE(w_Set_front)
 {
 	ObjSet* set = AS_SET(args[0]);
 	if (set->elements.count > 0) {
@@ -482,7 +482,7 @@ DEF_PRIMITIVE(set_front)
 	}
 }
 
-DEF_PRIMITIVE(set_iterate)
+DEF_PRIMITIVE(w_Set_iterate)
 {
 	ObjSet* set = AS_SET(args[0]);
 
@@ -506,7 +506,7 @@ DEF_PRIMITIVE(set_iterate)
 	RETURN_NUM(index + 1);
 }
 
-DEF_PRIMITIVE(set_iteratorValue)
+DEF_PRIMITIVE(w_Set_iteratorValue)
 {
 	ObjSet* set = AS_SET(args[0]);
 	uint32_t index = validate_index(args[1], set->elements.count, "Iterator");
@@ -517,7 +517,7 @@ DEF_PRIMITIVE(set_iteratorValue)
 	RETURN_VAL(set->elements.values[index]);
 }
 
-DEF_PRIMITIVE(range_new)
+DEF_PRIMITIVE(w_Range_new)
 {
 	if (!IS_NUMBER(args[-1])) {
 		return false;
@@ -532,17 +532,17 @@ DEF_PRIMITIVE(range_new)
 	return true;
 }
 
-DEF_PRIMITIVE(range_from)
+DEF_PRIMITIVE(w_Range_from)
 {
 	RETURN_NUM(AS_RANGE(args[0])->from);
 }
 
-DEF_PRIMITIVE(range_to)
+DEF_PRIMITIVE(w_Range_to)
 {
 	RETURN_NUM(AS_RANGE(args[0])->to);
 }
 
-DEF_PRIMITIVE(range_setTo)
+DEF_PRIMITIVE(w_Range_setTo)
 {
 	if (!IS_NUMBER(args[1])) {
 		return false;
@@ -553,7 +553,7 @@ DEF_PRIMITIVE(range_setTo)
 	RETURN_VAL(args[0]);
 }
 
-DEF_PRIMITIVE(range_setInclusive)
+DEF_PRIMITIVE(w_Range_setInclusive)
 {
 	if (!IS_BOOL(args[1])) {
 		return false;
@@ -564,7 +564,7 @@ DEF_PRIMITIVE(range_setInclusive)
 	RETURN_VAL(args[0]);
 }
 
-DEF_PRIMITIVE(range_iterate)
+DEF_PRIMITIVE(w_Range_iterate)
 {
 	ObjRange* range = AS_RANGE(args[0]);
 
@@ -607,24 +607,24 @@ DEF_PRIMITIVE(range_iterate)
 	RETURN_NUM(iterator);
 }
 
-DEF_PRIMITIVE(range_iteratorValue)
+DEF_PRIMITIVE(w_Range_iteratorValue)
 {
 	// Assume the iterator is a number so that is the value of the range.
 	RETURN_VAL(args[1]);
 }
 
-DEF_PRIMITIVE(system_writeString)
+DEF_PRIMITIVE(w_System_writeString)
 {
 	dump_value(args[1], false);
 	return true;
 }
 
-DEF_PRIMITIVE(system_clock)
+DEF_PRIMITIVE(w_System_clock)
 {
 	RETURN_NUM((double)clock() / CLOCKS_PER_SEC);
 }
 
-DEF_PRIMITIVE(basic_loadstring)
+DEF_PRIMITIVE(w_Basic_loadstring)
 {
 	ObjString* str = AS_STRING(args[1]);
 	if (str->length > 0) {
@@ -666,30 +666,30 @@ void initialize_core()
 	pop();
 
 	vm.object_class = define_class(core_module, "Object");
-	PRIMITIVE(vm.object_class, "is(_)", object_is);
-	PRIMITIVE(vm.object_class, "type", object_type);
-	PRIMITIVE(vm.object_class, "toString()", object_toString);
+	PRIMITIVE(vm.object_class, "is(_)", w_Object_is);
+	PRIMITIVE(vm.object_class, "type", w_Object_type);
+	PRIMITIVE(vm.object_class, "toString()", w_Object_toString);
 
 	vm.class_class = define_class(core_module, "Class");
-	PRIMITIVE(vm.class_class, "name", class_name);
-	PRIMITIVE(vm.class_class, "toString()", class_toString);
+	PRIMITIVE(vm.class_class, "name", w_Class_name);
+	PRIMITIVE(vm.class_class, "toString()", w_Class_toString);
 	bind_superclass(vm.class_class, vm.object_class);
 
 	ves_interpret("Core", coreModuleSource);
 
 	vm.bool_class = AS_CLASS(find_variable(core_module, "Bool"));
-	PRIMITIVE(vm.bool_class, "toString()", bool_toString);
+	PRIMITIVE(vm.bool_class, "toString()", w_Bool_toString);
 	//PRIMITIVE(vm.bool_class, "!", bool_not);
 
 	vm.num_class = AS_CLASS(find_variable(core_module, "Num"));
-	PRIMITIVE(vm.num_class, "toString()", num_toString);
+	PRIMITIVE(vm.num_class, "toString()", w_Num_toString);
 
 	vm.null_class = AS_CLASS(find_variable(core_module, "Null"));
-	PRIMITIVE(vm.null_class, "!", null_not);
-	PRIMITIVE(vm.null_class, "toString()", null_toString);
+	PRIMITIVE(vm.null_class, "!", w_Null_not);
+	PRIMITIVE(vm.null_class, "toString()", w_Null_toString);
 
 	vm.string_class = AS_CLASS(find_variable(core_module, "String"));
-	PRIMITIVE(vm.string_class, "toString()", string_toString);
+	PRIMITIVE(vm.string_class, "toString()", w_String_toString);
 	for (int i = 0; i < vm.strings.capacity; ++i) {
 		if (vm.strings.entries[i].key) {
 			vm.strings.entries[i].key->obj.class_obj = vm.string_class;
@@ -697,59 +697,59 @@ void initialize_core()
 	}
 
 	vm.list_class = AS_CLASS(find_variable(core_module, "List"));
-	PRIMITIVE(vm.list_class->obj.class_obj, "new()", list_new);
-	PRIMITIVE(vm.list_class->obj.class_obj, "filled(_,_)", list_filled);
-	PRIMITIVE(vm.list_class, "[_]", list_subscript);
-	PRIMITIVE(vm.list_class, "[_]=(_)", list_subscriptSetter);
-	PRIMITIVE(vm.list_class, "add(_)", list_add);
-	PRIMITIVE(vm.list_class, "addCore_(_)", list_addCore);
-	PRIMITIVE(vm.list_class, "clear()", list_clear);
-	PRIMITIVE(vm.list_class, "count", list_count);
-	PRIMITIVE(vm.list_class, "removeAt(_)", list_removeAt);
-	PRIMITIVE(vm.list_class, "isEmpty", list_isEmpty);
-	PRIMITIVE(vm.list_class, "iterate(_)", list_iterate);
-	PRIMITIVE(vm.list_class, "iteratorValue(_)", list_iteratorValue);
+	PRIMITIVE(vm.list_class->obj.class_obj, "new()", w_List_new);
+	PRIMITIVE(vm.list_class->obj.class_obj, "filled(_,_)", w_List_filled);
+	PRIMITIVE(vm.list_class, "[_]", w_List_subscript);
+	PRIMITIVE(vm.list_class, "[_]=(_)", w_List_subscriptSetter);
+	PRIMITIVE(vm.list_class, "add(_)", w_List_add);
+	PRIMITIVE(vm.list_class, "addCore_(_)", w_List_addCore);
+	PRIMITIVE(vm.list_class, "clear()", w_List_clear);
+	PRIMITIVE(vm.list_class, "count", w_List_count);
+	PRIMITIVE(vm.list_class, "removeAt(_)", w_List_removeAt);
+	PRIMITIVE(vm.list_class, "isEmpty", w_List_isEmpty);
+	PRIMITIVE(vm.list_class, "iterate(_)", w_List_iterate);
+	PRIMITIVE(vm.list_class, "iteratorValue(_)", w_List_iteratorValue);
 
 	vm.map_class = AS_CLASS(find_variable(core_module, "Map"));
-	PRIMITIVE(vm.map_class->obj.class_obj, "new()", map_new);
-	PRIMITIVE(vm.map_class, "[_]", map_subscript);
-	PRIMITIVE(vm.map_class, "[_]=(_)", map_subscriptSetter);
-	PRIMITIVE(vm.map_class, "addCore_(_,_)", map_addCore);
-	PRIMITIVE(vm.map_class, "clear()", map_clear);
-	PRIMITIVE(vm.map_class, "containsKey(_)", map_containsKey);
-	PRIMITIVE(vm.map_class, "count", map_count);
-	PRIMITIVE(vm.map_class, "remove(_)", map_remove);
-	PRIMITIVE(vm.map_class, "iterate(_)", map_iterate);
-	PRIMITIVE(vm.map_class, "keyIteratorValue_(_)", map_keyIteratorValue);
-	PRIMITIVE(vm.map_class, "valueIteratorValue_(_)", map_valueIteratorValue);
+	PRIMITIVE(vm.map_class->obj.class_obj, "new()", w_Map_new);
+	PRIMITIVE(vm.map_class, "[_]", w_Map_subscript);
+	PRIMITIVE(vm.map_class, "[_]=(_)", w_Map_subscriptSetter);
+	PRIMITIVE(vm.map_class, "addCore_(_,_)", w_Map_addCore);
+	PRIMITIVE(vm.map_class, "clear()", w_Map_clear);
+	PRIMITIVE(vm.map_class, "containsKey(_)", w_Map_containsKey);
+	PRIMITIVE(vm.map_class, "count", w_Map_count);
+	PRIMITIVE(vm.map_class, "remove(_)", w_Map_remove);
+	PRIMITIVE(vm.map_class, "iterate(_)", w_Map_iterate);
+	PRIMITIVE(vm.map_class, "keyIteratorValue_(_)", w_Map_keyIteratorValue);
+	PRIMITIVE(vm.map_class, "valueIteratorValue_(_)", w_Map_valueIteratorValue);
 
 	vm.set_class = AS_CLASS(find_variable(core_module, "Set"));
-	PRIMITIVE(vm.set_class->obj.class_obj, "new()", set_new);
-	PRIMITIVE(vm.set_class, "add(_)", set_add);
-	PRIMITIVE(vm.set_class, "clear()", set_clear);
-	PRIMITIVE(vm.set_class, "count", set_count);
-	PRIMITIVE(vm.set_class, "remove(_)", set_remove);
-	PRIMITIVE(vm.set_class, "isEmpty", set_isEmpty);
-	PRIMITIVE(vm.set_class, "front()", set_front);
-	PRIMITIVE(vm.set_class, "iterate(_)", set_iterate);
-	PRIMITIVE(vm.set_class, "iteratorValue(_)", set_iteratorValue);
+	PRIMITIVE(vm.set_class->obj.class_obj, "new()", w_Set_new);
+	PRIMITIVE(vm.set_class, "add(_)", w_Set_add);
+	PRIMITIVE(vm.set_class, "clear()", w_Set_clear);
+	PRIMITIVE(vm.set_class, "count", w_Set_count);
+	PRIMITIVE(vm.set_class, "remove(_)", w_Set_remove);
+	PRIMITIVE(vm.set_class, "isEmpty", w_Set_isEmpty);
+	PRIMITIVE(vm.set_class, "front()", w_Set_front);
+	PRIMITIVE(vm.set_class, "iterate(_)", w_Set_iterate);
+	PRIMITIVE(vm.set_class, "iteratorValue(_)", w_Set_iteratorValue);
 
 	vm.range_class = AS_CLASS(find_variable(core_module, "Range"));
 	DefineVariable(core_module, "Range", 5, OBJ_VAL(vm.range_class), NULL);
-	PRIMITIVE(vm.range_class->obj.class_obj, "new()", range_new);
-	PRIMITIVE(vm.range_class, "from", range_from);
-	PRIMITIVE(vm.range_class, "to", range_to);
-	PRIMITIVE(vm.range_class, "setTo(_)", range_setTo);
-	PRIMITIVE(vm.range_class, "setInclusive(_)", range_setInclusive);
-	PRIMITIVE(vm.range_class, "iterate(_)", range_iterate);
-	PRIMITIVE(vm.range_class, "iteratorValue(_)", range_iteratorValue);
+	PRIMITIVE(vm.range_class->obj.class_obj, "new()", w_Range_new);
+	PRIMITIVE(vm.range_class, "from", w_Range_from);
+	PRIMITIVE(vm.range_class, "to", w_Range_to);
+	PRIMITIVE(vm.range_class, "setTo(_)", w_Range_setTo);
+	PRIMITIVE(vm.range_class, "setInclusive(_)", w_Range_setInclusive);
+	PRIMITIVE(vm.range_class, "iterate(_)", w_Range_iterate);
+	PRIMITIVE(vm.range_class, "iteratorValue(_)", w_Range_iteratorValue);
 
 	vm.system_class = AS_CLASS(find_variable(core_module, "System"));
 	DefineVariable(core_module, "System", 6, OBJ_VAL(vm.system_class), NULL);
-	PRIMITIVE(vm.system_class->obj.class_obj, "writeString(_)", system_writeString);
-	PRIMITIVE(vm.system_class->obj.class_obj, "clock()", system_clock);
+	PRIMITIVE(vm.system_class->obj.class_obj, "writeString(_)", w_System_writeString);
+	PRIMITIVE(vm.system_class->obj.class_obj, "clock()", w_System_clock);
 
 	vm.basic_class = AS_CLASS(find_variable(core_module, "Basic"));
 	DefineVariable(core_module, "Basic", 5, OBJ_VAL(vm.basic_class), NULL);
-	PRIMITIVE(vm.basic_class->obj.class_obj, "loadstring(_)", basic_loadstring);
+	PRIMITIVE(vm.basic_class->obj.class_obj, "loadstring(_)", w_Basic_loadstring);
 }
