@@ -453,7 +453,6 @@ static bool bind_method(ObjClass* klass, ObjString* name)
 		}
 
 		if (!find) {
-			runtime_error("Undefined property '%s'.", name->chars);
 			return false;
 		}
 	}
@@ -862,7 +861,7 @@ static VesselInterpretResult run()
 					break;
 				}
 				if (!bind_method(instance->klass, name)) {
-					return VES_INTERPRET_RUNTIME_ERROR;
+					push(NIL_VAL);
 				}
 			}
 			else
