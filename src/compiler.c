@@ -1126,7 +1126,7 @@ static void function(FunctionType type, bool is_foreign, int* arity)
 
         for (int i = 0; i < function->upvalue_count; i++) {
             emit_byte(compiler.upvalues[i].is_local ? 1 : 0);
-            emit_byte(compiler.upvalues[i].index);
+            emit_short(compiler.upvalues[i].index);
         }
     }
 }

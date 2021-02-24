@@ -1110,7 +1110,7 @@ static VesselInterpretResult run()
 			push(OBJ_VAL(closure));
 			for (int i = 0; i < closure->upvalue_count; i++) {
 				uint8_t is_local = READ_BYTE();
-				uint8_t index = READ_BYTE();
+				uint16_t index = READ_SHORT();
 				if (is_local) {
 					closure->upvalues[i] = capture_upvalue(frame->slots + index);
 				} else {

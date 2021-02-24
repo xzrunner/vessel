@@ -60,7 +60,7 @@ void w_File_read()
     }
 
     fseek(file->fp, 0, SEEK_END);
-    int size = ftell(file->fp);
+    size_t size = ftell(file->fp);
     rewind(file->fp);
 
     char* buffer = (char*)malloc(sizeof(char) * (size + 1));
