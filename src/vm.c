@@ -726,7 +726,7 @@ static VesselInterpretResult run()
     (uint16_t)((frame->ip[-2] << 8) | frame->ip[-1]))
 #define FUNC (frame->closure->function)
 #define READ_CONSTANT() \
-    (FUNC->chunk.constants.values[READ_BYTE()])
+    (FUNC->chunk.constants.values[READ_SHORT()])
 #define READ_STRING() AS_STRING(READ_CONSTANT())
 
 #define BINARY_OP(valueType, op) \
@@ -778,13 +778,13 @@ static VesselInterpretResult run()
 		case OP_POP: pop(); break;
 
 		case OP_GET_LOCAL: {
-			uint8_t slot = READ_BYTE();
+			uint16_t slot = READ_SHORT();
 			push(frame->slots[slot]);
 			break;
 		}
 
 		case OP_SET_LOCAL: {
-			uint8_t slot = READ_BYTE();
+			uint16_t slot = READ_SHORT();
 			frame->slots[slot] = peek(0);
 			break;
 		}
@@ -836,13 +836,13 @@ static VesselInterpretResult run()
 		}
 
 		case OP_GET_UPVALUE: {
-			uint8_t slot = READ_BYTE();
+			uint16_t slot = READ_SHORT();
 			push(*frame->closure->upvalues[slot]->location);
 			break;
 		}
 
 		case OP_SET_UPVALUE: {
-			uint8_t slot = READ_BYTE();
+			uint16_t slot = READ_SHORT();
 			*frame->closure->upvalues[slot]->location = peek(0);
 			break;
 		}

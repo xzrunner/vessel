@@ -53,7 +53,7 @@ typedef struct
 
 typedef struct
 {
-    uint8_t index;
+    uint16_t index;
     bool is_local;
 } Upvalue;
 
@@ -252,7 +252,7 @@ static int emit_jump(uint8_t instruction)
 static void emit_return()
 {
     if (current->type == TYPE_INITIALIZER) {
-        emit_byte_arg(OP_GET_LOCAL, 0);
+        emit_short_arg(OP_GET_LOCAL, 0);
     } else {
         emit_op(OP_NIL);
     }
@@ -260,20 +260,20 @@ static void emit_return()
     emit_op(OP_RETURN);
 }
 
-static uint8_t make_constant(Value value)
+static uint16_t make_constant(Value value)
 {
     int constant = add_constant(current_chunk(), value);
-    if (constant > UINT8_MAX) {
+    if (constant > UINT16_MAX) {
         error("Too many constants in one chunk.");
         return 0;
     }
 
-    return (uint8_t)constant;
+    return (uint16_t)constant;
 }
 
 static void emit_constant(Value value)
 {
-    emit_byte_arg(OP_CONSTANT, make_constant(value));
+    emit_short_arg(OP_CONSTANT, make_constant(value));
 }
 
 static void patch_jump(int offset)
@@ -366,7 +366,7 @@ static bool identifiers_equal(Token* a, Token* b)
     return memcmp(a->start, b->start, a->length) == 0;
 }
 
-static uint8_t identifier_constant(Token* name)
+static uint16_t identifier_constant(Token* name)
 {
     return make_constant(OBJ_VAL(copy_string(name->start, name->length)));
 }
@@ -387,7 +387,7 @@ static int resolve_local(Compiler* compiler, Token* name)
     return -1;
 }
 
-static int add_upvalue(Compiler* compiler, uint8_t index, bool is_local)
+static int add_upvalue(Compiler* compiler, uint16_t index, bool is_local)
 {
     int upvalue_count = compiler->function->upvalue_count;
 
@@ -417,12 +417,12 @@ static int resolve_upvalue(Compiler* compiler, Token* name)
     int local = resolve_local(compiler->enclosing, name);
     if (local != -1) {
         compiler->enclosing->locals[local].is_captured = true;
-        return add_upvalue(compiler, (uint8_t)local, true);
+        return add_upvalue(compiler, (uint16_t)local, true);
     }
 
     int upvalue = resolve_upvalue(compiler->enclosing, name);
     if (upvalue != -1) {
-        return add_upvalue(compiler, (uint8_t)upvalue, false);
+        return add_upvalue(compiler, (uint16_t)upvalue, false);
     }
 
     return -1;
@@ -465,7 +465,7 @@ static void declare_variable()
     add_local(*name);
 }
 
-static uint8_t parse_variable(const char* errorMessage)
+static uint16_t parse_variable(const char* errorMessage)
 {
     consume(TOKEN_IDENTIFIER, errorMessage);
 
@@ -485,14 +485,14 @@ static void mark_initialized()
     current->locals[current->local_count - 1].depth = current->scope_depth;
 }
 
-static void define_variable(uint8_t global)
+static void define_variable(uint16_t global)
 {
     if (current->scope_depth > 0) {
         mark_initialized();
         return;
     }
 
-    emit_byte_arg(OP_DEFINE_GLOBAL, global);
+    emit_short_arg(OP_DEFINE_GLOBAL, global);
 }
 
 static uint8_t argument_list(TokenType token_right)
@@ -580,17 +580,17 @@ static void call(bool can_assign)
 static void dot(bool can_assign)
 {
     consume(TOKEN_IDENTIFIER, "Expect property name after '.'.");
-    uint8_t name = identifier_constant(&parser.previous);
+    uint16_t name = identifier_constant(&parser.previous);
 
     if (can_assign && match(TOKEN_EQUAL)) {
         expression();
-        emit_byte_arg(OP_SET_PROPERTY, name);
+        emit_short_arg(OP_SET_PROPERTY, name);
     } else if (match(TOKEN_LEFT_PAREN)) {
         uint8_t arg_count = argument_list(TOKEN_RIGHT_PAREN);
-        emit_byte_arg(OP_INVOKE, name);
+        emit_short_arg(OP_INVOKE, name);
         emit_byte(arg_count);
     } else {
-        emit_byte_arg(OP_GET_PROPERTY, name);
+        emit_short_arg(OP_GET_PROPERTY, name);
     }
 }
 
@@ -909,7 +909,7 @@ static void named_variable(Token name, bool can_assign)
 
     if (can_assign && match(TOKEN_EQUAL)) {
         expression();
-        emit_byte_arg(set_op, (uint8_t)arg);
+        emit_short_arg(set_op, (uint16_t)arg);
     } else {
         if (get_op == OP_GET_GLOBAL)
         {
@@ -921,13 +921,13 @@ static void named_variable(Token name, bool can_assign)
                 //    named_variable(synthetic_token("this"), false);
                 //    named_call(can_assign);
                 //} else {
-                    emit_byte_arg(get_op, (uint8_t)arg);
+                    emit_short_arg(get_op, (uint16_t)arg);
                 //}
             }
         }
         else
         {
-            emit_byte_arg(get_op, (uint8_t)arg);
+            emit_short_arg(get_op, (uint16_t)arg);
         }
     }
 }
@@ -947,17 +947,17 @@ static void super_(bool can_assign)
 
     consume(TOKEN_DOT, "Expect '.' after 'super'.");
     consume(TOKEN_IDENTIFIER, "Expect superclass method name.");
-    uint8_t name = identifier_constant(&parser.previous);
+    uint16_t name = identifier_constant(&parser.previous);
 
     named_variable(synthetic_token("this"), false);
     if (match(TOKEN_LEFT_PAREN)) {
         uint8_t arg_count = argument_list(TOKEN_RIGHT_PAREN);
         named_variable(synthetic_token("super"), false);
-        emit_byte_arg(OP_SUPER_INVOKE, name);
+        emit_short_arg(OP_SUPER_INVOKE, name);
         emit_byte(arg_count);
     } else {
         named_variable(synthetic_token("super"), false);
-        emit_byte_arg(OP_GET_SUPER, name);
+        emit_short_arg(OP_GET_SUPER, name);
     }
 }
 
@@ -1095,7 +1095,7 @@ static void function(FunctionType type, bool is_foreign, int* arity)
                     (*arity)++;
                 }
 
-                uint8_t paramConstant = parse_variable("Expect parameter name.");
+                uint16_t paramConstant = parse_variable("Expect parameter name.");
                 define_variable(paramConstant);
             } while (match(TOKEN_COMMA));
         }
@@ -1122,7 +1122,7 @@ static void function(FunctionType type, bool is_foreign, int* arity)
         block();
 
         ObjFunction* function = end_compiler();
-        emit_byte_arg(OP_CLOSURE, make_constant(OBJ_VAL(function)));
+        emit_short_arg(OP_CLOSURE, make_constant(OBJ_VAL(function)));
 
         for (int i = 0; i < function->upvalue_count; i++) {
             emit_byte(compiler.upvalues[i].is_local ? 1 : 0);
@@ -1145,7 +1145,7 @@ static void create_constructor(int arity, int init_symbol, bool is_class_foreign
     emit_op(OP_RETURN);
 
     ObjFunction* function = end_compiler(&method_compiler, "", 0);
-    emit_byte_arg(OP_CLOSURE, make_constant(OBJ_VAL(function)));
+    emit_short_arg(OP_CLOSURE, make_constant(OBJ_VAL(function)));
 }
 
 static void method(bool is_class_foreign, Token class_name)
@@ -1155,7 +1155,7 @@ static void method(bool is_class_foreign, Token class_name)
 
     consume(TOKEN_IDENTIFIER, "Expect method name.");
     Signature signature = { parser.previous.start, parser.previous.length, SIG_METHOD, 0 };
-    //uint8_t constant = identifier_constant(&parser.previous);
+    //uint16_t constant = identifier_constant(&parser.previous);
 
     FunctionType type = TYPE_METHOD;
     if (parser.previous.length == vm.init_str->length &&
@@ -1171,13 +1171,13 @@ static void method(bool is_class_foreign, Token class_name)
     int length;
     signature_to_string(&signature, name, &length);
     Token method_name = synthetic_token(name);
-    uint8_t constant = identifier_constant(&method_name);
+    uint16_t constant = identifier_constant(&method_name);
 
     named_variable(class_name, false);
     if (is_static) {
-        emit_byte_arg(OP_METHOD_STATIC, constant);
+        emit_short_arg(OP_METHOD_STATIC, constant);
     } else {
-        emit_byte_arg(OP_METHOD, constant);
+        emit_short_arg(OP_METHOD, constant);
     }
 
     // define the ctor to meta class
@@ -1187,7 +1187,7 @@ static void method(bool is_class_foreign, Token class_name)
         create_constructor(arity, init_symbol, is_class_foreign);
 
         named_variable(class_name, false);
-        emit_byte_arg(OP_METHOD_STATIC, constant);
+        emit_short_arg(OP_METHOD_STATIC, constant);
     }
 }
 
@@ -1196,13 +1196,13 @@ static void class_declaration(bool is_foreign)
     consume(TOKEN_IDENTIFIER, "Expect class name.");
     Token class_name = parser.previous;
 
-    uint8_t name_constant = identifier_constant(&parser.previous);
+    uint16_t name_constant = identifier_constant(&parser.previous);
     declare_variable();
 
     if (is_foreign) {
-        emit_byte_arg(OP_FOREIGN_CLASS, name_constant);
+        emit_short_arg(OP_FOREIGN_CLASS, name_constant);
     } else {
-        emit_byte_arg(OP_CLASS, name_constant);
+        emit_short_arg(OP_CLASS, name_constant);
     }
     define_variable(name_constant);
 
@@ -1262,7 +1262,7 @@ static void class_declaration(bool is_foreign)
 
 static void fun_declaration()
 {
-    uint8_t global = parse_variable("Expect function name.");
+    uint16_t global = parse_variable("Expect function name.");
     mark_initialized();
 
     bool is_foreign = match(TOKEN_FOREIGN);
@@ -1273,7 +1273,7 @@ static void fun_declaration()
 
 static void var_declaration()
 {
-    uint8_t global = parse_variable("Expect variable name.");
+    uint16_t global = parse_variable("Expect variable name.");
 
     if (match(TOKEN_EQUAL)) {
         expression();
@@ -1316,24 +1316,24 @@ static void for_statement()
             add_local(token_iter);
             mark_initialized();
 
-            emit_byte_arg(OP_SET_LOCAL, (uint8_t)resolve_local(current, &token_seq));
+            emit_short_arg(OP_SET_LOCAL, (uint16_t)resolve_local(current, &token_seq));
             emit_op(OP_NIL);
-            emit_byte_arg(OP_SET_LOCAL, (uint8_t)resolve_local(current, &token_iter));
+            emit_short_arg(OP_SET_LOCAL, (uint16_t)resolve_local(current, &token_iter));
 
             int loop_start = current_chunk()->count;
 
-            emit_byte_arg(OP_GET_LOCAL, (uint8_t)resolve_local(current, &token_seq));
-            emit_byte_arg(OP_GET_LOCAL, (uint8_t)resolve_local(current, &token_iter));
+            emit_short_arg(OP_GET_LOCAL, (uint16_t)resolve_local(current, &token_seq));
+            emit_short_arg(OP_GET_LOCAL, (uint16_t)resolve_local(current, &token_iter));
             call_method(1, "iterate(_)", 10);
-            emit_byte_arg(OP_SET_LOCAL, (uint8_t)resolve_local(current, &token_iter));
+            emit_short_arg(OP_SET_LOCAL, (uint16_t)resolve_local(current, &token_iter));
 
             int exit_jump = emit_jump(OP_JUMP_IF_FALSE);
             emit_op(OP_POP); // Condition.
 
-            emit_byte_arg(OP_GET_LOCAL, (uint8_t)resolve_local(current, &token_seq));
-            emit_byte_arg(OP_GET_LOCAL, (uint8_t)resolve_local(current, &token_iter));
+            emit_short_arg(OP_GET_LOCAL, (uint16_t)resolve_local(current, &token_seq));
+            emit_short_arg(OP_GET_LOCAL, (uint16_t)resolve_local(current, &token_iter));
             call_method(1, "iteratorValue(_)", 16);
-            emit_byte_arg(OP_SET_LOCAL, (uint8_t)resolve_local(current, &token_var));
+            emit_short_arg(OP_SET_LOCAL, (uint16_t)resolve_local(current, &token_var));
             emit_op(OP_POP);
 
             statement();
@@ -1493,7 +1493,7 @@ static void import()
     int module_constant = make_constant(OBJ_VAL(copy_string(parser.previous.start + 1, parser.previous.length - 2)));
 
     // Load the module.
-    emit_byte_arg(OP_IMPORT_MODULE, module_constant);
+    emit_short_arg(OP_IMPORT_MODULE, module_constant);
 
     // Discard the unused result value from calling the module body's closure.
     emit_op(OP_POP);
@@ -1526,7 +1526,7 @@ static void import()
         declare_variable();
 
         // Load the variable from the other module.
-        emit_byte_arg(OP_IMPORT_VARIABLE, source_variable_constant);
+        emit_short_arg(OP_IMPORT_VARIABLE, source_variable_constant);
 
         // Store the result in the variable here.
         define_variable(slot);
