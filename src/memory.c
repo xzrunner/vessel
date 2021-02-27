@@ -9,7 +9,6 @@
 #endif
 
 #include <stdlib.h>
-#include <assert.h>
 
 #define GC_HEAP_GROW_FACTOR 2
 
@@ -179,7 +178,7 @@ static void blacken_object(Obj* object)
 	case OBJ_RANGE:
 		break;
 	default:
-		assert(0);
+		ASSERT(0, "unknown obj type.");
 	}
 }
 
@@ -277,7 +276,7 @@ static void free_object(Obj* object)
 		FREE(ObjRange, object);
 		break;
 	default:
-		assert(0);
+		ASSERT(0, "unknown obj type.");
 	}
 }
 
