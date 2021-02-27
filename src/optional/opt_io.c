@@ -6,6 +6,7 @@
 #include "object.h"
 
 #include <stdio.h>
+#include <stdlib.h> // for malloc
 
 typedef struct 
 {
