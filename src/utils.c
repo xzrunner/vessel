@@ -88,10 +88,10 @@ Value string_format(const char* format, ...)
 
     // Concatenate the string.
     char* heap_chars = ALLOCATE(char, total_length + 1);
-    ObjString* result = allocate_string(heap_chars, total_length, 0);
+    memset(heap_chars, 0, total_length + 1);
 
     va_start(arg_list, format);
-    char* start = result->chars;
+    char* start = heap_chars;
     for (const char* c = format; *c != '\0'; c++)
     {
         switch (*c)
@@ -120,7 +120,5 @@ Value string_format(const char* format, ...)
     }
     va_end(arg_list);
 
-    result->hash = hash_string(result->chars, start - result->chars);
-
-    return OBJ_VAL(result);
+    return OBJ_VAL(take_string(heap_chars, start - heap_chars));
 }
