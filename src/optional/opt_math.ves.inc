@@ -20,5 +20,9 @@ class Math
 	foreign static pi()
 	foreign static min(x,y)
 	foreign static max(x,y)
+
+	static radians(degrees) {
+		return degrees * 0.01745329251994329576923690768489
+	}
 }
 );
