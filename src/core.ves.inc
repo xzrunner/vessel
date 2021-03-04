@@ -68,6 +68,16 @@ class List is Sequence
             }
         }
     }
+
+    query_index(value)
+    {
+		for (var i = 0; i < this.count; i = i + 1) {
+			if (this[i] == value) {
+				return i
+			}
+		}
+		return -1
+    }
 }
 
 class Range is Sequence {}
