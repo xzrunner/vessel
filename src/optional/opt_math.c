@@ -37,26 +37,26 @@ DEF_MATH_FUNC(log, log)
 DEF_MATH_FUNC(log2, log2)
 DEF_MATH_FUNC(exp, exp)
 
-static void math_pi()
+static void w_Math_pi()
 {
 	ves_set_number(0, 3.14159265358979323846264338327950288);
 }
 
-static void math_min()
+static void w_Math_min()
 {
 	const double a = ves_tonumber(1);
 	const double b = ves_tonumber(2);
 	ves_set_number(0, a < b ? a : b);
 }
 
-static void math_max()
+static void w_Math_max()
 {
 	const double a = ves_tonumber(1);
 	const double b = ves_tonumber(2);
 	ves_set_number(0, a > b ? a : b);
 }
 
-static void w_math_clamp()
+static void w_Math_clamp()
 {
 	const double v = ves_tonumber(1);
 	const double min = ves_tonumber(2);
@@ -91,10 +91,10 @@ VesselForeignMethodFn MathBindMethod(const char* class_name, bool is_static, con
 	CALL_MATH_FUNC(log2)
 	CALL_MATH_FUNC(exp)
 
-	if (strcmp(signature, "pi()") == 0) return math_pi;
-	if (strcmp(signature, "min(_,_)") == 0) return math_min;
-	if (strcmp(signature, "max(_,_)") == 0) return math_max;
-	if (strcmp(signature, "clamp(_,_,_)") == 0) return w_math_clamp;
+	if (strcmp(signature, "pi()") == 0) return w_Math_pi;
+	if (strcmp(signature, "min(_,_)") == 0) return w_Math_min;
+	if (strcmp(signature, "max(_,_)") == 0) return w_Math_max;
+	if (strcmp(signature, "clamp(_,_,_)") == 0) return w_Math_clamp;
 
     ASSERT(false, "Unknown method.");
     return NULL;

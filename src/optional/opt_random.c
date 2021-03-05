@@ -38,18 +38,18 @@ static uint32_t advance_state(Well512* well)
     return well->state[well->index];
 }
 
-static void random_allocate()
+static void w_Random_allocate()
 {
     Well512* well = (Well512*)ves_set_newforeign(0, 0, sizeof(Well512));
     well->index = 0;
 }
 
-static int random_finalize(void* data)
+static int w_Random_finalize(void* data)
 {
     return sizeof(Well512);
 }
 
-static void random_seed0()
+static void w_Random_seed0()
 {
     Well512* well = (Well512*)ves_toforeign(0);
 
@@ -59,7 +59,7 @@ static void random_seed0()
     }
 }
 
-static void random_seed1()
+static void w_Random_seed1()
 {
     Well512* well = (Well512*)ves_toforeign(0);
 
@@ -69,7 +69,7 @@ static void random_seed1()
     }
 }
 
-static void random_seed16()
+static void w_Random_seed16()
 {
     Well512* well = (Well512*)ves_toforeign(0);
 
@@ -78,7 +78,7 @@ static void random_seed16()
     }
 }
 
-static void random_float()
+static void w_Random_float()
 {
     Well512* well = (Well512*)ves_toforeign(0);
 
@@ -98,7 +98,7 @@ static void random_float()
     ves_set_number(0, result);
 }
 
-static void random_int0()
+static void w_Random_int0()
 {
     Well512* well = (Well512*)ves_toforeign(0);
 
@@ -114,8 +114,8 @@ VesselForeignClassMethods RandomBindForeignClass(const char* module, const char*
 {
     ASSERT(strcmp(class_name, "Random") == 0, "Should be in Random class.");
     VesselForeignClassMethods methods;
-    methods.allocate = random_allocate;
-    methods.finalize = random_finalize;
+    methods.allocate = w_Random_allocate;
+    methods.finalize = w_Random_finalize;
     return methods;
 }
 
@@ -123,17 +123,17 @@ VesselForeignMethodFn RandomBindForeignMethod(const char* class_name, bool is_st
 {
     ASSERT(strcmp(class_name, "Random") == 0, "Should be in Random class.");
 
-    if (strcmp(signature, "<allocate>") == 0) return random_allocate;
-    if (strcmp(signature, "seed_()") == 0) return random_seed0;
-    if (strcmp(signature, "seed_(_)") == 0) return random_seed1;
+    if (strcmp(signature, "<allocate>") == 0) return w_Random_allocate;
+    if (strcmp(signature, "seed_()") == 0) return w_Random_seed0;
+    if (strcmp(signature, "seed_(_)") == 0) return w_Random_seed1;
 
     if (strcmp(signature, "seed_(_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_)") == 0)
     {
-        return random_seed16;
+        return w_Random_seed16;
     }
 
-    if (strcmp(signature, "float()") == 0) return random_float;
-    if (strcmp(signature, "int()") == 0) return random_int0;
+    if (strcmp(signature, "float()") == 0) return w_Random_float;
+    if (strcmp(signature, "int()") == 0) return w_Random_int0;
 
     ASSERT(false, "Unknown method.");
     return NULL;

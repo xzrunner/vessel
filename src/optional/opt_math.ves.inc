@@ -18,8 +18,8 @@ class Math
 	foreign static log2(num)
 	foreign static exp(num)
 	foreign static pi()
-	foreign static min(x,y)
-	foreign static max(x,y)
+	foreign static min(x, y)
+	foreign static max(x, y)
 	foreign static clamp(num, min, max)
 
 	static radians(degrees) {

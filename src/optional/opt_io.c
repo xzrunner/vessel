@@ -14,7 +14,7 @@ typedef struct
     bool binary;
 } File;
 
-static void file_allocate()
+static void w_File_allocate()
 {
 	File* file = (File*)ves_set_newforeign(0, 0, sizeof(File));
 	file->fp = NULL;
@@ -112,7 +112,7 @@ VesselForeignClassMethods IOBindForeignClass(const char* module, const char* cla
     if (strcmp(class_name, "File") == 0)
     {
         VesselForeignClassMethods methods;
-        methods.allocate = file_allocate;
+        methods.allocate = w_File_allocate;
         methods.finalize = file_finalize;
         return methods;
     }
@@ -124,7 +124,7 @@ VesselForeignMethodFn IOBindForeignMethod(const char* class_name, bool is_static
 {
     if (strcmp(class_name, "File") == 0)
     {
-        if (strcmp(signature, "<allocate>") == 0) return file_allocate;
+        if (strcmp(signature, "<allocate>") == 0) return w_File_allocate;
         if (strcmp(signature, "open(_,_)") == 0) return w_File_open;
         if (strcmp(signature, "close()") == 0) return w_File_close;
         if (strcmp(signature, "read()") == 0) return w_File_read;
