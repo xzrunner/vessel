@@ -56,6 +56,16 @@ static void math_max()
 	ves_set_number(0, a > b ? a : b);
 }
 
+static void w_math_clamp()
+{
+	const double v = ves_tonumber(1);
+	const double min = ves_tonumber(2);
+	const double max = ves_tonumber(3);
+	double x = v > min ? v : min;
+	x = x < max ? x : max;
+	ves_set_number(0, x);
+}
+
 const char* MathSource()
 {
 	return mathModuleSource;
@@ -84,6 +94,7 @@ VesselForeignMethodFn MathBindMethod(const char* class_name, bool is_static, con
 	if (strcmp(signature, "pi()") == 0) return math_pi;
 	if (strcmp(signature, "min(_,_)") == 0) return math_min;
 	if (strcmp(signature, "max(_,_)") == 0) return math_max;
+	if (strcmp(signature, "clamp(_,_,_)") == 0) return w_math_clamp;
 
     ASSERT(false, "Unknown method.");
     return NULL;
