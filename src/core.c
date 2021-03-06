@@ -5,6 +5,7 @@
 #include "utils.h"
 #include "core.ves.inc"
 #include "debug.h"
+#include "memory.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -116,6 +117,56 @@ DEF_PRIMITIVE(w_Null_not)
 DEF_PRIMITIVE(w_Null_toString)
 {
 	RETURN_VAL(OBJ_VAL(copy_string("null", 4)));
+}
+
+DEF_PRIMITIVE(w_String_count)
+{
+	RETURN_NUM(AS_STRING(args[0])->length);
+}
+
+// https://stackoverflow.com/questions/779875/what-function-is-to-replace-a-substring-from-a-string-in-c
+DEF_PRIMITIVE(w_String_replace)
+{
+	if (!IS_STRING(args[0]) ||
+		!IS_STRING(args[1]) ||
+		!IS_STRING(args[2])) {
+		return false;
+	}
+
+	ObjString* orig = AS_STRING(args[0]);
+	ObjString* rep = AS_STRING(args[1]);
+	ObjString* with = AS_STRING(args[2]);
+
+	if (rep->length == 0) {
+		return true;
+	}
+
+    char* ins = orig->chars;
+	char* tmp = NULL;
+	int count = 0;
+    for ( ; tmp = strstr(ins, rep->chars); ++count) {
+        ins = tmp + rep->length;
+    }
+
+	int len = orig->length + (with->length - rep->length) * count;
+	tmp = ALLOCATE(char, orig->length + (with->length - rep->length) * count + 1);
+	if (!tmp) {
+		return false;
+	}
+
+	char* p_orig = orig->chars;
+	char* p_tmp = tmp;
+    while (count--) 
+	{
+        ins = strstr(p_orig, rep->chars);
+        int len_front = ins - p_orig;
+        p_tmp = strncpy(p_tmp, p_orig, len_front) + len_front;
+        p_tmp = strcpy(p_tmp, with->chars) + with->length;
+		p_orig += len_front + rep->length;
+    }
+    strcpy(p_tmp, p_orig);
+
+	RETURN_VAL(OBJ_VAL(take_string(tmp, len)));
 }
 
 DEF_PRIMITIVE(w_String_toString)
@@ -689,6 +740,8 @@ void initialize_core()
 	PRIMITIVE(vm.null_class, "toString()", w_Null_toString);
 
 	vm.string_class = AS_CLASS(find_variable(core_module, "String"));
+	PRIMITIVE(vm.string_class, "count", w_String_count);
+	PRIMITIVE(vm.string_class, "replace(_,_)", w_String_replace);
 	PRIMITIVE(vm.string_class, "toString()", w_String_toString);
 	for (int i = 0; i < vm.strings.capacity; ++i) {
 		if (vm.strings.entries[i].key) {
