@@ -677,9 +677,10 @@ DEF_PRIMITIVE(w_System_clock)
 
 DEF_PRIMITIVE(w_Basic_loadstring)
 {
-	ObjString* str = AS_STRING(args[1]);
-	if (str->length > 0) {
-		ves_interpret("temp", str->chars);
+	ObjString* module = AS_STRING(args[1]);
+	ObjString* source = AS_STRING(args[2]);
+	if (module->length > 0 && source->length > 0) {
+		ves_interpret(module->chars, source->chars);
 	}
 	return true;
 }
@@ -804,5 +805,5 @@ void initialize_core()
 
 	vm.basic_class = AS_CLASS(find_variable(core_module, "Basic"));
 	DefineVariable(core_module, "Basic", 5, OBJ_VAL(vm.basic_class), NULL);
-	PRIMITIVE(vm.basic_class->obj.class_obj, "loadstring(_)", w_Basic_loadstring);
+	PRIMITIVE(vm.basic_class->obj.class_obj, "loadstring(_,_)", w_Basic_loadstring);
 }
