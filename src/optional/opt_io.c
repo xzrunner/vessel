@@ -77,7 +77,6 @@ void w_File_read()
         return;
     }
     buffer[result] = 0;
-    fclose(file->fp);
 
     ves_set_lstring(0, buffer, result);
     free(buffer);
