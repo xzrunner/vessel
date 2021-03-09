@@ -6,7 +6,10 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-static char OUT_BUF[1024];
+
+
+#define BUF_SIZE 1024
+static char OUT_BUF[BUF_SIZE];
 
 static void print(bool to_console, const char* format, ...)
 {
@@ -19,7 +22,8 @@ static void print(bool to_console, const char* format, ...)
 	}
 	else
 	{
-		vsprintf(&OUT_BUF[0], format, args);
+		vsnprintf(OUT_BUF, BUF_SIZE, format, args);
+		OUT_BUF[BUF_SIZE - 1] = 0;
 		if (vm.config.write_fn != NULL) {
 			vm.config.write_fn(OUT_BUF);
 		}
