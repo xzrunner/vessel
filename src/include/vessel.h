@@ -154,6 +154,7 @@ int ves_getglobal(const char* name);
 
 VesselInterpretResult ves_call(int nargs, int nresults);
 
+void ves_set_nil(int slot);
 void ves_set_number(int slot, double value);
 void ves_set_boolean(int slot, bool value);
 void ves_set_lstring(int slot, const char* s, size_t len);

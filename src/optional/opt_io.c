@@ -57,6 +57,7 @@ void w_File_read()
 {
     File* file = (File*)ves_toforeign(0);
     if (!file->fp) {
+        ves_set_nil(0);
         return;
     }
 

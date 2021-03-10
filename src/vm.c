@@ -1622,6 +1622,11 @@ static void set_slot(int slot, Value value)
 	vm.api_stack[slot] = value;
 }
 
+void ves_set_nil(int slot)
+{
+	set_slot(slot, NIL_VAL);
+}
+
 void ves_set_number(int slot, double value)
 {
 	set_slot(slot, NUMBER_VAL(value));
