@@ -45,6 +45,14 @@ DEF_PRIMITIVE(w_Object_toString)
 	RETURN_VAL(string_format("instance of @", OBJ_VAL(get_class(args[0])->name)));
 }
 
+DEF_PRIMITIVE(w_Object_has_method)
+{
+	ObjClass* klass = get_class(args[0]);
+	ObjString* method = AS_STRING(args[1]);
+	Value v;
+	RETURN_BOOL(table_get(&klass->methods, method, &v));
+}
+
 DEF_PRIMITIVE(w_Class_name)
 {
 	RETURN_OBJ(AS_CLASS(args[0])->name);
@@ -721,6 +729,7 @@ void initialize_core()
 	PRIMITIVE(vm.object_class, "is(_)", w_Object_is);
 	PRIMITIVE(vm.object_class, "type", w_Object_type);
 	PRIMITIVE(vm.object_class, "toString()", w_Object_toString);
+	PRIMITIVE(vm.object_class, "has_method(_)", w_Object_has_method);
 
 	vm.class_class = define_class(core_module, "Class");
 	PRIMITIVE(vm.class_class, "name", w_Class_name);
