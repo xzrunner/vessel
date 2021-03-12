@@ -490,6 +490,23 @@ DEF_PRIMITIVE(w_Set_new)
 	RETURN_OBJ(new_set());
 }
 
+DEF_PRIMITIVE(w_Set_subscript)
+{
+	ObjSet* set = AS_SET(args[0]);
+
+	if (IS_NUMBER(args[1]))
+	{
+		uint32_t index = validate_index(args[1], set->elements.count, "Subscript");
+		if (index == UINT32_MAX) {
+			RETURN_FALSE;
+		}
+
+		RETURN_VAL(set->elements.values[index]);
+	}
+
+	RETURN_FALSE;
+}
+
 DEF_PRIMITIVE(w_Set_add)
 {
 	ObjSet* set = AS_SET(args[0]);
@@ -788,6 +805,7 @@ void initialize_core()
 
 	vm.set_class = AS_CLASS(find_variable(core_module, "Set"));
 	PRIMITIVE(vm.set_class->obj.class_obj, "new()", w_Set_new);
+	PRIMITIVE(vm.set_class, "[_]", w_Set_subscript);
 	PRIMITIVE(vm.set_class, "add(_)", w_Set_add);
 	PRIMITIVE(vm.set_class, "clear()", w_Set_clear);
 	PRIMITIVE(vm.set_class, "count", w_Set_count);
