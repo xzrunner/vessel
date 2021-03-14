@@ -177,6 +177,76 @@ DEF_PRIMITIVE(w_String_replace)
 	RETURN_VAL(OBJ_VAL(take_string(tmp, len)));
 }
 
+// Uses the Boyer-Moore-Horspool string matching algorithm.
+uint32_t wrenStringFind(ObjString* haystack, ObjString* needle, uint32_t start)
+{
+  // Edge case: An empty needle is always found.
+  if (needle->length == 0) return start;
+
+  // If the needle goes past the haystack it won't be found.
+  if (start + needle->length > haystack->length) return UINT32_MAX;
+
+  // If the startIndex is too far it also won't be found.
+  if (start >= haystack->length) return UINT32_MAX;
+
+  // Pre-calculate the shift table. For each character (8-bit value), we
+  // determine how far the search window can be advanced if that character is
+  // the last character in the haystack where we are searching for the needle
+  // and the needle doesn't match there.
+  uint32_t shift[UINT8_MAX];
+  uint32_t needleEnd = needle->length - 1;
+
+  // By default, we assume the character is not the needle at all. In that case
+  // case, if a match fails on that character, we can advance one whole needle
+  // width since.
+  for (uint32_t index = 0; index < UINT8_MAX; index++)
+  {
+    shift[index] = needle->length;
+  }
+
+  // Then, for every character in the needle, determine how far it is from the
+  // end. If a match fails on that character, we can advance the window such
+  // that it the last character in it lines up with the last place we could
+  // find it in the needle.
+  for (uint32_t index = 0; index < needleEnd; index++)
+  {
+    char c = needle->chars[index];
+    shift[(uint8_t)c] = needleEnd - index;
+  }
+
+  // Slide the needle across the haystack, looking for the first match or
+  // stopping if the needle goes off the end.
+  char lastChar = needle->chars[needleEnd];
+  uint32_t range = haystack->length - needle->length;
+
+  for (uint32_t index = start; index <= range; )
+  {
+    // Compare the last character in the haystack's window to the last character
+    // in the needle. If it matches, see if the whole needle matches.
+    char c = haystack->chars[index + needleEnd];
+    if (lastChar == c &&
+        memcmp(haystack->chars + index, needle->chars, needleEnd) == 0)
+    {
+      // Found a match.
+      return index;
+    }
+
+    // Otherwise, slide the needle forward.
+    index += shift[(uint8_t)c];
+  }
+
+  // Not found.
+  return UINT32_MAX;
+}
+
+DEF_PRIMITIVE(w_String_contains)
+{
+	ObjString* string = AS_STRING(args[0]);
+	ObjString* search = AS_STRING(args[1]);
+	
+	RETURN_BOOL(wrenStringFind(string, search, 0) != UINT32_MAX);
+}
+
 DEF_PRIMITIVE(w_String_toString)
 {
 	RETURN_VAL(args[0]);
@@ -769,6 +839,7 @@ void initialize_core()
 	vm.string_class = AS_CLASS(find_variable(core_module, "String"));
 	PRIMITIVE(vm.string_class, "count", w_String_count);
 	PRIMITIVE(vm.string_class, "replace(_,_)", w_String_replace);
+	PRIMITIVE(vm.string_class, "contains(_)", w_String_contains);
 	PRIMITIVE(vm.string_class, "toString()", w_String_toString);
 	for (int i = 0; i < vm.strings.capacity; ++i) {
 		if (vm.strings.entries[i].key) {
