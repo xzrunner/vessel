@@ -162,6 +162,8 @@ void* ves_set_newforeign(int slot, int class_slot, size_t size);
 
 void ves_newlist(int num_elements);
 
+void ves_traceback();
+
 #endif // vessel_h
 
 #ifdef __cplusplus

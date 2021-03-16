@@ -38,14 +38,8 @@ static void reset_stack()
 	vm.open_upvalues = NULL;
 }
 
-static void runtime_error(const char* format, ...)
+void ves_traceback()
 {
-	va_list args;
-	va_start(args, format);
-	vfprintf(stderr, format, args);
-	va_end(args);
-	fputs("\n", stderr);
-
 	for (int i = vm.frame_count - 1; i >= 0; i--)
 	{
 		CallFrame* frame = &vm.frames[i];
@@ -61,6 +55,17 @@ static void runtime_error(const char* format, ...)
 		}
 		fprintf(stderr, "\n");
 	}
+}
+
+static void runtime_error(const char* format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	vfprintf(stderr, format, args);
+	va_end(args);
+	fputs("\n", stderr);
+
+	ves_traceback();
 
 	reset_stack();
 }
