@@ -117,6 +117,8 @@ void ves_init_vm()
 	vm.gray_capacity = 0;
 	vm.gray_stack = NULL;
 
+	vm.num_temp_roots = 0;
+
 	init_table(&vm.strings);
 
 	vm.init_str = copy_string("init", 4);
@@ -212,6 +214,20 @@ Value pop()
 	printf("pop %d\n", ves_gettop());
 #endif // DEBUG_PRINT_STACK
 	return *vm.stack_top;
+}
+
+void push_root(Obj* obj)
+{
+	ASSERT(obj != NULL, "Can't root NULL.");
+	ASSERT(vm.num_temp_roots < MAX_TEMP_ROOTS, "Too many temporary roots.");
+
+	vm.temp_roots[vm.num_temp_roots++] = obj;
+}
+
+void pop_root()
+{
+	ASSERT(vm.num_temp_roots > 0, "No temporary roots to release.");
+	vm.num_temp_roots--;
 }
 
 static Value peek(int distance)
@@ -553,6 +569,7 @@ static void define_method(ObjString* name, int method_type, ObjModule* module)
 
 	Value method_val = peek(1);
 	ObjMethod* method = new_method();
+	push_root((Obj*)method);
 	if (IS_STRING(method_val))
 	{
 		const char* name = AS_CSTRING(method_val);
@@ -581,6 +598,7 @@ static void define_method(ObjString* name, int method_type, ObjModule* module)
 	}
 
 	table_set(&klass->methods, name, OBJ_VAL(method));
+	pop_root();	// method
 	pop();
 	pop();
 }

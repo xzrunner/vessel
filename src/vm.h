@@ -9,6 +9,8 @@
 #define FRAMES_MAX 64
 #define STACK_MAX (FRAMES_MAX * UINT8_COUNT)
 
+#define MAX_TEMP_ROOTS 8
+
 typedef enum
 {
 #define OPCODE(name) OP_##name,
@@ -65,6 +67,9 @@ typedef struct
 	int gray_capacity;
 	Obj** gray_stack;
 
+	Obj* temp_roots[MAX_TEMP_ROOTS];
+	int num_temp_roots;
+
 	Value* api_stack;
 
 	VesselConfiguration config;
@@ -89,5 +94,8 @@ int FinalizeForeign(ObjForeign* foreign);
 
 void push(Value value);
 Value pop();
+
+void push_root(Obj* obj);
+void pop_root();
 
 #endif // vessel_vm_h

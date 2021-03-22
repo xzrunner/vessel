@@ -284,6 +284,11 @@ static void mark_roots()
 {
 	mark_table(&vm.modules);
 
+	// Temporary roots.
+	for (int i = 0; i < vm.num_temp_roots; i++) {
+		mark_object(vm.temp_roots[i]);
+	}
+
 	for (Value* slot = vm.stack; slot < vm.stack_top; slot++) {
 		mark_value(*slot);
 	}
