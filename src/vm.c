@@ -884,7 +884,8 @@ static VesselInterpretResult run()
 					break;
 				}
 				if (!bind_method(instance->klass, name)) {
-					push(NIL_VAL);
+					//push(NIL_VAL);
+					runtime_error("Unknown property %s.", name->chars);
 				}
 			}
 			else
