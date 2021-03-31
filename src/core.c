@@ -814,7 +814,7 @@ void initialize_core()
 
 	vm.object_class = define_class(core_module, "Object");
 	PRIMITIVE(vm.object_class, "is(_)", w_Object_is);
-	PRIMITIVE(vm.object_class, "type", w_Object_type);
+	PRIMITIVE(vm.object_class, "type()", w_Object_type);
 	PRIMITIVE(vm.object_class, "toString()", w_Object_toString);
 	PRIMITIVE(vm.object_class, "has_method(_)", w_Object_has_method);
 
