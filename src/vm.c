@@ -1396,6 +1396,11 @@ int ves_gettop()
 	return vm.stack_top - &vm.stack[0];
 }
 
+int ves_argnum()
+{
+	return vm.stack_top - vm.api_stack;
+}
+
 VesselType ves_type(int index)
 {
 	Value val = get_stack_value(index);

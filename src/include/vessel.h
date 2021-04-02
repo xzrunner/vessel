@@ -109,6 +109,7 @@ void ves_init_vm();
 void ves_free_vm();
 
 int ves_gettop();
+int ves_argnum();
 
 typedef enum
 {
