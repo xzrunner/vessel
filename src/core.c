@@ -53,6 +53,21 @@ DEF_PRIMITIVE(w_Object_has_method)
 	RETURN_BOOL(table_get(&klass->methods, method, &v));
 }
 
+DEF_PRIMITIVE(w_Object_subscript)
+{
+	if (IS_INSTANCE(args[0]))
+	{
+		ObjInstance* instance = AS_INSTANCE(args[0]);
+		ObjString* name = AS_STRING(args[1]);
+		Value value;
+		if (table_get(&instance->fields, name, &value)) {
+			RETURN_VAL(value);
+		}
+	}
+
+	RETURN_NULL;
+}
+
 DEF_PRIMITIVE(w_Class_name)
 {
 	RETURN_OBJ(AS_CLASS(args[0])->name);
@@ -817,10 +832,12 @@ void initialize_core()
 	PRIMITIVE(vm.object_class, "type()", w_Object_type);
 	PRIMITIVE(vm.object_class, "toString()", w_Object_toString);
 	PRIMITIVE(vm.object_class, "has_method(_)", w_Object_has_method);
+	PRIMITIVE(vm.object_class, "[_]", w_Object_subscript);
 
 	vm.class_class = define_class(core_module, "Class");
 	PRIMITIVE(vm.class_class, "name", w_Class_name);
 	PRIMITIVE(vm.class_class, "toString()", w_Class_toString);
+	//PRIMITIVE(vm.class_class, "[_]", w_Class_subscript);
 	bind_superclass(vm.class_class, vm.object_class);
 
 	ves_interpret("Core", coreModuleSource);
