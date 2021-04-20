@@ -11,7 +11,7 @@
     #define OPT_IO 1
 #endif
 
-//#define NAN_BOXING
+#define NAN_BOXING
 #define DEBUG_PRINT_CODE
 #define DEBUG_TRACE_EXECUTION
 #define DEBUG_STRESS_GC
