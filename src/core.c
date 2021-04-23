@@ -68,6 +68,20 @@ DEF_PRIMITIVE(w_Object_subscript)
 	RETURN_NULL;
 }
 
+DEF_PRIMITIVE(w_Object_subscriptSetter)
+{
+	if (IS_INSTANCE(args[0]))
+	{
+		ObjInstance* instance = AS_INSTANCE(args[0]);
+		ObjString* name = AS_STRING(args[1]);
+		if (table_set(&instance->fields, name, args[2])) {
+			RETURN_VAL(args[2]);
+		}
+	}
+
+	RETURN_NULL;
+}
+
 DEF_PRIMITIVE(w_Class_name)
 {
 	RETURN_OBJ(AS_CLASS(args[0])->name);
@@ -833,6 +847,7 @@ void initialize_core()
 	PRIMITIVE(vm.object_class, "toString()", w_Object_toString);
 	PRIMITIVE(vm.object_class, "has_method(_)", w_Object_has_method);
 	PRIMITIVE(vm.object_class, "[_]", w_Object_subscript);
+	PRIMITIVE(vm.object_class, "[_]=(_)", w_Object_subscriptSetter);
 
 	vm.class_class = define_class(core_module, "Class");
 	PRIMITIVE(vm.class_class, "name", w_Class_name);
