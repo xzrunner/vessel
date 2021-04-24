@@ -210,6 +210,7 @@ void push(Value value)
 
 Value pop()
 {
+	ASSERT(ves_gettop() > 0, "Stack error.");
 	vm.stack_top--;
 #ifdef DEBUG_PRINT_STACK
 	printf("pop %d\n", ves_gettop());
