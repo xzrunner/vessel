@@ -87,6 +87,7 @@ static void define_native(const char* name, NativeFn function)
 void init_configuration(VesselConfiguration* config)
 {
 	config->load_module_fn = NULL;
+	config->expand_modules_fn = NULL;
 	config->bind_foreign_method_fn = NULL;
 	config->bind_foreign_class_fn = NULL;
 	config->write_fn = NULL;

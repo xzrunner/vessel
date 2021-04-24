@@ -35,6 +35,17 @@ typedef VesselForeignMethodFn(*VesselBindForeignMethodFn)(
 	const char* module, const char* className, bool isStatic,
 	const char* signature);
 
+typedef void (*VesselExpandModulesCompleteFn)(struct VesselExpandModulesResult result);
+
+typedef struct VesselExpandModulesResult
+{
+	const char** modules;
+	int num;
+	VesselExpandModulesCompleteFn on_complete;
+} VesselExpandModulesResult;
+
+typedef VesselExpandModulesResult(*VesselExpandModulesFn)(const char* name);
+
 typedef struct
 {
 	VesselForeignMethodFn allocate;
@@ -67,6 +78,8 @@ typedef struct
   // If a module with the given name could not be found by the embedder, it
   // should return NULL and Vessel will report that as a runtime error.
   VesselLoadModuleFn load_module_fn;
+
+  VesselExpandModulesFn expand_modules_fn;
 
   // The callback Vessel uses to find a foreign method and bind it to a class.
   //

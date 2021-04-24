@@ -1485,12 +1485,62 @@ static void synchronize()
     }
 }
 
+static void import_directory(const char* path)
+{
+    if (vm.config.expand_modules_fn == NULL) {
+        return;
+    }
+
+    VesselExpandModulesResult result = vm.config.expand_modules_fn(path);
+    for (int i = 0; i < result.num; ++i)
+    {
+        const char* sub_path = result.modules[i];
+
+        char fullpath[256];
+        strcpy(fullpath, path);
+        fullpath[strlen(fullpath) - 1] = 0;	// pop back *
+        strcat(fullpath, sub_path);
+
+        int module_constant = make_constant(OBJ_VAL(copy_string(fullpath, strlen(fullpath))));
+        emit_short_arg(OP_IMPORT_MODULE, module_constant);
+        emit_op(OP_POP);
+
+		char class_name[256];
+		bool upper = true;
+		int ptr = 0;
+		for (int i = 0, n = strlen(sub_path); i < n; ++i) 
+		{
+			if (sub_path[i] == '_') {
+				upper = true;
+			} else {
+				class_name[ptr++] = upper ? sub_path[i] + 'A' - 'a' : sub_path[i];
+				upper = false;
+			}
+		}
+        class_name[ptr] = 0;
+
+        int source_variable_constant = make_constant(OBJ_VAL(copy_string(class_name, strlen(class_name))));
+        declare_variable();
+        emit_short_arg(OP_IMPORT_VARIABLE, source_variable_constant);
+        define_variable(source_variable_constant);
+    }
+}
+
 static void import()
 {
     ignore_new_lines();
     consume(TOKEN_STRING, "Expect a string after 'import'.");
 
-    int module_constant = make_constant(OBJ_VAL(copy_string(parser.previous.start + 1, parser.previous.length - 2)));
+    ObjString* str = copy_string(parser.previous.start + 1, parser.previous.length - 2);
+    int module_constant = make_constant(OBJ_VAL(str));
+
+    // Load directory.
+    for (int i = 0; i < str->length; ++i) {
+        if (str->chars[i] == '*') {
+            import_directory(str->chars);
+            return;
+        }
+    }
 
     // Load the module.
     emit_short_arg(OP_IMPORT_MODULE, module_constant);
