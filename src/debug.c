@@ -8,7 +8,7 @@
 
 
 
-#define BUF_SIZE 1024
+#define BUF_SIZE 1024 * 8
 static char OUT_BUF[BUF_SIZE];
 
 static void print(bool to_console, const char* format, ...)
