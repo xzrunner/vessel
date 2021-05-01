@@ -98,6 +98,12 @@ void w_File_write()
     }
 }
 
+void w_File_is_valid()
+{
+    File* file = (File*)ves_toforeign(0);
+    ves_set_boolean(0, file->fp ? true : false);
+}
+
 const char* IOSource()
 {
 	return ioModuleSource;
@@ -129,6 +135,7 @@ VesselForeignMethodFn IOBindForeignMethod(const char* class_name, bool is_static
         if (strcmp(signature, "close()") == 0) return w_File_close;
         if (strcmp(signature, "read()") == 0) return w_File_read;
         if (strcmp(signature, "write(_)") == 0) return w_File_write;
+        if (strcmp(signature, "is_valid()") == 0) return w_File_is_valid;
     }
 
     return NULL;

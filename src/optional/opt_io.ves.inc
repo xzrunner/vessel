@@ -7,6 +7,7 @@ foreign class File {
 	foreign close()
 	foreign read()
 	foreign write(str)
+	foreign is_valid()
 }
 
 foreign class IO {
