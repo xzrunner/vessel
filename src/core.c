@@ -799,6 +799,11 @@ DEF_PRIMITIVE(w_System_clock)
 	RETURN_NUM((double)clock() / CLOCKS_PER_SEC);
 }
 
+DEF_PRIMITIVE(w_System_traceback)
+{
+	ves_traceback();
+}
+
 DEF_PRIMITIVE(w_Basic_loadstring)
 {
 	ObjString* module = AS_STRING(args[1]);
@@ -932,6 +937,7 @@ void initialize_core()
 	DefineVariable(core_module, "System", 6, OBJ_VAL(vm.system_class), NULL);
 	PRIMITIVE(vm.system_class->obj.class_obj, "writeString(_)", w_System_writeString);
 	PRIMITIVE(vm.system_class->obj.class_obj, "clock()", w_System_clock);
+	PRIMITIVE(vm.system_class->obj.class_obj, "traceback()", w_System_traceback);
 
 	vm.basic_class = AS_CLASS(find_variable(core_module, "Basic"));
 	DefineVariable(core_module, "Basic", 5, OBJ_VAL(vm.basic_class), NULL);
