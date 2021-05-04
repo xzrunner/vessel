@@ -802,6 +802,7 @@ DEF_PRIMITIVE(w_System_clock)
 DEF_PRIMITIVE(w_System_traceback)
 {
 	ves_traceback();
+	return true;
 }
 
 DEF_PRIMITIVE(w_Basic_loadstring)
