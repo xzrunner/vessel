@@ -1562,11 +1562,33 @@ void ves_pushlstring(const char* s, size_t len)
 	push(OBJ_VAL(copy_string(s, len)));
 }
 
+void ves_pushnil()
+{
+	push(NIL_VAL);
+}
+
 void ves_pop(int n)
 {
 	for (int i = 0; i < n; ++i) {
 		pop();
 	}
+}
+
+void ves_insert(int index)
+{
+	ASSERT(index >= 0, "Error insert index.");
+
+	int num = 0;
+	if (vm.api_stack != NULL) {
+		num = (int)(vm.stack_top - vm.api_stack);
+	}
+	ASSERT(index < num, "Not that many slots.");
+
+	Value src = *(vm.stack_top - 1);
+	for (int i = num - 1; i > index; --i) {
+		vm.api_stack[i] = vm.api_stack[i - 1];
+	}
+	vm.api_stack[index] = src;
 }
 
 int ves_getfield(int index, const char* k)

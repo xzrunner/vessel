@@ -160,8 +160,10 @@ void ves_pushnumber(double n);
 void ves_pushboolean(int b);
 void ves_pushstring(const char* s);
 void ves_pushlstring(const char* s, size_t len);
+void ves_pushnil();
 
 void ves_pop(int n);
+void ves_insert(int index);
 
 int ves_getfield(int index, const char* k);
 int ves_getglobal(const char* name);
