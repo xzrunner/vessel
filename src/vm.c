@@ -1739,3 +1739,17 @@ void ves_newmap()
 	ObjMap* map = new_map();
 	push(OBJ_VAL(map));
 }
+
+void ves_import_class(const char* module_name, const char* class_name)
+{
+	Value v_module_name = OBJ_VAL(copy_string(module_name, strlen(module_name)));
+	Value v_module = import_module(v_module_name);
+	ObjModule* obj_module = (ObjModule*)(AS_OBJ(v_module));
+
+	int symbol = symbol_table_find(&obj_module->variable_names, class_name, strlen(class_name));
+	if (symbol != -1) {
+		push(obj_module->variables.values[symbol]);
+	} else {
+		push(NIL_VAL);
+	}
+}

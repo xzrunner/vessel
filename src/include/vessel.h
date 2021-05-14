@@ -182,6 +182,8 @@ void ves_newmap();
 
 void ves_traceback();
 
+void ves_import_class(const char* module_name, const char* class_name);
+
 #endif // vessel_h
 
 #ifdef __cplusplus
