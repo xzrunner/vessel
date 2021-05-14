@@ -165,6 +165,7 @@ void ves_pushnil();
 void ves_pop(int n);
 void ves_insert(int index);
 
+void ves_setfield(int index, const char* k);
 int ves_getfield(int index, const char* k);
 int ves_getglobal(const char* name);
 
@@ -177,6 +178,7 @@ void ves_set_lstring(int slot, const char* s, size_t len);
 void* ves_set_newforeign(int slot, int class_slot, size_t size);
 
 void ves_newlist(int num_elements);
+void ves_newmap();
 
 void ves_traceback();
 

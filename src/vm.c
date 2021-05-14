@@ -1591,6 +1591,22 @@ void ves_insert(int index)
 	vm.api_stack[index] = src;
 }
 
+void ves_setfield(int index, const char* k)
+{
+	Value val = get_stack_value(index);
+
+	if (IS_MAP(val))
+	{
+		ObjMap* map = AS_MAP(val);
+		table_set(&map->entries, copy_string(k, strlen(k)), peek(0));
+	}
+	else if (IS_INSTANCE(val))
+	{
+		ObjInstance* inst = AS_INSTANCE(val);
+		table_set(&inst->fields, copy_string(k, strlen(k)), peek(0));
+	}
+}
+
 int ves_getfield(int index, const char* k)
 {
 	Value val = get_stack_value(index);
@@ -1716,4 +1732,10 @@ void ves_newlist(int num_elements)
 {
 	ObjList* list = new_list(num_elements);
 	push(OBJ_VAL(list));
+}
+
+void ves_newmap()
+{
+	ObjMap* map = new_map();
+	push(OBJ_VAL(map));
 }
