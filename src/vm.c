@@ -1625,6 +1625,10 @@ int ves_getfield(int index, const char* k)
 		table_get(&inst->fields, copy_string(k, strlen(k)), &value);
 		push(value);
 	}
+	else
+	{
+		push(NIL_VAL);
+	}
 
 	return ves_type(-1);
 }
