@@ -1511,7 +1511,11 @@ static void import_directory(const char* path)
 		for (int i = 0, n = strlen(sub_path); i < n; ++i) 
 		{
 			if (sub_path[i] == '_') {
-				upper = true;
+                if (upper) {
+                    class_name[ptr++] = sub_path[i];
+                } else {
+                    upper = true;
+                }
 			} else {
 				class_name[ptr++] = upper ? sub_path[i] + 'A' - 'a' : sub_path[i];
 				upper = false;
