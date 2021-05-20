@@ -1248,6 +1248,8 @@ static VesselInterpretResult run()
 			int symbol = symbol_table_find(&vm.last_module->variable_names, variable->chars, variable->length);
 			if (symbol != -1) {
 				push(vm.last_module->variables.values[symbol]);
+			} else {
+				push(NIL_VAL);
 			}
 		}
 			break;
