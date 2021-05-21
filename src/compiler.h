@@ -27,4 +27,6 @@ typedef struct
 
 void signature_to_string(Signature* signature, char name[MAX_METHOD_SIGNATURE], int* length);
 
+void mark_gray_compiler();
+
 #endif // vessel_compiler_h

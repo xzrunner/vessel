@@ -2,6 +2,7 @@
 #define vessel_scanner_h
 
 #include "common.h"
+#include "value.h"
 
 typedef enum
 {
@@ -39,6 +40,7 @@ typedef struct
     const char* start;
     int length;
     int line;
+    Value value;
 } Token;
 
 void init_scanner(const char* source);

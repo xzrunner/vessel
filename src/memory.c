@@ -357,6 +357,7 @@ void collect_garbage()
 	size_t before = vm.bytes_allocated;
 #endif
 
+	mark_gray_compiler();
 	mark_roots();
 	trace_references();
 	table_remove_white(&vm.strings);

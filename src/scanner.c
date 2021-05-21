@@ -88,6 +88,7 @@ static Token make_token(TokenType type)
     token.start = scanner.start;
     token.length = (int)(scanner.current - scanner.start);
     token.line = scanner.line;
+    token.value = NIL_VAL;
 
     return token;
 }
@@ -99,6 +100,7 @@ static Token error_token(const char* message)
     token.start = message;
     token.length = (int)strlen(message);
     token.line = scanner.line;
+    token.value = NIL_VAL;
 
     return token;
 }
@@ -313,6 +315,7 @@ static Token string()
     token.start = obj_str->chars;
     token.length = obj_str->length;
     token.line = scanner.line;
+    token.value = OBJ_VAL(obj_str);
 
     return token;
 }

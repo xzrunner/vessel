@@ -1793,3 +1793,10 @@ void signature_to_string(Signature* signature, char name[MAX_METHOD_SIGNATURE], 
 
     name[*length] = '\0';
 }
+
+void mark_gray_compiler()
+{
+    mark_object((Obj*)parser.module);
+    mark_value(parser.current.value);
+    mark_value(parser.previous.value);
+}
