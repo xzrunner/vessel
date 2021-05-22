@@ -1464,10 +1464,12 @@ void ves_seti(int index, int i)
 double ves_tonumber(int index)
 {
 	Value val = get_stack_value(index);
-	ASSERT(IS_NUMBER(val), "Slot must hold a number.");
-
-	return AS_NUMBER(val);
-
+	if (IS_NIL(val)) {
+		return 0.0;
+	} else {
+		ASSERT(IS_NUMBER(val), "Slot must hold a number.");
+		return AS_NUMBER(val);
+	}
 }
 
 bool ves_toboolean(int index)
