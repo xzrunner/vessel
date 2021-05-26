@@ -21,6 +21,7 @@ class Math
 	foreign static min(x, y)
 	foreign static max(x, y)
 	foreign static clamp(num, min, max)
+	foreign static pow(x, y)
 
 	static radians(degrees) {
 		return degrees * 0.01745329251994329576923690768489
