@@ -1466,6 +1466,8 @@ double ves_tonumber(int index)
 	Value val = get_stack_value(index);
 	if (IS_NIL(val)) {
 		return 0.0;
+	} else if (IS_BOOL(val)) {
+		return AS_BOOL(val) ? 1.0 : 0.0;
 	} else {
 		ASSERT(IS_NUMBER(val), "Slot must hold a number.");
 		return AS_NUMBER(val);
