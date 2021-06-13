@@ -122,7 +122,29 @@ class Map is Sequence
     }
 }
 
-class Set is Sequence {}
+class Set is Sequence 
+{
+    toString()
+    {
+        var first = true
+        var result = "< "
+
+        for (var element in this) 
+        {
+            if (!first) result = result + ", "
+            first = false
+            if (element is String) {
+                result = result + "\"" + element.toString() + "\""
+            } else {
+                result = result + element.toString()
+            }
+        }
+
+        result = result + " >"
+
+        return result
+    }
+}
 
 class MapEntry 
 {
