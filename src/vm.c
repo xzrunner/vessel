@@ -1493,6 +1493,9 @@ const char* ves_tostring(int index)
 void* ves_toforeign(int index)
 {
 	Value val = get_stack_value(index);
+	if (IS_NIL(val)) {
+		return NULL;
+	}
 	ASSERT(IS_FOREIGN(val), "Slot must hold a foreign instance.");
 
 	return AS_FOREIGN(val)->data;
