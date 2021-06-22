@@ -1485,9 +1485,13 @@ bool ves_toboolean(int index)
 const char* ves_tostring(int index)
 {
 	Value val = get_stack_value(index);
-	ASSERT(IS_STRING(val), "Slot must hold a string.");
+	if (IS_NIL(val)) {
+		return NULL;
+	} else {
+		ASSERT(IS_STRING(val), "Slot must hold a string.");
 
-	return AS_STRING(val)->chars;
+		return AS_STRING(val)->chars;
+	}
 }
 
 void* ves_toforeign(int index)
