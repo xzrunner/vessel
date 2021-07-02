@@ -606,6 +606,17 @@ DEF_PRIMITIVE(w_Set_subscript)
 	RETURN_FALSE;
 }
 
+DEF_PRIMITIVE(w_Set_find)
+{
+	ObjSet* set = AS_SET(args[0]);
+	for (int i = 0; i < set->elements.count; ++i) {
+		if (values_equal(args[1], set->elements.values[i])) {
+			RETURN_BOOL(true);
+		}
+	}
+	RETURN_FALSE;
+}
+
 DEF_PRIMITIVE(w_Set_add)
 {
 	ObjSet* set = AS_SET(args[0]);
@@ -915,6 +926,7 @@ void initialize_core()
 	vm.set_class = AS_CLASS(find_variable(core_module, "Set"));
 	PRIMITIVE(vm.set_class->obj.class_obj, "new()", w_Set_new);
 	PRIMITIVE(vm.set_class, "[_]", w_Set_subscript);
+	PRIMITIVE(vm.set_class, "find(_)", w_Set_find);
 	PRIMITIVE(vm.set_class, "add(_)", w_Set_add);
 	PRIMITIVE(vm.set_class, "clear()", w_Set_clear);
 	PRIMITIVE(vm.set_class, "count", w_Set_count);
