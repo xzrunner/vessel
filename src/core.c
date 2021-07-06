@@ -392,6 +392,28 @@ DEF_PRIMITIVE(w_List_isEmpty)
 	RETURN_BOOL(AS_LIST(args[0])->elements.count == 0);
 }
 
+DEF_PRIMITIVE(w_List_reverse)
+{
+	ObjList* list = AS_LIST(args[0]);
+	if (list->elements.count == 0) {
+		RETURN_NULL;
+	}
+
+	int begin = 0;
+	int end = list->elements.count - 1;
+	while (begin < end) 
+	{
+		Value tmp = list->elements.values[begin];
+		list->elements.values[begin] = list->elements.values[end];
+		list->elements.values[end] = tmp;
+
+		++begin;
+		--end;
+	}
+
+	RETURN_NULL;
+}
+
 DEF_PRIMITIVE(w_List_iterate)
 {
 	ObjList* list = AS_LIST(args[0]);
@@ -907,6 +929,7 @@ void initialize_core()
 	PRIMITIVE(vm.list_class, "count", w_List_count);
 	PRIMITIVE(vm.list_class, "removeAt(_)", w_List_removeAt);
 	PRIMITIVE(vm.list_class, "isEmpty", w_List_isEmpty);
+	PRIMITIVE(vm.list_class, "reverse()", w_List_reverse);
 	PRIMITIVE(vm.list_class, "iterate(_)", w_List_iterate);
 	PRIMITIVE(vm.list_class, "iteratorValue(_)", w_List_iteratorValue);
 
