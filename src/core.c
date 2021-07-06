@@ -35,7 +35,7 @@ DEF_PRIMITIVE(w_Object_is)
 	RETURN_BOOL(false);
 }
 
-DEF_PRIMITIVE(w_Object_type)
+DEF_PRIMITIVE(w_Object_get_class)
 {
 	RETURN_OBJ(get_class(args[0]));
 }
@@ -887,7 +887,7 @@ void initialize_core()
 
 	vm.object_class = define_class(core_module, "Object");
 	PRIMITIVE(vm.object_class, "is(_)", w_Object_is);
-	PRIMITIVE(vm.object_class, "type()", w_Object_type);
+	PRIMITIVE(vm.object_class, "get_class()", w_Object_get_class);
 	PRIMITIVE(vm.object_class, "toString()", w_Object_toString);
 	PRIMITIVE(vm.object_class, "has_method(_)", w_Object_has_method);
 	PRIMITIVE(vm.object_class, "[_]", w_Object_subscript);
