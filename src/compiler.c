@@ -985,6 +985,61 @@ static void unary(bool can_assign)
     }
 }
 
+static void scope(bool can_assign)
+{
+    const char* start = parser.previous.start;
+
+    int num = 0;
+    do {
+        consume(TOKEN_IDENTIFIER, "Expect identifier after scope.");
+        ++num;
+    } while (match(TOKEN_SCOPE));
+
+    int module_length = parser.previous.start - start - 4 - (num - 2);
+    char* module_chars = ALLOCATE(char, module_length + 1);
+    int i = 0;
+    const char* ptr = start + 2;
+    while (i < module_length)
+    {
+        if (*ptr == ':') {
+            module_chars[i++] = '.';
+            ptr += 2;
+        } else {
+            module_chars[i++] = *ptr++;
+        }
+    }
+    module_chars[module_length] = '\0';
+
+    int variable_length = module_length + 1 + parser.previous.length;
+    char* variable_chars = ALLOCATE(char, variable_length + 1);
+    strncpy(variable_chars, module_chars, module_length);
+    variable_chars[module_length] = '.';
+    strncpy(&variable_chars[module_length + 1], parser.previous.start, parser.previous.length);
+    variable_chars[variable_length] = '\0';
+
+    ObjString* module_str = take_string(module_chars, module_length);
+    int module_constant = make_constant(OBJ_VAL(module_str));
+
+    // Load the module.
+    emit_short_arg(OP_IMPORT_MODULE, module_constant);
+
+    // Discard the unused result value from calling the module body's closure.
+    emit_op(OP_POP);
+
+    int variable_constant = make_constant(OBJ_VAL(copy_string(parser.previous.start, parser.previous.length)));
+    declare_variable();
+
+    // Load the variable from the other module.
+    emit_short_arg(OP_IMPORT_VARIABLE, variable_constant);
+
+    // Store the result in the variable here.
+    ObjString* variable_str = take_string(variable_chars, variable_length);
+    int slot = make_constant(OBJ_VAL(variable_str));
+    define_variable(slot);
+
+    named_variable(synthetic_token(variable_str->chars), can_assign);
+}
+
 ParseRule rules[] =
 {
     [TOKEN_LEFT_PAREN]    = {grouping, call,   PREC_CALL},
@@ -1031,6 +1086,7 @@ ParseRule rules[] =
     [TOKEN_VAR]           = {NULL,     NULL,   PREC_NONE},
     [TOKEN_WHILE]         = {NULL,     NULL,   PREC_NONE},
     [TOKEN_IMPORT]        = {NULL,     NULL,   PREC_NONE},
+    [TOKEN_SCOPE]         = {scope,    NULL,   PREC_NONE},
     [TOKEN_IS]            = {NULL,     binary, PREC_IS},
     [TOKEN_AS]            = {NULL,     NULL,   PREC_NONE},
     [TOKEN_FOREIGN]       = {NULL,     NULL,   PREC_NONE},
