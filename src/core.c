@@ -87,6 +87,11 @@ DEF_PRIMITIVE(w_Class_name)
 	RETURN_OBJ(AS_CLASS(args[0])->name);
 }
 
+DEF_PRIMITIVE(w_Class_module)
+{
+	RETURN_OBJ(AS_CLASS(args[0])->module->name);
+}
+
 DEF_PRIMITIVE(w_Class_toString)
 {
 	RETURN_OBJ(AS_CLASS(args[0])->name);
@@ -853,7 +858,7 @@ static ObjClass* define_class(ObjModule* module, const char* name)
 	ObjString* name_string = copy_string(name, strlen(name));
 	push(OBJ_VAL(name_string));
 
-	ObjClass* class_obj = new_single_class(0, name_string);
+	ObjClass* class_obj = new_single_class(0, name_string, module);
 
 	DefineVariable(module, name, name_string->length, OBJ_VAL(class_obj), NULL);
 
@@ -890,6 +895,7 @@ void initialize_core()
 
 	vm.class_class = define_class(core_module, "Class");
 	PRIMITIVE(vm.class_class, "name", w_Class_name);
+	PRIMITIVE(vm.class_class, "module", w_Class_module);
 	PRIMITIVE(vm.class_class, "toString()", w_Class_toString);
 	//PRIMITIVE(vm.class_class, "[_]", w_Class_subscript);
 	bind_superclass(vm.class_class, vm.object_class);

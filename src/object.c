@@ -35,13 +35,13 @@ ObjBoundMethod* new_bound_method(Value receiver, ObjClosure* method)
 	return bound;
 }
 
-ObjClass* new_class(ObjClass* superclass, int num_fields, ObjString* name)
+ObjClass* new_class(ObjClass* superclass, int num_fields, ObjString* name, ObjModule* module)
 {
 	// Create the metaclass.
 	Value metaclass_name = string_format("@ metaclass", OBJ_VAL(name));
 	push(metaclass_name);
 
-	ObjClass* metaclass = new_single_class(0, AS_STRING(metaclass_name));
+	ObjClass* metaclass = new_single_class(0, AS_STRING(metaclass_name), module);
 	metaclass->obj.class_obj = vm.class_class;
 
 	pop();
@@ -53,7 +53,7 @@ ObjClass* new_class(ObjClass* superclass, int num_fields, ObjString* name)
 	// hierarchy.
 	bind_superclass(metaclass, vm.class_class);
 
-	ObjClass* class_obj = new_single_class(num_fields, name);
+	ObjClass* class_obj = new_single_class(num_fields, name, module);
 
 	// Make sure the class isn't collected while the inherited methods are being
 	// bound.
@@ -68,10 +68,11 @@ ObjClass* new_class(ObjClass* superclass, int num_fields, ObjString* name)
 	return class_obj;
 }
 
-ObjClass* new_single_class(int num_fields, ObjString* name)
+ObjClass* new_single_class(int num_fields, ObjString* name, ObjModule* module)
 {
 	ObjClass* klass = ALLOCATE_OBJ(ObjClass, OBJ_CLASS);
 	klass->superclass = NULL;
+	klass->module = module;
 	klass->name = name;
 	klass->num_fields = num_fields;
 	init_table(&klass->methods);

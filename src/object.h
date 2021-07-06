@@ -145,6 +145,7 @@ struct ObjClass
 {
 	Obj obj;
 	ObjClass* superclass;
+	ObjModule* module;
 	ObjString* name;
 	int num_fields;
 	Table methods;
@@ -205,8 +206,8 @@ typedef struct
 } ObjRange;
 
 ObjBoundMethod* new_bound_method(Value receiver, ObjClosure* method);
-ObjClass* new_class(ObjClass* superclass, int num_fields, ObjString* name);
-ObjClass* new_single_class(int num_fields, ObjString* name);
+ObjClass* new_class(ObjClass* superclass, int num_fields, ObjString* name, ObjModule* module);
+ObjClass* new_single_class(int num_fields, ObjString* name, ObjModule* module);
 ObjClosure* new_closure(ObjFunction* function);
 ObjMethod* new_method();
 ObjFunction* new_function(ObjModule* module);

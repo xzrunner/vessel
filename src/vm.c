@@ -1170,12 +1170,12 @@ static VesselInterpretResult run()
 		}
 
 		case OP_CLASS:
-			push(OBJ_VAL(new_class(vm.object_class, 0, READ_STRING())));
+			push(OBJ_VAL(new_class(vm.object_class, 0, READ_STRING(), FUNC->module)));
 			break;
 
 		case OP_FOREIGN_CLASS:
 		{
-			ObjClass* class_obj = new_class(vm.object_class, -1, READ_STRING());
+			ObjClass* class_obj = new_class(vm.object_class, -1, READ_STRING(), FUNC->module);
 			push(OBJ_VAL(class_obj));
 			bind_foreign_class(class_obj, FUNC->module);
 		}
