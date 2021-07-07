@@ -256,7 +256,7 @@ void bind_superclass(ObjClass* subclass, ObjClass* superclass)
 	if (subclass->num_fields != -1) {
 		subclass->num_fields += superclass->num_fields;
 	} else {
-		ASSERT(superclass->num_fields == 0, "A foreign class cannot inherit from a class with fields.");
+		ASSERT(superclass->num_fields <= 0, "A foreign class cannot inherit from a class with fields.");
 	}
 
 	table_add_all(&superclass->methods, &subclass->methods);
