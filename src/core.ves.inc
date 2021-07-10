@@ -69,6 +69,20 @@ class List is Sequence
         }
     }
 
+    pop_front()
+    {
+		if (!this.isEmpty) {
+			this.removeAt(0)
+		}
+    }
+
+    pop_back()
+    {
+		if (!this.isEmpty) {
+			this.removeAt(this.count - 1)
+		}
+    }
+
     query_index(value)
     {
 		for (var i = 0; i < this.count; i = i + 1) {
