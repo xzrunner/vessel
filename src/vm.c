@@ -1664,6 +1664,9 @@ int ves_getglobal(const char* name)
 
 VesselInterpretResult ves_call(int nargs, int nresults)
 {
+	int prev_begin = vm.frame_count_begin;
+	vm.frame_count_begin = vm.frame_count;
+
 	ASSERT(IS_STRING(peek(0)), "Method name should be string.");
 	ObjString* s_method = AS_STRING(peek(0));
 	pop();
@@ -1693,6 +1696,8 @@ VesselInterpretResult ves_call(int nargs, int nresults)
 	Value* stack_top = vm.stack_top - nargs;
 	VesselInterpretResult ret = run();
 	vm.stack_top = stack_top;
+
+	vm.frame_count_begin = prev_begin;
 
 	return ret;
 }
