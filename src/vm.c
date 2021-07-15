@@ -308,7 +308,8 @@ static bool call_value(Value callee, int arg_count)
 			//	break;
 			case METHOD_FOREIGN:
 			{
-				ASSERT(vm.api_stack == NULL, "Cannot already be in foreign call.");
+				Value* old_api_stack = vm.api_stack;
+
 				vm.api_stack = vm.stack_top - arg_count - 1;
 
 				method->as.foreign();
@@ -317,7 +318,7 @@ static bool call_value(Value callee, int arg_count)
 				// for the result.
 				vm.stack_top = vm.api_stack + 1;
 
-				vm.api_stack = NULL;
+				vm.api_stack = old_api_stack;
 
 				return true;
 			}
