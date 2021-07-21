@@ -83,6 +83,24 @@ class List is Sequence
 		}
     }
 
+    front()
+    {
+        if (this.isEmpty) {
+            return nil
+        } else {
+            return this[0]
+        }
+    }
+
+    back()
+    {
+        if (this.isEmpty) {
+            return nil
+        } else {
+            return this[this.count - 1]
+        }
+    }
+
     query_index(value)
     {
 		for (var i = 0; i < this.count; i = i + 1) {
