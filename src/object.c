@@ -38,7 +38,8 @@ ObjBoundMethod* new_bound_method(Value receiver, ObjClosure* method)
 ObjClass* new_class(ObjClass* superclass, int num_fields, ObjString* name, ObjModule* module)
 {
 	// Create the metaclass.
-	Value metaclass_name = string_format("@ metaclass", OBJ_VAL(name));
+//	Value metaclass_name = string_format("@ metaclass", OBJ_VAL(name));
+	Value metaclass_name = string_format("@", OBJ_VAL(name));
 	push(metaclass_name);
 
 	ObjClass* metaclass = new_single_class(0, AS_STRING(metaclass_name), module);
