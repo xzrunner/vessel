@@ -6,6 +6,7 @@ class Math
 	foreign static acos(num)
 	foreign static asin(num)
 	foreign static atan(num)
+	foreign static atan2(y, x)
 	foreign static ceil(num)
 	foreign static cos(num)
 	foreign static floor(num)

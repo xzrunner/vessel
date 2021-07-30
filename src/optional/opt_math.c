@@ -37,6 +37,13 @@ DEF_MATH_FUNC(log, log)
 DEF_MATH_FUNC(log2, log2)
 DEF_MATH_FUNC(exp, exp)
 
+static void w_Math_atan2()
+{
+	const double y = ves_tonumber(1);
+	const double x = ves_tonumber(2);
+	ves_set_number(0, atan2(y, x));
+}
+
 static void w_Math_pi()
 {
 	ves_set_number(0, 3.14159265358979323846264338327950288);
@@ -98,6 +105,7 @@ VesselForeignMethodFn MathBindMethod(const char* class_name, bool is_static, con
 	CALL_MATH_FUNC(log2)
 	CALL_MATH_FUNC(exp)
 
+	if (strcmp(signature, "atan2(_,_)") == 0) return w_Math_atan2;
 	if (strcmp(signature, "pi()") == 0) return w_Math_pi;
 	if (strcmp(signature, "min(_,_)") == 0) return w_Math_min;
 	if (strcmp(signature, "max(_,_)") == 0) return w_Math_max;
