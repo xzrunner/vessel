@@ -6,7 +6,7 @@
 #include "object.h"
 #include "vessel.h"
 
-#define FRAMES_MAX 128
+#define FRAMES_MAX 256
 #define STACK_MAX (FRAMES_MAX * UINT8_COUNT)
 
 #define MAX_TEMP_ROOTS 8
