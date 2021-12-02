@@ -80,6 +80,13 @@ static void w_Math_pow()
 	ves_set_number(0, pow(x, y));
 }
 
+static void w_Math_mod()
+{
+	const double x = ves_tonumber(1);
+	const double y = ves_tonumber(2);
+	ves_set_number(0, x - y * floor(x / y));
+}
+
 const char* MathSource()
 {
 	return mathModuleSource;
@@ -111,6 +118,7 @@ VesselForeignMethodFn MathBindMethod(const char* class_name, bool is_static, con
 	if (strcmp(signature, "max(_,_)") == 0) return w_Math_max;
 	if (strcmp(signature, "clamp(_,_,_)") == 0) return w_Math_clamp;
 	if (strcmp(signature, "pow(_,_)") == 0) return w_Math_pow;
+	if (strcmp(signature, "mod(_,_)") == 0) return w_Math_mod;
 
     ASSERT(false, "Unknown method.");
     return NULL;
