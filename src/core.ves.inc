@@ -110,6 +110,22 @@ class List is Sequence
 		}
 		return -1
     }
+
+    sort(comparer)
+    {
+        if (this.count > 1) 
+        {
+            for (var i = 0; i < this.count - 1; i = i + 1) {
+                for (var j = i; j < this.count; j = j + 1) {
+                    if (comparer(this[j], this[i])) {
+                        var t = this[i]
+                        this[i] = this[j]
+                        this[j] = t
+                    }
+                }
+            }
+        }
+    }
 }
 
 class Range is Sequence {}
