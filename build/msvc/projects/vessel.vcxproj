@@ -19,22 +19,57 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\src\buffer.c" />
-    <ClCompile Include="..\..\..\src\chunk.c" />
-    <ClCompile Include="..\..\..\src\compiler.c" />
-    <ClCompile Include="..\..\..\src\core.c" />
-    <ClCompile Include="..\..\..\src\debug.c" />
-    <ClCompile Include="..\..\..\src\memory.c" />
-    <ClCompile Include="..\..\..\src\object.c" />
-    <ClCompile Include="..\..\..\src\optional\opt_io.c" />
-    <ClCompile Include="..\..\..\src\optional\opt_math.c" />
-    <ClCompile Include="..\..\..\src\optional\opt_random.c" />
-    <ClCompile Include="..\..\..\src\primitive.c" />
-    <ClCompile Include="..\..\..\src\scanner.c" />
-    <ClCompile Include="..\..\..\src\table.c" />
-    <ClCompile Include="..\..\..\src\utils.c" />
-    <ClCompile Include="..\..\..\src\value.c" />
-    <ClCompile Include="..\..\..\src\vm.c" />
+    <ClCompile Include="..\..\..\src\buffer.c">
+      <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MultiThreadedDebugDLL</RuntimeLibrary>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\chunk.c">
+      <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MultiThreadedDebugDLL</RuntimeLibrary>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\compiler.c">
+      <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MultiThreadedDebugDLL</RuntimeLibrary>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\core.c">
+      <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MultiThreadedDebugDLL</RuntimeLibrary>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\debug.c">
+      <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MultiThreadedDebugDLL</RuntimeLibrary>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\memory.c">
+      <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MultiThreadedDebugDLL</RuntimeLibrary>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\object.c">
+      <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MultiThreadedDebugDLL</RuntimeLibrary>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\optional\opt_io.c">
+      <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MultiThreadedDebugDLL</RuntimeLibrary>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\optional\opt_math.c">
+      <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MultiThreadedDebugDLL</RuntimeLibrary>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\optional\opt_random.c">
+      <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MultiThreadedDebugDLL</RuntimeLibrary>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\primitive.c">
+      <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MultiThreadedDebugDLL</RuntimeLibrary>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\profile.cpp">
+      <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MultiThreadedDebugDLL</RuntimeLibrary>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\scanner.c">
+      <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MultiThreadedDebugDLL</RuntimeLibrary>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\table.c">
+      <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MultiThreadedDebugDLL</RuntimeLibrary>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\utils.c">
+      <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MultiThreadedDebugDLL</RuntimeLibrary>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\value.c">
+      <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MultiThreadedDebugDLL</RuntimeLibrary>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\vm.c">
+      <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MultiThreadedDebugDLL</RuntimeLibrary>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\buffer.h" />
