@@ -83,6 +83,10 @@ typedef struct
 	Chunk chunk;
 	ObjString* name;
 	ObjModule* module;
+#ifdef STATISTICS
+	uint64_t call_times;
+	double   run_time;
+#endif // STATISTICS
 } ObjFunction;
 
 typedef Value(*NativeFn)(int arg_count, Value* args);
@@ -139,6 +143,10 @@ typedef struct
 		VesselForeignMethodFn foreign;
 		ObjClosure* closure;
 	} as;
+#ifdef STATISTICS
+	uint64_t call_times;
+	double   run_time;
+#endif // STATISTICS
 } ObjMethod;
 
 struct ObjClass

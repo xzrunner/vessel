@@ -52,7 +52,7 @@
     <ClCompile Include="..\..\..\src\primitive.c">
       <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\profile.cpp">
+    <ClCompile Include="..\..\..\src\statistics.cpp">
       <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <ClCompile Include="..\..\..\src\scanner.c">
@@ -86,6 +86,7 @@
     <ClInclude Include="..\..\..\src\optional\opt_math.h" />
     <ClInclude Include="..\..\..\src\optional\opt_random.h" />
     <ClInclude Include="..\..\..\src\primitive.h" />
+    <ClInclude Include="..\..\..\src\statistics.h" />
     <ClInclude Include="..\..\..\src\scanner.h" />
     <ClInclude Include="..\..\..\src\table.h" />
     <ClInclude Include="..\..\..\src\utils.h" />

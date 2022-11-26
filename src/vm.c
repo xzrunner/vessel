@@ -7,6 +7,7 @@
 #include "object.h"
 #include "utils.h"
 #include "primitive.h"
+#include "statistics.h"
 #if OPT_RANDOM
 #include "opt_random.h"
 #endif // OPT_RANDOM
@@ -250,6 +251,9 @@ static bool call(ObjClosure* closure, int arg_count)
 	frame->ip = closure->function->chunk.code;
 
 	frame->slots = vm.stack_top - arg_count - 1;
+
+	STAT_UP_TIMES(frame->closure->function)
+
 	return true;
 }
 
@@ -281,6 +285,7 @@ static bool call_value(Value callee, int arg_count)
 				ASSERT(IS_METHOD(initializer), "Error method type.");
 				ObjMethod* obj_method = AS_METHOD(initializer);
 				ASSERT(obj_method->type == METHOD_BLOCK, "Method should be block.");
+				STAT_UP_TIMES(obj_method)
 				return call(obj_method->as.closure, arg_count);
 			} else if (arg_count != 0) {
 				runtime_error("Expected 0 arguments but got %d.", arg_count);
@@ -292,17 +297,23 @@ static bool call_value(Value callee, int arg_count)
 		case OBJ_METHOD:
 		{
 			ObjMethod* method = AS_METHOD(callee);
+			STAT_UP_TIMES(method)
 			Value* args = vm.stack_top - arg_count - 1;
 			switch (method->type)
 			{
 			case METHOD_PRIMITIVE:
+			{
+				STAT_TIMER_START
 				if (method->as.primitive(args)) {
+					STAT_TIMER_END(method)
 					vm.stack_top -= arg_count;
 					return true;
 				} else {
+					STAT_TIMER_END(method)
 					runtime_error("Run primitive fail.");
 					return false;
 				}
+			}
 				break;
 			//case METHOD_FUNCTION_CALL:
 			//	break;
@@ -312,7 +323,9 @@ static bool call_value(Value callee, int arg_count)
 
 				vm.api_stack = vm.stack_top - arg_count - 1;
 
+				STAT_TIMER_START
 				method->as.foreign();
+				STAT_TIMER_END(method)
 
 				// Discard the stack slots for the arguments and temporaries but leave one
 				// for the result.
@@ -381,15 +394,19 @@ static bool invoke_from_class(ObjClass* klass, ObjString* name, int arg_count)
 
 	ASSERT(IS_METHOD(method), "Error method type.");
 	ObjMethod* obj_method = AS_METHOD(method);
+	STAT_UP_TIMES(obj_method);
 
 	bool ret = false;
 	switch (obj_method->type)
 	{
 	case METHOD_PRIMITIVE:
+		STAT_TIMER_START
 		if (obj_method->as.primitive(vm.stack_top - arg_count - 1)) {
+			STAT_TIMER_END(obj_method)
 			vm.stack_top -= arg_count;
 			ret = true;
 		} else {
+			STAT_TIMER_END(obj_method)
 			runtime_error("Run primitive fail.");
 			return VES_INTERPRET_RUNTIME_ERROR;
 		}
@@ -744,6 +761,8 @@ static void bind_foreign_class(ObjClass* class_obj, ObjModule* module)
 
 static VesselInterpretResult run()
 {
+	STAT_TIMER_START
+
 	CallFrame* frame = &vm.frames[vm.frame_count - 1];
 
 #define READ_BYTE() (*frame->ip++)
@@ -911,9 +930,13 @@ static VesselInterpretResult run()
 						switch (method->type)
 						{
 						case METHOD_PRIMITIVE:
+							STAT_UP_TIMES(method);
+							STAT_TIMER_START
 							if (method->as.primitive(vm.stack_top)) {
+								STAT_TIMER_END(method)
 								vm.stack_top += 1;
 							} else {
+								STAT_TIMER_END(method)
 								runtime_error("Run primitive fail.");
 								return VES_INTERPRET_RUNTIME_ERROR;
 							}
@@ -1066,13 +1089,17 @@ static VesselInterpretResult run()
 			}
 
 			ObjMethod* method = AS_METHOD(v_method);
+			STAT_UP_TIMES(method);
 			switch (method->type)
 			{
 			case METHOD_PRIMITIVE:
+				STAT_TIMER_START
 				if (method->as.primitive(args)) {
+					STAT_TIMER_END(method)
 					// The result is now in the first arg slot. Discard the other stack slots.
 					vm.stack_top -= arg_count - 1;
 				} else {
+					STAT_TIMER_END(method)
 					runtime_error("Run primitive fail.");
 					return VES_INTERPRET_RUNTIME_ERROR;
 				}
@@ -1153,6 +1180,8 @@ static VesselInterpretResult run()
 			break;
 
 		case OP_RETURN: {
+			STAT_TIMER_END(frame->closure->function)
+
 			Value result = pop();
 
 			close_upvalues(frame->slots);
@@ -1276,7 +1305,10 @@ static VesselInterpretResult run()
 			ASSERT(vm.api_stack == NULL, "Cannot already be in foreign call.");
 			vm.api_stack = frame->slots;
 
+			STAT_UP_TIMES(method);
+			STAT_TIMER_START
 			method->as.foreign();
+			STAT_TIMER_END(method)
 
 			vm.api_stack = NULL;
 		}
@@ -1683,6 +1715,7 @@ VesselInterpretResult ves_call(int nargs, int nresults)
 	}
 
 	ObjMethod* method = AS_METHOD(v_method);
+	STAT_UP_TIMES(method);
 	switch (method->type)
 	{
 	case METHOD_BLOCK:

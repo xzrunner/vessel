@@ -2,6 +2,9 @@
 #include "vm.h"
 #include "memory.h"
 #include "utils.h"
+#ifdef STATISTICS
+#include "statistics.h"
+#endif // STATISTICS
 
 #include <stdio.h>
 
@@ -97,7 +100,15 @@ ObjClosure* new_closure(ObjFunction* function)
 ObjMethod* new_method()
 {
 	ObjMethod* method = ALLOCATE_OBJ(ObjMethod, OBJ_METHOD);
+
 	method->type = METHOD_NONE;
+
+#ifdef STATISTICS
+	method->call_times = 0;
+	method->run_time = 0;
+	stat_add_callee(OBJ_VAL(method));
+#endif // STATISTICS
+
 	return method;
 }
 
@@ -110,6 +121,13 @@ ObjFunction* new_function(ObjModule* module)
 	function->name = NULL;
 	init_chunk(&function->chunk);
 	function->module = module;
+
+#ifdef STATISTICS
+	function->call_times = 0;
+	function->run_time = 0;
+	stat_add_callee(OBJ_VAL(function));
+#endif // STATISTICS
+	
 	return function;
 }
 

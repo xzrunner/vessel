@@ -23,6 +23,7 @@
     <ClCompile Include="..\..\..\src\optional\opt_io.c">
       <Filter>optional</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\statistics.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\chunk.h" />
@@ -52,6 +53,7 @@
     <ClInclude Include="..\..\..\src\optional\opt_io.h">
       <Filter>optional</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\src\statistics.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="include">

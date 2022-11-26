@@ -6,6 +6,7 @@
 #include "core.ves.inc"
 #include "debug.h"
 #include "memory.h"
+#include "statistics.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -848,6 +849,14 @@ DEF_PRIMITIVE(w_System_traceback)
 	return true;
 }
 
+DEF_PRIMITIVE(w_System_profile)
+{
+#ifdef STATISTICS
+	stat_end();
+#endif // STATISTICS
+	return true;
+}
+
 DEF_PRIMITIVE(w_Basic_loadstring)
 {
 	ObjString* module = AS_STRING(args[1]);
@@ -986,6 +995,7 @@ void initialize_core()
 	PRIMITIVE(vm.system_class->obj.class_obj, "writeString(_)", w_System_writeString);
 	PRIMITIVE(vm.system_class->obj.class_obj, "clock()", w_System_clock);
 	PRIMITIVE(vm.system_class->obj.class_obj, "traceback()", w_System_traceback);
+	PRIMITIVE(vm.system_class->obj.class_obj, "profile()", w_System_profile);
 
 	vm.basic_class = AS_CLASS(find_variable(core_module, "Basic"));
 	DefineVariable(core_module, "Basic", 5, OBJ_VAL(vm.basic_class), NULL);
