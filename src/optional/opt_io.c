@@ -35,6 +35,9 @@ void w_File_open()
     }
 
     file->fp = fopen(filename, mode);
+    if (!file->fp) {
+        perror("fopen");
+    }
 
     file->binary = false;
     for (int i = 0, n = strlen(mode); i < n; ++i) {
