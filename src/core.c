@@ -51,6 +51,13 @@ DEF_PRIMITIVE(w_Object_toString)
 	RETURN_VAL(string_format("instance of @", OBJ_VAL(get_class(args[0])->name)));
 }
 
+DEF_PRIMITIVE(w_Object_to_pointer)
+{
+	char str[255];
+	sprintf(str, "%d", args[0]);
+	RETURN_VAL(string_format("$", str));
+}
+
 DEF_PRIMITIVE(w_Object_has_method)
 {
 	ObjClass* klass = get_class(args[0]);
@@ -904,6 +911,7 @@ void initialize_core()
 	PRIMITIVE(vm.object_class, "equal(_)", w_Object_equal);
 	PRIMITIVE(vm.object_class, "get_class()", w_Object_get_class);
 	PRIMITIVE(vm.object_class, "toString()", w_Object_toString);
+	PRIMITIVE(vm.object_class, "to_pointer()", w_Object_to_pointer);
 	PRIMITIVE(vm.object_class, "has_method(_)", w_Object_has_method);
 	PRIMITIVE(vm.object_class, "[_]", w_Object_subscript);
 	PRIMITIVE(vm.object_class, "[_]=(_)", w_Object_subscriptSetter);
