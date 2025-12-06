@@ -1,7 +1,7 @@
 #include "utility.h"
 
 #define CATCH_CONFIG_RUNNER
-#include <catch/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <vessel.h>
 
