@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.16)
 
 project(vessel)
 
@@ -66,12 +66,9 @@ set(ALL_FILES
     ${optional}
 )
 
-include_directories(${CMAKE_SOURCE_DIR}/src)
-include_directories(${CMAKE_SOURCE_DIR}/src/include)
-include_directories(${CMAKE_SOURCE_DIR}/src/optional)
-include_directories(${CMAKE_SOURCE_DIR}/third_party/Catch2/src)
-
 add_library(${PROJECT_NAME} STATIC ${ALL_FILES})
+
+target_include_directories(${PROJECT_NAME} PRIVATE src src/include src/optional)
 
 if(VESSEL_BUILD_TESTS)
     set(no_group_source_files
@@ -123,6 +120,6 @@ if(VESSEL_BUILD_TESTS)
     add_subdirectory(third_party/Catch2)
 
     add_executable(vessel-test ${TEST_FILES})
-    target_include_directories(vessel-test PRIVATE "third_party/catch2/src")
+    target_include_directories(vessel-test PRIVATE src/include third_party/catch2/src)
     target_link_libraries(vessel-test vessel Catch2)
 endif()
