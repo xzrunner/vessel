@@ -68,7 +68,8 @@ set(ALL_FILES
 
 add_library(${PROJECT_NAME} STATIC ${ALL_FILES})
 
-target_include_directories(${PROJECT_NAME} PRIVATE src src/include src/optional)
+target_include_directories(${PROJECT_NAME} PUBLIC src/include)
+target_include_directories(${PROJECT_NAME} PRIVATE src src/optional)
 
 if(VESSEL_BUILD_TESTS)
     set(no_group_source_files
@@ -117,7 +118,9 @@ if(VESSEL_BUILD_TESTS)
         ${tests}
     )
 
-    add_subdirectory(third_party/Catch2)
+    if(NOT TARGET Catch2)
+        add_subdirectory(third_party/Catch2)
+    endif()
 
     add_executable(vessel-test ${TEST_FILES})
     target_include_directories(vessel-test PRIVATE src/include third_party/catch2/src)
