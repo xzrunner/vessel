@@ -909,6 +909,7 @@ void initialize_core()
 	vm.object_class = define_class(core_module, "Object");
 	PRIMITIVE(vm.object_class, "is(_)", w_Object_is);
 	PRIMITIVE(vm.object_class, "equal(_)", w_Object_equal);
+	PRIMITIVE(vm.object_class, "type", w_Object_get_class);
 	PRIMITIVE(vm.object_class, "get_class()", w_Object_get_class);
 	PRIMITIVE(vm.object_class, "toString()", w_Object_toString);
 	PRIMITIVE(vm.object_class, "to_pointer()", w_Object_to_pointer);

@@ -263,7 +263,7 @@ System.print(Math.log(-1))
     REQUIRE(std::string(get_output_buf()) == R"(
 1.0986122886681
 4.6051701859881
--nan(ind)
+nan
 )" + 1);
 }
 
