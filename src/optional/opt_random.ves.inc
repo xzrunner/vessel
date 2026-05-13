@@ -13,13 +13,12 @@ foreign class Random {
 
       // TODO: Empty sequence.
       var seeds = []
-      var break = false
-      for (var i = 0; i < seed.count and !break; i = i + 1) {
+      for (var i = 0; i < seed.count; i = i + 1) {
         var element = seed[i]
         if (!(element is Num)) Fiber.abort("List elements must all be numbers.")
 
         seeds.add(element)
-        if (seeds.count == 16) break = true
+        if (seeds.count == 16) break
       }
 
       // Cycle the values to fill in any missing slots.

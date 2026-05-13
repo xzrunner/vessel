@@ -65,6 +65,15 @@ typedef enum
     TYPE_SCRIPT
 } FunctionType;
 
+typedef struct Loop
+{
+    struct Loop* enclosing;
+    int start;
+    int scope_depth;
+    int body;
+    int exit_jump;
+} Loop;
+
 typedef struct Compiler
 {
     struct Compiler* enclosing;
@@ -75,6 +84,8 @@ typedef struct Compiler
     int local_count;
     Upvalue upvalues[UINT8_COUNT];
     int scope_depth;
+
+    Loop* loop;
 } Compiler;
 
 typedef struct ClassCompiler
@@ -296,6 +307,7 @@ static void init_compiler(Compiler* compiler, FunctionType type)
     compiler->type = type;
     compiler->local_count = 0;
     compiler->scope_depth = 0;
+    compiler->loop = NULL;
     compiler->function = new_function(parser.module);
     current = compiler;
 
@@ -1071,7 +1083,9 @@ ParseRule rules[] =
     [TOKEN_INTERPOLATION] = {string_interpolation,   NULL,   PREC_NONE},
     [TOKEN_NUMBER]        = {number,   NULL,   PREC_NONE},
     [TOKEN_AND]           = {NULL,     and_,   PREC_AND},
+    [TOKEN_BREAK]         = {NULL,     NULL,   PREC_NONE},
     [TOKEN_CLASS]         = {NULL,     NULL,   PREC_NONE},
+    [TOKEN_CONTINUE]      = {NULL,     NULL,   PREC_NONE},
     [TOKEN_ELSE]          = {NULL,     NULL,   PREC_NONE},
     [TOKEN_FALSE]         = {literal,  NULL,   PREC_NONE},
     [TOKEN_FOR]           = {NULL,     NULL,   PREC_NONE},
@@ -1346,9 +1360,52 @@ static void expression_statement()
     emit_op(OP_POP);
 }
 
+static void discard_locals(int depth)
+{
+    for (int i = current->local_count - 1;
+         i >= 0 && current->locals[i].depth > depth; i--)
+    {
+        if (current->locals[i].is_captured) {
+            emit_op(OP_CLOSE_UPVALUE);
+        } else {
+            emit_op(OP_POP);
+        }
+    }
+}
+
+static void break_statement()
+{
+    if (current->loop == NULL) {
+        error("Can't use 'break' outside of a loop.");
+        return;
+    }
+
+    discard_locals(current->loop->scope_depth);
+
+    current->loop->exit_jump = emit_jump(OP_JUMP);
+}
+
+static void continue_statement()
+{
+    if (current->loop == NULL) {
+        error("Can't use 'continue' outside of a loop.");
+        return;
+    }
+
+    discard_locals(current->loop->scope_depth);
+
+    emit_loop(current->loop->body);
+}
+
 static void for_statement()
 {
     begin_scope();
+
+    Loop loop;
+    loop.enclosing = current->loop;
+    loop.scope_depth = current->scope_depth;
+    loop.exit_jump = -1;
+    current->loop = &loop;
 
     consume(TOKEN_LEFT_PAREN, "Expect '(' after 'for'.");
     // for-initializer
@@ -1377,6 +1434,8 @@ static void for_statement()
             emit_short_arg(OP_SET_LOCAL, (uint16_t)resolve_local(current, &token_iter));
 
             int loop_start = current_chunk()->count;
+            loop.start = loop_start;
+            loop.body = loop_start;
 
             emit_short_arg(OP_GET_LOCAL, (uint16_t)resolve_local(current, &token_seq));
             emit_short_arg(OP_GET_LOCAL, (uint16_t)resolve_local(current, &token_iter));
@@ -1399,6 +1458,11 @@ static void for_statement()
             patch_jump(exit_jump);
             emit_op(OP_POP); // Condition.
 
+            if (loop.exit_jump != -1) {
+                patch_jump(loop.exit_jump);
+            }
+
+            current->loop = loop.enclosing;
             end_scope();
 
             return;
@@ -1413,6 +1477,8 @@ static void for_statement()
     }
 
     int loop_start = current_chunk()->count;
+    loop.start = loop_start;
+    loop.body = loop_start;
 
     // for-exit
     int exit_jump = -1;
@@ -1437,6 +1503,7 @@ static void for_statement()
 
         emit_loop(loop_start);
         loop_start = increment_start;
+        loop.body = increment_start;
         patch_jump(body_jump);
     }
 
@@ -1450,6 +1517,11 @@ static void for_statement()
         emit_op(OP_POP); // Condition.
     }
 
+    if (loop.exit_jump != -1) {
+        patch_jump(loop.exit_jump);
+    }
+
+    current->loop = loop.enclosing;
     end_scope();
 }
 
@@ -1494,7 +1566,13 @@ static void return_statement()
 
 static void while_statement()
 {
-    int loop_start = current_chunk()->count;
+    Loop loop;
+    loop.enclosing = current->loop;
+    loop.start = current_chunk()->count;
+    loop.body = loop.start;
+    loop.scope_depth = current->scope_depth;
+    loop.exit_jump = -1;
+    current->loop = &loop;
 
     consume(TOKEN_LEFT_PAREN, "Expect '(' after 'while'.");
     expression();
@@ -1505,10 +1583,16 @@ static void while_statement()
     emit_op(OP_POP);
     statement();
 
-    emit_loop(loop_start);
+    emit_loop(loop.start);
 
     patch_jump(exit_jump);
     emit_op(OP_POP);
+
+    if (loop.exit_jump != -1) {
+        patch_jump(loop.exit_jump);
+    }
+
+    current->loop = loop.enclosing;
 }
 
 static void synchronize()
@@ -1523,7 +1607,9 @@ static void synchronize()
 
         switch (parser.current.type)
         {
+            case TOKEN_BREAK:
             case TOKEN_CLASS:
+            case TOKEN_CONTINUE:
             case TOKEN_FUN:
             case TOKEN_VAR:
             case TOKEN_FOR:
@@ -1676,7 +1762,11 @@ static void statement()
 {
     ignore_new_lines();
 
-    if (match(TOKEN_FOR)) {
+    if (match(TOKEN_BREAK)) {
+        break_statement();
+    } else if (match(TOKEN_CONTINUE)) {
+        continue_statement();
+    } else if (match(TOKEN_FOR)) {
         for_statement();
     } else if (match(TOKEN_IF)) {
         if_statement();
