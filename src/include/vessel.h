@@ -8,9 +8,13 @@ extern "C"
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stddef.h> // size_t (libc++ does not pull it in transitively like MSVC)
 
 // Called after load_module_fn is called for module [name]. The original returned result
 // is handed back to you in this callback, so that you can free memory if appropriate.
+// Forward-declare at file scope so the function-pointer typedef below binds to this
+// struct, not a (prototype-scoped, always-incomplete) tag local to the prototype.
+struct VesselLoadModuleResult;
 typedef void (*VesselLoadModuleCompleteFn)(const char* name, struct VesselLoadModuleResult result);
 
 // The result of a load_module_fn call.

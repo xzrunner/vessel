@@ -19,7 +19,7 @@ static void math_##name()                 \
 #define STRINGIZE_NX(A) #A
 #define STRINGIZE(A) STRINGIZE_NX(A)
 #define	CALL_MATH_FUNC(name)              \
-if (strcmp(signature, STRINGIZE(PPCAT(name, (_)))) == 0) return math_##name;
+if (strcmp(signature, STRINGIZE(name) "(_)") == 0) return math_##name;
 
 DEF_MATH_FUNC(abs, fabs)
 DEF_MATH_FUNC(acos, acos)
