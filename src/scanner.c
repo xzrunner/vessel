@@ -373,6 +373,7 @@ Token scan_token()
             return make_token(TOKEN_COLON);
         }
     }
+    case '?': return make_token(TOKEN_QUESTION);
     case ';': return make_token(TOKEN_SEMICOLON);
     case ',': return make_token(TOKEN_COMMA);
     case '.':

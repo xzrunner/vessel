@@ -86,6 +86,7 @@ if(VESSEL_BUILD_TESTS)
         "test/class.cpp"
         "test/closure.cpp"
         "test/comments.cpp"
+        "test/conditional.cpp"
         "test/constructor.cpp"
         "test/continue.cpp"
         "test/expressions.cpp"

@@ -23,6 +23,7 @@ typedef struct
 typedef enum {
     PREC_NONE,
     PREC_ASSIGNMENT,  // =
+    PREC_CONDITIONAL, // ?:
     PREC_OR,          // or
     PREC_AND,         // and
     PREC_EQUALITY,    // == !=
@@ -736,6 +737,35 @@ static void or_(bool can_assign)
     patch_jump(end_jump);
 }
 
+static void conditional(bool can_assign)
+{
+    // The condition has already been compiled; its result is on the stack.
+    ignore_new_lines();
+
+    // Jump to the else branch when the condition is falsey.
+    int then_jump = emit_jump(OP_JUMP_IF_FALSE);
+    emit_op(OP_POP); // Discard the condition.
+
+    // Compile the then branch.
+    parse_precedence(PREC_CONDITIONAL);
+
+    ignore_new_lines();
+    consume(TOKEN_COLON, "Expect ':' after then branch of conditional operator.");
+    ignore_new_lines();
+
+    // Jump over the else branch once the then branch has run.
+    int else_jump = emit_jump(OP_JUMP);
+
+    patch_jump(then_jump);
+    emit_op(OP_POP); // Discard the condition.
+
+    // Compile the else branch. Parse at assignment precedence so the operator
+    // is right-associative (a ? b : c ? d : e == a ? b : (c ? d : e)).
+    parse_precedence(PREC_ASSIGNMENT);
+
+    patch_jump(else_jump);
+}
+
 static void string(bool can_assign)
 {
     emit_constant(OBJ_VAL(copy_string(parser.previous.start + 1, parser.previous.length - 2)));
@@ -1061,6 +1091,7 @@ ParseRule rules[] =
     [TOKEN_LEFT_BRACE]    = {map,      NULL,   PREC_NONE},
     [TOKEN_RIGHT_BRACE]   = {NULL,     NULL,   PREC_NONE},
     [TOKEN_COLON]         = {NULL,     NULL,   PREC_NONE},
+    [TOKEN_QUESTION]      = {NULL,     conditional, PREC_CONDITIONAL},
     [TOKEN_COMMA]         = {NULL,     NULL,   PREC_NONE},
     [TOKEN_DOT]           = {NULL,     dot,    PREC_CALL},
     [TOKEN_DOTDOT]        = {NULL,     range,  PREC_RANGE},
