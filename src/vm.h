@@ -6,7 +6,21 @@
 #include "object.h"
 #include "vessel.h"
 
-#define FRAMES_MAX 256
+// Max depth of nested ves CLOSURE calls (call() errors "Stack overflow." at
+// this many frames). This is a VM-internal cap, NOT the native thread stack:
+// the interpreter dispatches calls through this fixed `frames` array, so the
+// process /STACK size is irrelevant to it. The default 256 is too shallow for
+// the editor's blueprint engine, which evaluates a graph by RECURSIVE pull
+// (Blueprint.calc_input_value -> node.calc_value -> calc_input_value -> ...):
+// eval depth tracks the longest data-dependency chain. A decompiled CAD history
+// (cadcvt RebuildHistory) of a real part is a long running-body spine -- e.g.
+// ZW3D R2900_50 is a 66-deep calc graph that, expanded into blueprint
+// fuse + Cache + pattern-Subgraph boundary nodes, needs ~350 frames and
+// overflowed at 256 on the first render (and on every re-eval after a param
+// edit). `vm` is a single global, so `frames` / `stack` live in BSS -- growing
+// them costs static address space only (the GC scans just the used prefix), so
+// 4096 simply lifts the ceiling for deep histories with ample headroom.
+#define FRAMES_MAX 4096
 #define STACK_MAX (FRAMES_MAX * UINT8_COUNT)
 
 #define MAX_TEMP_ROOTS 8
