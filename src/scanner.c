@@ -16,9 +16,52 @@ typedef struct
     int parens[MAX_INTERPOLATION_NESTING];
     int num_parens;
 
+    // Type of the last token returned, for Wren-style line continuation: a
+    // newline that immediately follows a token which cannot end a statement
+    // (',', '(', '[', a binary/unary operator, '.', '=', '..', '?', ':', '::')
+    // is insignificant, so an expression / call / array literal may span
+    // multiple lines. (Multi-line '{ }' maps/blocks already work via the
+    // compiler.) Skipping these newlines only makes previously-invalid code
+    // valid -- a statement-ending token still emits its TOKEN_LINE.
+    TokenType previous_type;
+
 } Scanner;
 
 Scanner scanner;
+
+// A newline right after one of these tokens continues the same expression.
+static bool token_continues_line(TokenType t)
+{
+    switch (t)
+    {
+    case TOKEN_COMMA:
+    case TOKEN_LEFT_PAREN:
+    case TOKEN_LEFT_BRACKET:
+    case TOKEN_DOT:
+    case TOKEN_DOTDOT:
+    case TOKEN_DOTDOT_EQUAL:
+    case TOKEN_SCOPE:
+    case TOKEN_QUESTION:
+    case TOKEN_COLON:
+    case TOKEN_PLUS:
+    case TOKEN_MINUS:
+    case TOKEN_STAR:
+    case TOKEN_SLASH:
+    case TOKEN_BANG:
+    case TOKEN_EQUAL:
+    case TOKEN_EQUAL_EQUAL:
+    case TOKEN_BANG_EQUAL:
+    case TOKEN_LESS:
+    case TOKEN_LESS_EQUAL:
+    case TOKEN_GREATER:
+    case TOKEN_GREATER_EQUAL:
+    case TOKEN_AND:
+    case TOKEN_OR:
+        return true;
+    default:
+        return false;
+    }
+}
 
 void init_scanner(const char* source)
 {
@@ -26,6 +69,7 @@ void init_scanner(const char* source)
 	scanner.current = source;
 	scanner.line = 1;
     scanner.num_parens = 0;
+    scanner.previous_type = TOKEN_LINE;
 }
 
 static bool is_alpha(char c)
@@ -90,6 +134,7 @@ static Token make_token(TokenType type)
     token.line = scanner.line;
     token.value = NIL_VAL;
 
+    scanner.previous_type = type;
     return token;
 }
 
@@ -327,12 +372,22 @@ static Token string()
     token.line = scanner.line;
     token.value = OBJ_VAL(obj_str);
 
+    scanner.previous_type = type;
     return token;
 }
 
 Token scan_token()
 {
     skip_whitespace();
+
+    // Line continuation: drop newline(s) that follow a token which cannot end a
+    // statement, so calls / arrays / binary expressions can span lines. Blank
+    // lines and statement-ending newlines are untouched (previous_type is then
+    // not a continuation token).
+    while (peek() == '\n' && token_continues_line(scanner.previous_type)) {
+        advance();           // consumes '\n', bumps scanner.line
+        skip_whitespace();
+    }
 
     scanner.start = scanner.current;
 

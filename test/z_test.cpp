@@ -58,3 +58,36 @@ true
 4
 )" + 1);
 }
+
+TEST_CASE("multiline line continuation")
+{
+    init_output_buf();
+
+    ves_interpret("test", R"(
+class Foo {
+    static bar(x, y, z) {
+        return x + y + z
+    }
+}
+
+// call arguments spanning lines (newline after a comma / open paren)
+System.print(Foo.bar(1,
+    2,
+    3)) // expect: 6
+
+// array literal spanning lines
+var a = [10,
+    20,
+    30]
+System.print(a[0] + a[1] + a[2]) // expect: 60
+
+// binary expression spanning lines (newline after an operator)
+System.print(100 +
+    200) // expect: 300
+)");
+    REQUIRE(std::string(get_output_buf()) == R"(
+6
+60
+300
+)" + 1);
+}
