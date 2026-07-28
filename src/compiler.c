@@ -66,13 +66,20 @@ typedef enum
     TYPE_SCRIPT
 } FunctionType;
 
+#define MAX_BREAKS_PER_LOOP 64
+
 typedef struct Loop
 {
     struct Loop* enclosing;
     int start;
     int scope_depth;
     int body;
-    int exit_jump;
+    // Every `break` in the loop body emits its own forward jump, and every one
+    // of them must be patched at loop end. A single slot here silently dropped
+    // all but the last break: the earlier ones kept their 0xffff placeholder
+    // operand and jumped 64KB past the chunk into arbitrary memory.
+    int exit_jumps[MAX_BREAKS_PER_LOOP];
+    int exit_count;
 } Loop;
 
 typedef struct Compiler
@@ -1413,7 +1420,11 @@ static void break_statement()
 
     discard_locals(current->loop->scope_depth);
 
-    current->loop->exit_jump = emit_jump(OP_JUMP);
+    if (current->loop->exit_count >= MAX_BREAKS_PER_LOOP) {
+        error("Too many 'break's in one loop.");
+        return;
+    }
+    current->loop->exit_jumps[current->loop->exit_count++] = emit_jump(OP_JUMP);
 }
 
 static void continue_statement()
@@ -1435,7 +1446,7 @@ static void for_statement()
     Loop loop;
     loop.enclosing = current->loop;
     loop.scope_depth = current->scope_depth;
-    loop.exit_jump = -1;
+    loop.exit_count = 0;
     current->loop = &loop;
 
     consume(TOKEN_LEFT_PAREN, "Expect '(' after 'for'.");
@@ -1489,8 +1500,8 @@ static void for_statement()
             patch_jump(exit_jump);
             emit_op(OP_POP); // Condition.
 
-            if (loop.exit_jump != -1) {
-                patch_jump(loop.exit_jump);
+            for (int i = 0; i < loop.exit_count; i++) {
+                patch_jump(loop.exit_jumps[i]);
             }
 
             current->loop = loop.enclosing;
@@ -1548,8 +1559,8 @@ static void for_statement()
         emit_op(OP_POP); // Condition.
     }
 
-    if (loop.exit_jump != -1) {
-        patch_jump(loop.exit_jump);
+    for (int i = 0; i < loop.exit_count; i++) {
+        patch_jump(loop.exit_jumps[i]);
     }
 
     current->loop = loop.enclosing;
@@ -1602,7 +1613,7 @@ static void while_statement()
     loop.start = current_chunk()->count;
     loop.body = loop.start;
     loop.scope_depth = current->scope_depth;
-    loop.exit_jump = -1;
+    loop.exit_count = 0;
     current->loop = &loop;
 
     consume(TOKEN_LEFT_PAREN, "Expect '(' after 'while'.");
@@ -1619,8 +1630,8 @@ static void while_statement()
     patch_jump(exit_jump);
     emit_op(OP_POP);
 
-    if (loop.exit_jump != -1) {
-        patch_jump(loop.exit_jump);
+    for (int i = 0; i < loop.exit_count; i++) {
+        patch_jump(loop.exit_jumps[i]);
     }
 
     current->loop = loop.enclosing;
