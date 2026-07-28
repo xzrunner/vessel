@@ -352,6 +352,19 @@ static void sweep()
 
 void collect_garbage()
 {
+	// Diagnostic kill switch (read once): VES_GC_OFF=1 disables collection so
+	// a crash that survives it is direct memory corruption, while one that
+	// disappears is an object freed while native code still held it.
+	static int gc_off = -1;
+	if (gc_off == -1) {
+		const char* e = getenv("VES_GC_OFF");
+		gc_off = (e && e[0] == '1') ? 1 : 0;
+	}
+	if (gc_off) {
+		vm.next_gc = vm.bytes_allocated * GC_HEAP_GROW_FACTOR;
+		return;
+	}
+
 #ifdef DEBUG_LOG_GC
 	printf("-- gc begin\n");
 	size_t before = vm.bytes_allocated;
