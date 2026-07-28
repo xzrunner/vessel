@@ -416,7 +416,8 @@ static bool invoke_from_class(ObjClass* klass, ObjString* name, int arg_count)
 		break;
 	case METHOD_FOREIGN:
 	{
-		ASSERT(vm.api_stack == NULL, "Cannot already be in foreign call.");
+		// Nest, don't reset: see the METHOD_FOREIGN case in invoke().
+		Value* old_api_stack = vm.api_stack;
 		vm.api_stack = vm.stack_top - arg_count;
 
 		obj_method->as.foreign();
@@ -425,7 +426,7 @@ static bool invoke_from_class(ObjClass* klass, ObjString* name, int arg_count)
 		// for the result.
 		vm.stack_top = vm.api_stack + 1;
 
-		vm.api_stack = NULL;
+		vm.api_stack = old_api_stack;
 	}
 		break;
 	default:
@@ -1108,7 +1109,12 @@ static VesselInterpretResult run()
 			//	break;
 			case METHOD_FOREIGN:
 			{
-				ASSERT(vm.api_stack == NULL, "Cannot already be in foreign call.");
+				// api_stack must nest, not reset: this foreign may be running
+				// inside another foreign's callback into script (ves_call), and
+				// after we return the outer foreign still reads its args and
+				// writes its result through its OWN api_stack. Resetting to
+				// NULL here hands that outer native code a null slot base.
+				Value* old_api_stack = vm.api_stack;
 				vm.api_stack = vm.stack_top - arg_count;
 
 				method->as.foreign();
@@ -1117,7 +1123,7 @@ static VesselInterpretResult run()
 				// for the result.
 				vm.stack_top = vm.api_stack + 1;
 
-				vm.api_stack = NULL;
+				vm.api_stack = old_api_stack;
 			}
 				break;
 			case METHOD_BLOCK:
@@ -1302,7 +1308,8 @@ static VesselInterpretResult run()
 			ASSERT(method->type == METHOD_FOREIGN, "Allocator should be foreign.");
 
 			// Pass the constructor arguments to the allocator as well.
-			ASSERT(vm.api_stack == NULL, "Cannot already be in foreign call.");
+			// Nest, don't reset: see the METHOD_FOREIGN case in invoke().
+			Value* old_api_stack = vm.api_stack;
 			vm.api_stack = frame->slots;
 
 			STAT_UP_TIMES(method);
@@ -1310,7 +1317,7 @@ static VesselInterpretResult run()
 			method->as.foreign();
 			STAT_TIMER_END(method)
 
-			vm.api_stack = NULL;
+			vm.api_stack = old_api_stack;
 		}
 			break;
 
@@ -1395,6 +1402,11 @@ VesselInterpretResult ves_run(void* closure)
 		return VES_INTERPRET_COMPILE_ERROR;
 	}
 
+	// Entering script from native code: preserve the caller's api_stack
+	// (see ves_call).
+	Value* prev_api_stack = vm.api_stack;
+	vm.api_stack = NULL;
+
 	const int prev_top = ves_gettop();
 
 	push(OBJ_VAL(closure));
@@ -1406,6 +1418,7 @@ VesselInterpretResult ves_run(void* closure)
 		runtime_error("Stack not empty.");
 	}
 
+	vm.api_stack = prev_api_stack;
 	return ret;
 }
 
@@ -1700,6 +1713,12 @@ VesselInterpretResult ves_call(int nargs, int nresults)
 	int prev_begin = vm.frame_count_begin;
 	vm.frame_count_begin = vm.frame_count;
 
+	// Entering script from native code: the caller may itself be a foreign
+	// with a live api_stack it will keep using after this call returns, so it
+	// must be preserved across the whole call, on every exit path.
+	Value* prev_api_stack = vm.api_stack;
+	vm.api_stack = NULL;
+
 	ASSERT(IS_STRING(peek(0)), "Method name should be string.");
 	ObjString* s_method = AS_STRING(peek(0));
 	pop();
@@ -1711,6 +1730,8 @@ VesselInterpretResult ves_call(int nargs, int nresults)
 	Value v_method;
 	if (!table_get(&class_obj->methods, s_method, &v_method)) {
 		runtime_error("Method %s does not implement.", s_method->chars);
+		vm.api_stack = prev_api_stack;
+		vm.frame_count_begin = prev_begin;
 		return VES_INTERPRET_RUNTIME_ERROR;
 	}
 
@@ -1731,6 +1752,7 @@ VesselInterpretResult ves_call(int nargs, int nresults)
 	VesselInterpretResult ret = run();
 	vm.stack_top = stack_top;
 
+	vm.api_stack = prev_api_stack;
 	vm.frame_count_begin = prev_begin;
 
 	return ret;
