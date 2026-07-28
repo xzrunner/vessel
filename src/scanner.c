@@ -300,6 +300,16 @@ static Token number()
     return make_token(TOKEN_NUMBER);
 }
 
+// Abandon a string literal: free the partially decoded bytes and hand back the
+// error token. Every failure inside string() must go through here -- an error
+// token that is built but not returned leaves the scanner mid-literal and lets
+// a corrupted string through, which is far worse than a failed compile.
+static Token string_error(ByteBuffer* string, const char* message)
+{
+    ByteBufferClear(string);
+    return error_token(message);
+}
+
 static Token string()
 {
     TokenType type = TOKEN_STRING;
@@ -316,23 +326,22 @@ static Token string()
         }
 
         if (is_at_end()) {
-            return error_token("Unterminated string.");
+            return string_error(&string, "Unterminated string.");
         }
 
         if (c == '%')
         {
-            if (scanner.num_parens < MAX_INTERPOLATION_NESTING)
-            {
-                if (advance() != '(') {
-                    error_token("Expect '(' after '%%'.");
-                }
-
-                scanner.parens[scanner.num_parens++] = 1;
-                type = TOKEN_INTERPOLATION;
-                break;
+            if (scanner.num_parens >= MAX_INTERPOLATION_NESTING) {
+                return string_error(&string, "Interpolation too many levels.");
             }
 
-            error_token("Interpolation too many levels.");
+            if (advance() != '(') {
+                return string_error(&string, "Expect '(' after '%'.");
+            }
+
+            scanner.parens[scanner.num_parens++] = 1;
+            type = TOKEN_INTERPOLATION;
+            break;
         }
 
         if (c == '\\')
@@ -352,8 +361,12 @@ static Token string()
                 case 'v':  ByteBufferWrite(&string, '\v'); break;
 
                 default:
-                    error_token("Invalid escape character.");
-                    break;
+                    // Not a recognised escape. Bail out instead of dropping the
+                    // backslash and the escaped byte on the floor: silently
+                    // mangling the literal turns a typo here into a confusing
+                    // failure far downstream (e.g. a shell-style "a\ b" path
+                    // losing its spaces and only surfacing as "cannot open").
+                    return string_error(&string, "Invalid escape character.");
             }
         }
         else
