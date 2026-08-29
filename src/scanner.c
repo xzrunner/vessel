@@ -297,6 +297,26 @@ static Token number()
         }
     }
 
+    // Node serialization uses the runtime's normal double rendering. Tiny
+    // geometric residuals (for example a rotated face normal) therefore
+    // legitimately appear as `-4.17e-17` in a saved .ves scene. `strtod`,
+    // which compiles the token later, already accepts that spelling; keep it
+    // in one NUMBER token instead of splitting it into a number and an
+    // identifier. Do not consume a bare `e` so `12edges` retains its old
+    // number-then-identifier tokenization.
+    if (peek() == 'e' || peek() == 'E') {
+        const char* exponent = scanner.current;
+        advance();
+        if (peek() == '+' || peek() == '-') advance();
+        if (is_digit(peek())) {
+            while (is_digit(peek())) {
+                advance();
+            }
+        } else {
+            scanner.current = exponent;
+        }
+    }
+
     return make_token(TOKEN_NUMBER);
 }
 

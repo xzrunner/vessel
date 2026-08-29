@@ -48,3 +48,29 @@ false
 true
 )" + 1);
 }
+
+TEST_CASE("scientific_notation")
+{
+    init_output_buf();
+
+    REQUIRE(ves_interpret("scientific_notation", R"(
+System.print(1e-3 == 0.001)
+System.print(2E+3 == 2000)
+System.print(-4.1799442055467e-17 == -0.000000000000000041799442055467)
+)") == VES_INTERPRET_OK);
+    REQUIRE(std::string(get_output_buf()) == R"(
+true
+true
+true
+)" + 1);
+}
+
+TEST_CASE("invalid_scientific_notation_keeps_token_boundaries")
+{
+    REQUIRE(ves_interpret("number_then_identifier", "System.print(12edges)") ==
+            VES_INTERPRET_COMPILE_ERROR);
+    REQUIRE(ves_interpret("missing_exponent_digits", "System.print(1e+)") ==
+            VES_INTERPRET_COMPILE_ERROR);
+    REQUIRE(ves_interpret("identifier_after_e", "System.print(1efoo)") ==
+            VES_INTERPRET_COMPILE_ERROR);
+}
