@@ -8,6 +8,7 @@
 #include "memory.h"
 #include "statistics.h"
 
+#include <inttypes.h>
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
@@ -53,8 +54,11 @@ DEF_PRIMITIVE(w_Object_toString)
 
 DEF_PRIMITIVE(w_Object_to_pointer)
 {
-	char str[255];
-	sprintf(str, "%d", args[0]);
+	if (!IS_OBJ(args[0])) {
+		RETURN_ERROR("to_pointer() receiver must be a heap object.");
+	}
+	char str[32];
+	sprintf(str, "%" PRIuPTR, (uintptr_t)AS_OBJ(args[0]));
 	RETURN_VAL(string_format("$", str));
 }
 
@@ -841,6 +845,10 @@ DEF_PRIMITIVE(w_Range_iteratorValue)
 
 DEF_PRIMITIVE(w_System_writeString)
 {
+	if (IS_NUMBER(args[1])) {
+		dump_value(num_to_string(AS_NUMBER(args[1])), false);
+		return true;
+	}
 	dump_value(args[1], false);
 	return true;
 }
