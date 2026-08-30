@@ -92,6 +92,7 @@ if(VESSEL_BUILD_TESTS)
         "test/expressions.cpp"
         "test/field.cpp"
         "test/for.cpp"
+        "test/foreign.cpp"
         "test/function.cpp"
         "test/if.cpp"
         "test/inheritance.cpp"
@@ -127,4 +128,16 @@ if(VESSEL_BUILD_TESTS)
     add_executable(vessel-test ${TEST_FILES})
     target_include_directories(vessel-test PRIVATE src/include third_party/catch2/src)
     target_link_libraries(vessel-test vessel Catch2)
+
+    enable_testing()
+    # Keep a fast foreign-focused acceptance gate alongside the complete
+    # regression suite; neither test is masked with WILL_FAIL.
+    add_test(
+        NAME vessel-foreign-test
+        COMMAND vessel-test "*foreign*")
+    set_tests_properties(
+        vessel-foreign-test
+        PROPERTIES TIMEOUT 45)
+    add_test(NAME vessel-test COMMAND vessel-test)
+    set_tests_properties(vessel-test PROPERTIES TIMEOUT 45)
 endif()

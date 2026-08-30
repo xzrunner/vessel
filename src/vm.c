@@ -273,15 +273,60 @@ static bool call_value(Value callee, int arg_count)
 		case OBJ_CLASS:
 		{
 			ObjClass* klass = AS_CLASS(callee);
+
+			// A foreign class constructs through the synthesized metaclass
+			// constructor (create_constructor() in compiler.c emits
+			// OP_FOREIGN_CONSTRUCT, which allocates the foreign object and
+			// swaps 'this' to it before running the user init). Falling
+			// through to new_instance() instead builds a plain instance
+			// under a foreign class whose bytes every later
+			// ves_toforeign() misreads as foreign data.
+			if (klass->num_fields == -1)
+			{
+				// Build the signature string only for this immediate
+				// query: copy_string() allocates and may trigger GC, but
+				// nothing below allocates before the table_get() consumes
+				// it, so it cannot be collected in between.
+				Signature signature = { vm.init_str->chars, vm.init_str->length, SIG_METHOD, arg_count };
+				char name[MAX_METHOD_SIGNATURE];
+				int length;
+				signature_to_string(&signature, name, &length);
+				ObjString* signed_name = copy_string(name, length);
+
+				Value ctor;
+				if (table_get(&klass->obj.class_obj->methods, signed_name, &ctor))
+				{
+					// The stack still holds [class, args...] with the
+					// class in slot 0 - exactly the receiver the
+					// synthesized constructor expects as 'this'.
+					return call_value(ctor, arg_count);
+				}
+
+				// Without a synthesized constructor, falling through to
+				// new_instance() would build a plain instance under a
+				// foreign class whose bytes every later ves_toforeign()
+				// misreads as foreign data. Report instead - in Release
+				// too, where ASSERT is compiled out.
+				runtime_error("Foreign class %s must have a constructor.",
+					klass->name->chars);
+				return false;
+			}
+
 			vm.stack_top[-arg_count - 1] = OBJ_VAL(new_instance(klass));
 
-			Value initializer;
-
+			// Create the signature string only AFTER the allocating
+			// new_instance() above: the string intern table is weakly
+			// referenced, so a signed_name held across an allocation
+			// without a VM-stack slot or temporary root could be freed
+			// before the table_get() below reads it.
 			Signature signature = { vm.init_str->chars, vm.init_str->length, SIG_METHOD, arg_count };
 			char name[MAX_METHOD_SIGNATURE];
 			int length;
 			signature_to_string(&signature, name, &length);
-			if (table_get(&klass->methods, copy_string(name, length), &initializer)) {
+			ObjString* signed_name = copy_string(name, length);
+
+			Value initializer;
+			if (table_get(&klass->methods, signed_name, &initializer)) {
 				ASSERT(IS_METHOD(initializer), "Error method type.");
 				ObjMethod* obj_method = AS_METHOD(initializer);
 				ASSERT(obj_method->type == METHOD_BLOCK, "Method should be block.");
@@ -408,7 +453,10 @@ static bool invoke_from_class(ObjClass* klass, ObjString* name, int arg_count)
 		} else {
 			STAT_TIMER_END(obj_method)
 			runtime_error("Run primitive fail.");
-			return VES_INTERPRET_RUNTIME_ERROR;
+			// This function returns bool: returning the VES_INTERPRET_*
+			// enum here would convert to true, so the caller would keep
+			// executing on the frames runtime_error() just cleared.
+			return false;
 		}
 		break;
 	case METHOD_BLOCK:
@@ -417,8 +465,16 @@ static bool invoke_from_class(ObjClass* klass, ObjString* name, int arg_count)
 	case METHOD_FOREIGN:
 	{
 		// Nest, don't reset: see the METHOD_FOREIGN case in invoke().
+		// The receiver sits at stack_top - arg_count - 1 - exactly where
+		// the METHOD_PRIMITIVE branch above already passes it - so the
+		// API stack must expose the receiver at slot 0 and the arguments
+		// at 1+. The old base (stack_top - arg_count) hid the receiver
+		// below the API stack: no-arg calls read past the top and calls
+		// with arguments saw argument 1 in slot 0, corrupting every
+		// foreign instance method silently in release builds (ASSERT is
+		// off there).
 		Value* old_api_stack = vm.api_stack;
-		vm.api_stack = vm.stack_top - arg_count;
+		vm.api_stack = vm.stack_top - arg_count - 1;
 
 		obj_method->as.foreign();
 
@@ -427,6 +483,12 @@ static bool invoke_from_class(ObjClass* klass, ObjString* name, int arg_count)
 		vm.stack_top = vm.api_stack + 1;
 
 		vm.api_stack = old_api_stack;
+
+		// The foreign function has run (failures report their own runtime
+		// errors); mirror the METHOD_FOREIGN case in call_value(), which
+		// returns true, so OP_INVOKE does not abort run() with the stack
+		// still at the foreign call's dirty height.
+		ret = true;
 	}
 		break;
 	default:
@@ -582,7 +644,10 @@ static VesselForeignMethodFn find_foreign_method(const char* moduleName, const c
 	return method;
 }
 
-static void define_method(ObjString* name, int method_type, ObjModule* module)
+// Returns false (after reporting its own runtime error and unwinding its
+// stack/root slots) when a foreign method could not be bound; the caller
+// must abort the interpreter loop instead of executing on the dirty stack.
+static bool define_method(ObjString* name, int method_type, ObjModule* module)
 {
 	Value class = peek(0);
 	ASSERT(IS_CLASS(class), "Should be a class.");
@@ -601,9 +666,16 @@ static void define_method(ObjString* name, int method_type, ObjModule* module)
 
 		if (method->as.foreign == NULL)
 		{
+			// runtime_error() calls reset_stack(): the data stack is empty
+			// now, so popping the two definition operands afterwards would
+			// push stack_top below vm.stack (UB, and a guaranteed assert
+			// in DEBUG builds). pop_root() only touches the temporary-root
+			// array and stays safe. The error message reads heap objects
+			// (name/class/module strings) that a stack reset never frees.
 			runtime_error("Could not find foreign method %s for class %s in module %s.",
 				name, klass->name->chars, module->name->chars);
-			return;
+			pop_root();	// method
+			return false;
 		}
 	}
 	else
@@ -622,6 +694,7 @@ static void define_method(ObjString* name, int method_type, ObjModule* module)
 	pop_root();	// method
 	pop();
 	pop();
+	return true;
 }
 
 static bool is_falsey(Value value)
@@ -1232,7 +1305,10 @@ static VesselInterpretResult run()
 
 		case OP_METHOD:
 		case OP_METHOD_STATIC:
-			define_method(READ_STRING(), instruction, FUNC->module);
+			if (!define_method(READ_STRING(), instruction, FUNC->module))
+			{
+				return VES_INTERPRET_RUNTIME_ERROR;
+			}
 			break;
 
 		case OP_LOAD_MODULE_VAR:
@@ -1300,12 +1376,22 @@ static VesselInterpretResult run()
 			ObjClass* class_obj = AS_CLASS(frame->slots[0]);
 			ASSERT(class_obj->num_fields == -1, "Class must be a foreign class.");
 
+			// The allocator is only installed when the host (or a built-in
+			// module) provided one. A missing or non-foreign allocator must
+			// be a runtime error, not an ASSERT: Release builds compile the
+			// ASSERT out and would then call through an uninitialized
+			// method value.
 			Value value;
-			bool find = table_get(&class_obj->methods, vm.allocate_str, &value);
-			ASSERT(find, "Not find allocator.");
+			if (!table_get(&class_obj->methods, vm.allocate_str, &value)
+				|| !IS_METHOD(value)
+				|| AS_METHOD(value)->type != METHOD_FOREIGN)
+			{
+				runtime_error("Foreign class %s does not have a foreign allocator.",
+					class_obj->name->chars);
+				return VES_INTERPRET_RUNTIME_ERROR;
+			}
 
 			ObjMethod* method = AS_METHOD(value);
-			ASSERT(method->type == METHOD_FOREIGN, "Allocator should be foreign.");
 
 			// Pass the constructor arguments to the allocator as well.
 			// Nest, don't reset: see the METHOD_FOREIGN case in invoke().
