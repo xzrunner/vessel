@@ -7,6 +7,7 @@ extern "C"
 #define vessel_h
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 // Called after load_module_fn is called for module [name]. The original returned result
