@@ -1345,7 +1345,17 @@ static VesselInterpretResult run()
 			}
 			else
 			{
-				vm.last_module = AS_MODULE(peek(0));
+				// import_module returns NIL_VAL when it failed (runtime_error
+				// already reported and execution continues in this VM), and a
+				// pre-compiled module otherwise. Only trust real modules --
+				// casting NIL left last_module garbage and the following
+				// OP_IMPORT_VARIABLE dereferenced it (crash in
+				// symbol_table_find).
+				if (IS_MODULE(peek(0))) {
+					vm.last_module = AS_MODULE(peek(0));
+				} else {
+					vm.last_module = NULL;
+				}
 			}
 		}
 			break;
@@ -1356,7 +1366,12 @@ static VesselInterpretResult run()
 #ifdef DEBUG_PRINT_OPCODE
 			printf("++ name %s\n", variable->chars);
 #endif // DEBUG_PRINT_OPCODE
-			ASSERT(vm.last_module != NULL, "Should have already imported module.");
+			if (vm.last_module == NULL) {
+				// Import of the owning module failed; resolve to nil so the
+				// rest of the module body keeps running.
+				push(NIL_VAL);
+				break;
+			}
 			int symbol = symbol_table_find(&vm.last_module->variable_names, variable->chars, variable->length);
 			if (symbol != -1) {
 				push(vm.last_module->variables.values[symbol]);
