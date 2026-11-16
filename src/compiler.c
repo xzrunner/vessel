@@ -580,6 +580,7 @@ static void binary(bool can_assign)
         case TOKEN_MINUS:         emit_op(OP_SUBTRACT); break;
         case TOKEN_STAR:          emit_op(OP_MULTIPLY); break;
         case TOKEN_SLASH:         emit_op(OP_DIVIDE); break;
+        case TOKEN_PERCENT:       emit_op(OP_MODULO); break;
         case TOKEN_IS:
         {
             Signature signature = { "is", 2, SIG_METHOD, 1 };
@@ -1108,6 +1109,7 @@ ParseRule rules[] =
     [TOKEN_SEMICOLON]     = {NULL,     NULL,   PREC_NONE},
     [TOKEN_SLASH]         = {NULL,     binary, PREC_FACTOR},
     [TOKEN_STAR]          = {NULL,     binary, PREC_FACTOR},
+    [TOKEN_PERCENT]       = {NULL,     binary, PREC_FACTOR},
     [TOKEN_BANG]          = {unary,    NULL,   PREC_NONE},
     [TOKEN_BANG_EQUAL]    = {NULL,     binary, PREC_EQUALITY},
     [TOKEN_EQUAL]         = {NULL,     NULL,   PREC_NONE},

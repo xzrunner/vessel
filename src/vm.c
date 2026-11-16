@@ -8,6 +8,7 @@
 #include "utils.h"
 #include "primitive.h"
 #include "statistics.h"
+#include <math.h>
 #if OPT_RANDOM
 #include "opt_random.h"
 #endif // OPT_RANDOM
@@ -1087,6 +1088,23 @@ static VesselInterpretResult run()
 		case OP_SUBTRACT: BINARY_OP(NUMBER_VAL, -); break;
 		case OP_MULTIPLY: BINARY_OP(NUMBER_VAL, *); break;
 		case OP_DIVIDE:   BINARY_OP(NUMBER_VAL, / ); break;
+		case OP_MODULO:
+		{
+			// C's % is integer-only: use fmod (sign follows the dividend,
+			// matching the truncated division OP_DIVIDE performs).
+			if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) {
+				runtime_error("Operands must be numbers.");
+				return VES_INTERPRET_RUNTIME_ERROR;
+			}
+			double b = AS_NUMBER(pop());
+			double a = AS_NUMBER(pop());
+			if (b == 0.0) {
+				runtime_error("Modulo by zero.");
+				return VES_INTERPRET_RUNTIME_ERROR;
+			}
+			push(NUMBER_VAL(fmod(a, b)));
+			break;
+		}
 		case OP_NOT:
 			push(BOOL_VAL(is_falsey(pop())));
 			break;

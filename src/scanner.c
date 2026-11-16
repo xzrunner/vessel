@@ -47,6 +47,7 @@ static bool token_continues_line(TokenType t)
     case TOKEN_MINUS:
     case TOKEN_STAR:
     case TOKEN_SLASH:
+    case TOKEN_PERCENT:
     case TOKEN_BANG:
     case TOKEN_EQUAL:
     case TOKEN_EQUAL_EQUAL:
@@ -476,6 +477,7 @@ Token scan_token()
     case '+': return make_token(TOKEN_PLUS);
     case '/': return make_token(TOKEN_SLASH);
     case '*': return make_token(TOKEN_STAR);
+    case '%': return make_token(TOKEN_PERCENT);
 
     case '\n': return make_token(TOKEN_LINE);
 

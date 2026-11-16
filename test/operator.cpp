@@ -1,6 +1,7 @@
 #include "utility.h"
 
 #include <catch2/catch_test_macros.hpp>
+#include <cstring>
 
 #include <vessel.h>
 
@@ -85,6 +86,48 @@ System.print(12.34 / 12.34)  // expect: 1
 4
 1
 )" + 1);
+}
+
+TEST_CASE("modulo")
+{
+    init_output_buf();
+
+    ves_interpret("test", R"(
+System.print(7 % 3)          // expect: 1
+System.print(10 % 5)         // expect: 0
+System.print(7.5 % 2)        // expect: 1.5
+
+// fmod semantics: the sign follows the dividend.
+System.print(-7 % 3)         // expect: -1
+System.print(7 % -3)         // expect: 1
+
+// % binds at factor precedence and is left-associative.
+System.print(10 - 7 % 3)     // expect: 9
+System.print(2 * 8 % 3)      // expect: 1
+System.print(12 % 5 * 2)     // expect: 4
+)");
+    REQUIRE(std::string(get_output_buf()) == R"(
+1
+0
+1.5
+-1
+1
+9
+1
+4
+)" + 1);
+}
+
+TEST_CASE("modulo_by_zero_is_runtime_error")
+{
+    init_output_buf();
+
+    VesselInterpretResult result = ves_interpret("test", R"(
+System.print(1 % 0)
+System.print("unreachable")
+)");
+    REQUIRE(result == VES_INTERPRET_RUNTIME_ERROR);
+    REQUIRE(std::strstr(get_output_buf(), "unreachable") == NULL);
 }
 
 TEST_CASE("equals")
